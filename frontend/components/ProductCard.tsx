@@ -40,8 +40,8 @@ export default function ProductCard({ id, name, price, originalPrice, discount, 
   const inWishlist = isInWishlist(id);
 
   return (
-    <Link href={`/product/${id}`} className="group bg-white rounded-lg overflow-hidden border border-border hover:shadow-xl transition-all duration-300">
-      <div className="relative h-64 overflow-hidden bg-neutral-light">
+    <Link href={`/product/${id}`} className="group bg-white rounded-lg overflow-hidden border border-border hover:shadow-xl transition-all duration-300 flex flex-col h-full">
+      <div className="relative h-64 overflow-hidden bg-neutral-light flex-shrink-0">
         <Image
           src={image}
           alt={name}
@@ -64,14 +64,14 @@ export default function ProductCard({ id, name, price, originalPrice, discount, 
         </button>
       </div>
       
-      <div className="p-4">
+      <div className="p-4 flex flex-col flex-grow">
         {category && (
           <p className="text-xs text-neutral-dark uppercase tracking-wide mb-2">{category}</p>
         )}
-        <h3 className="text-base font-semibold mb-2 text-foreground line-clamp-2 group-hover:text-accent transition-colors">
+        <h3 className="text-base font-semibold mb-2 text-foreground line-clamp-2 group-hover:text-accent transition-colors min-h-[3rem]">
           {name}
         </h3>
-        <div className="flex items-baseline gap-2 mb-3">
+        <div className="flex items-baseline gap-2 mb-3 mt-auto">
           <span className="text-lg font-bold text-foreground">{price}</span>
           {originalPrice && (
             <span className="text-sm text-neutral-dark line-through">{originalPrice}</span>
