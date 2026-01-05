@@ -45,7 +45,7 @@ export default function Hero() {
   };
 
   return (
-    <section className="relative h-[600px] bg-foreground overflow-hidden">
+    <section className="relative h-[500px] sm:h-[600px] bg-foreground overflow-hidden">
       {slides.map((slide, index) => (
         <div
           key={index}
@@ -60,29 +60,29 @@ export default function Hero() {
             className="object-cover"
             priority={index === 0}
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-foreground/70 to-foreground/30" />
+          <div className="absolute inset-0 bg-gradient-to-r from-foreground/80 to-foreground/40" />
         </div>
       ))}
 
       <div className="absolute inset-0 flex items-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="max-w-2xl">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-3 sm:mb-4 leading-tight">
               {slides[currentSlide].title}
             </h1>
-            <p className="text-xl md:text-2xl text-white/90 mb-8">
+            <p className="text-base sm:text-xl md:text-2xl text-white/90 mb-6 sm:mb-8 leading-relaxed">
               {slides[currentSlide].subtitle}
             </p>
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Link
                 href="/shop"
-                className="bg-accent hover:bg-secondary text-white px-8 py-3 rounded-md font-semibold transition-colors"
+                className="bg-accent hover:bg-secondary text-white px-6 sm:px-8 py-3 rounded-md font-semibold transition-colors text-center w-auto sm:w-auto"
               >
                 Shop Now
               </Link>
               <Link
                 href="/categories"
-                className="bg-white hover:bg-neutral-light text-foreground px-8 py-3 rounded-md font-semibold transition-colors"
+                className="bg-white hover:bg-neutral-light text-foreground px-6 sm:px-8 py-3 rounded-md font-semibold transition-colors text-center w-auto sm:w-auto"
               >
                 Browse Categories
               </Link>
@@ -93,7 +93,7 @@ export default function Hero() {
 
       <button
         onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full backdrop-blur-sm transition-colors"
+        className="hidden sm:block absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full backdrop-blur-sm transition-colors"
         aria-label="Previous slide"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -103,7 +103,7 @@ export default function Hero() {
 
       <button
         onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full backdrop-blur-sm transition-colors"
+        className="hidden sm:block absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full backdrop-blur-sm transition-colors"
         aria-label="Next slide"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -158,19 +158,44 @@ export default function Header() {
           <div className="lg:hidden py-4 border-t border-border">
             <nav className="flex flex-col space-y-4">
               <Link href="/shop" className="text-sm font-medium hover:text-accent transition-colors">
-                Shop All
+                Shop
               </Link>
               <Link href="/categories" className="text-sm font-medium hover:text-accent transition-colors">
                 Categories
+              </Link>
+              
+              <div className="border-t border-border pt-4">
+                <p className="text-xs font-semibold text-neutral-dark mb-3 uppercase tracking-wide">Company</p>
+                <div className="flex flex-col space-y-3 pl-2">
+                  <Link href="/about" className="text-sm font-medium hover:text-accent transition-colors">
+                    About UFLIX
+                  </Link>
+                  <Link href="/manufacturing" className="text-sm font-medium hover:text-accent transition-colors">
+                    Manufacturing
+                  </Link>
+                  <Link href="/quality" className="text-sm font-medium hover:text-accent transition-colors">
+                    Quality & Certifications
+                  </Link>
+                  <Link href="/sustainability" className="text-sm font-medium hover:text-accent transition-colors">
+                    Sustainability
+                  </Link>
+                </div>
+              </div>
+
+              <Link href="/shop-fittings" className="text-sm font-medium hover:text-accent transition-colors">
+                Shop Fittings
+              </Link>
+              <Link href="/industries" className="text-sm font-medium hover:text-accent transition-colors">
+                Industries
+              </Link>
+              <Link href="/projects" className="text-sm font-medium hover:text-accent transition-colors">
+                Projects
               </Link>
               <Link href="/business" className="text-sm font-medium hover:text-accent transition-colors">
                 For Business
               </Link>
               <Link href="/shops" className="text-sm font-medium hover:text-accent transition-colors">
                 Our Shops
-              </Link>
-              <Link href="/about" className="text-sm font-medium hover:text-accent transition-colors">
-                About Us
               </Link>
               <Link href="/contact" className="text-sm font-medium hover:text-accent transition-colors">
                 Contact
