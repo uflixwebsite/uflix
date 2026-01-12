@@ -19,8 +19,12 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: "Uflix - Premium Furniture & Home Decor",
-  description: "Discover stylish and comfortable furniture for every room. Shop modern sofas, dining sets, bedroom furniture, and more with quality craftsmanship.",
+  title: "UFLIX - Premium Furniture & Manufacturing Solutions",
+  description: "Leading manufacturer of premium furniture, metal fabrication, and shop fittings. Serving government, corporate, and retail sectors with ISO 9001:2015 certified quality.",
+  icons: {
+    icon: '/Logos/Uflix_Logo.png',
+    apple: '/Logos/Uflix_Logo.png',
+  },
 };
 
 export default function RootLayout({

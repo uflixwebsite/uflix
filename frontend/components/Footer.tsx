@@ -46,12 +46,21 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="font-semibold mb-4">Resources</h4>
+            <h4 className="font-semibold mb-4">Contact</h4>
             <ul className="space-y-2">
-              <li><Link href="/shops" className="text-gray-300 hover:text-accent transition-colors">Our Locations</Link></li>
-              <li><Link href="/cart" className="text-gray-300 hover:text-accent transition-colors">Shopping Cart</Link></li>
-              <li><Link href="/wishlist" className="text-gray-300 hover:text-accent transition-colors">Wishlist</Link></li>
-              <li><Link href="/login" className="text-gray-300 hover:text-accent transition-colors">Login / Register</Link></li>
+              <li className="text-gray-300">
+                <span className="block text-sm font-medium mb-1">Phone</span>
+                <a href="tel:+911204911871" className="hover:text-accent transition-colors">+91 120 491 1871</a>
+                <br />
+                <a href="tel:+917303836300" className="hover:text-accent transition-colors">+91 730 383 6300</a>
+              </li>
+              <li className="text-gray-300">
+                <span className="block text-sm font-medium mb-1">Email</span>
+                <a href="mailto:ebusiness@uflix.co.in" className="hover:text-accent transition-colors">ebusiness@uflix.co.in</a>
+              </li>
+              <li className="text-gray-300 text-sm">
+                Mon-Sat, 10 AM - 7 PM
+              </li>
             </ul>
           </div>
         </div>

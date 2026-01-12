@@ -15,7 +15,7 @@ export default function ClientCarousel() {
   ];
 
   return (
-    <section className="py-12 bg-neutral-light border-y border-border overflow-hidden">
+    <section className="py-12 bg-white border-y border-border overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <p className="text-center text-sm text-neutral-dark mb-6 uppercase tracking-wide font-medium">
           Trusted by Leading Organizations
@@ -25,12 +25,12 @@ export default function ClientCarousel() {
             {[...clients, ...clients, ...clients].map((client, index) => (
               <div
                 key={index}
-                className="flex items-center justify-center min-w-[200px] h-24 opacity-70 hover:opacity-100 transition-opacity"
+                className="flex items-center justify-center min-w-[240px] h-28"
               >
                 <img
                   src={client.image}
                   alt={client.name}
-                  className="object-contain h-20 w-48"
+                  className="object-contain h-24 w-56"
                 />
               </div>
             ))}

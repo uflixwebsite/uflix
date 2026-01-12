@@ -45,7 +45,8 @@ export default function Hero() {
   };
 
   return (
-    <section className="relative h-[500px] sm:h-[600px] bg-foreground overflow-hidden">
+    <section className="relative h-[600px] sm:h-[700px] bg-foreground overflow-hidden">
+
       {slides.map((slide, index) => (
         <div
           key={index}
@@ -60,7 +61,7 @@ export default function Hero() {
             className="object-cover"
             priority={index === 0}
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-foreground/80 to-foreground/40" />
+          <div className="absolute inset-0 bg-gradient-to-r from-foreground/70 to-foreground/30" />
         </div>
       ))}
 
@@ -73,16 +74,17 @@ export default function Hero() {
             <p className="text-base sm:text-xl md:text-2xl text-white/90 mb-6 sm:mb-8 leading-relaxed">
               {slides[currentSlide].subtitle}
             </p>
+            
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Link
                 href="/shop"
-                className="bg-accent hover:bg-secondary text-white px-6 sm:px-8 py-3 rounded-md font-semibold transition-colors text-center w-auto sm:w-auto"
+                className="bg-accent hover:bg-secondary text-white px-6 sm:px-8 py-3 rounded-md font-semibold transition-colors text-center"
               >
                 Shop Now
               </Link>
               <Link
                 href="/categories"
-                className="bg-white hover:bg-neutral-light text-foreground px-6 sm:px-8 py-3 rounded-md font-semibold transition-colors text-center w-auto sm:w-auto"
+                className="bg-white hover:bg-neutral-light text-foreground px-6 sm:px-8 py-3 rounded-md font-semibold transition-colors text-center"
               >
                 Browse Categories
               </Link>

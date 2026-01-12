@@ -58,8 +58,9 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-semibold mb-1">Phone</h3>
-                      <p className="text-neutral-dark">+91 123 456 7890</p>
-                      <p className="text-neutral-dark">Mon-Sat, 10 AM - 7 PM</p>
+                      <p className="text-neutral-dark">Office: +91 120 491 1871</p>
+                      <p className="text-neutral-dark">Mobile: +91 730 383 6300</p>
+                      <p className="text-neutral-dark text-sm mt-1">Mon-Sat, 10 AM - 7 PM</p>
                     </div>
                   </div>
 
@@ -71,8 +72,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-semibold mb-1">Email</h3>
-                      <p className="text-neutral-dark">support@uflix.com</p>
-                      <p className="text-neutral-dark">sales@uflix.com</p>
+                      <p className="text-neutral-dark">ebusiness@uflix.co.in</p>
                     </div>
                   </div>
 
@@ -152,10 +152,11 @@ export default function ContactPage() {
                       required
                     >
                       <option value="">Select a subject</option>
+                      <option value="custom-built">Custom Built Furniture</option>
+                      <option value="customize-existing">Customize Existing Product</option>
+                      <option value="shop-fittings">Shop Fittings</option>
+                      <option value="business-order">For Business - Custom Order</option>
                       <option value="general">General Inquiry</option>
-                      <option value="product">Product Question</option>
-                      <option value="order">Order Status</option>
-                      <option value="business">Business Inquiry</option>
                       <option value="other">Other</option>
                     </select>
                   </div>
