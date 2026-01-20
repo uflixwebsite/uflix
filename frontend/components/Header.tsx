@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
-import { useUser } from '@clerk/nextjs';
+import { useUser, SignOutButton } from '@clerk/nextjs';
 import { getCurrentUser } from '@/services/authService';
 
 export default function Header() {
@@ -14,6 +14,7 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCompanyOpen, setIsCompanyOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'homes' | 'business'>('homes');
   const [userRole, setUserRole] = useState<string | null>(null);
   const { cartCount } = useCart();
@@ -85,15 +86,63 @@ export default function Header() {
               </svg>
             </button>
 
-            <Link 
-              href={isSignedIn ? (userRole === 'admin' ? "/admin" : "/profile") : "/sign-in"} 
-              className={`p-2 ${textColor} ${hoverColor} transition-colors`} 
-              aria-label="Account"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            </Link>
+{isSignedIn ? (
+              <div 
+                className="relative"
+                onMouseEnter={() => setIsUserMenuOpen(true)}
+                onMouseLeave={() => setIsUserMenuOpen(false)}
+              >
+                <button 
+                  className={`p-2 ${textColor} ${hoverColor} transition-colors`} 
+                  aria-label="Account"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </button>
+
+                {isUserMenuOpen && (
+                  <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-border py-2">
+                    <div className="px-4 py-2 border-b border-border">
+                      <p className="text-sm font-semibold text-foreground">{user?.firstName || 'User'}</p>
+                      <p className="text-xs text-neutral-dark">{user?.primaryEmailAddress?.emailAddress}</p>
+                    </div>
+                    
+                    <Link 
+                      href={userRole === 'admin' ? "/admin" : "/profile"} 
+                      className="block px-4 py-2 text-sm text-foreground hover:bg-accent/10 transition-colors"
+                    >
+                      {userRole === 'admin' ? 'Admin Dashboard' : 'My Profile'}
+                    </Link>
+                    
+                    <Link 
+                      href="/orders" 
+                      className="block px-4 py-2 text-sm text-foreground hover:bg-accent/10 transition-colors"
+                    >
+                      My Orders
+                    </Link>
+                    
+                    <div className="border-t border-border mt-2 pt-2">
+                      <SignOutButton>
+                        <button className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                          Logout
+                        </button>
+                      </SignOutButton>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link 
+                href="/sign-in" 
+                className={`p-2 ${textColor} ${hoverColor} transition-colors`} 
+                aria-label="Sign In"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </Link>
+            )}
 
             <Link href="/wishlist" className={`p-2 ${textColor} ${hoverColor} transition-colors relative`} aria-label="Wishlist">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -256,6 +305,31 @@ export default function Header() {
               <Link href="/contact" className="text-sm font-medium text-white hover:text-accent transition-colors">
                 Contact
               </Link>
+
+              {isSignedIn && (
+                <div className="border-t border-white/20 pt-4 mt-4">
+                  <p className="text-xs font-semibold text-white/70 mb-3 uppercase tracking-wide">Account</p>
+                  <div className="flex flex-col space-y-3 pl-2">
+                    <Link 
+                      href={userRole === 'admin' ? "/admin" : "/profile"} 
+                      className="text-sm font-medium text-white hover:text-accent transition-colors"
+                    >
+                      {userRole === 'admin' ? 'Admin Dashboard' : 'My Profile'}
+                    </Link>
+                    <Link 
+                      href="/orders" 
+                      className="text-sm font-medium text-white hover:text-accent transition-colors"
+                    >
+                      My Orders
+                    </Link>
+                    <SignOutButton>
+                      <button className="text-sm font-medium text-red-400 hover:text-red-300 transition-colors text-left">
+                        Logout
+                      </button>
+                    </SignOutButton>
+                  </div>
+                </div>
+              )}
             </nav>
           </div>
         )}
