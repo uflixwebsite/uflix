@@ -11,9 +11,25 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// --------------------
-// Middleware
-// --------------------
+/* ======================================================
+   HEALTH CHECK (MUST BE FIRST)
+   - No auth
+   - No logging
+   - No DB
+   - No side effects
+   - <10ms
+====================================================== */
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    service: 'uflix-backend',
+    timestamp: new Date().toISOString(),
+  });
+});
+
+/* ======================================================
+   GLOBAL MIDDLEWARE
+====================================================== */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -26,28 +42,25 @@ app.use(
 
 app.use(morgan('dev'));
 
-// Clerk middleware to parse JWT tokens and populate req.auth
-app.use(ClerkExpressWithAuth({
-  onError: (error) => {
-    console.error('Clerk auth error:', error);
-  }
-}));
+/* ======================================================
+   AUTH MIDDLEWARE (AFTER /health)
+====================================================== */
+app.use(
+  ClerkExpressWithAuth({
+    onError: (error) => {
+      console.error('Clerk auth error:', error);
+    },
+  })
+);
 
-// Static files for uploads
+/* ======================================================
+   STATIC FILES
+====================================================== */
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Health endpoint
-app.get('/health', (req, res) => {
-  res.status(200).json({
-    status: 'ok',
-    service: 'uflix-backend',
-    timestamp: new Date().toISOString()
-  });
-});
-
-// --------------------
-// Routes
-// --------------------
+/* ======================================================
+   ROUTES
+====================================================== */
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/products', require('./routes/products'));
@@ -60,9 +73,9 @@ app.use('/api/reviews', require('./routes/reviews'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/upload', require('./routes/upload'));
 
-// --------------------
-// Error handling
-// --------------------
+/* ======================================================
+   ERROR HANDLING
+====================================================== */
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(err.status || 500).json({
@@ -72,7 +85,9 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 404 handler
+/* ======================================================
+   404 HANDLER
+====================================================== */
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -80,9 +95,9 @@ app.use((req, res) => {
   });
 });
 
-// --------------------
-// Server + DB bootstrap
-// --------------------
+/* ======================================================
+   SERVER + DATABASE
+====================================================== */
 const startServer = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI);
