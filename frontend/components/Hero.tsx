@@ -60,6 +60,7 @@ export default function Hero() {
             fill
             className="object-cover"
             priority={index === 0}
+            loading={index === 0 ? 'eager' : 'lazy'}
           />
           <div className="absolute inset-0 bg-gradient-to-r from-foreground/70 to-foreground/30" />
         </div>

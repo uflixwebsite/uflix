@@ -5,6 +5,9 @@ import { CartProvider } from "@/contexts/CartContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
 import { ClerkProvider } from '@clerk/nextjs';
 import UserSync from '@/components/UserSync';
+import PageTransition from '@/components/PageTransition';
+import PageLoadingIndicator from '@/components/PageLoadingIndicator';
+import LoadingBar from '@/components/LoadingBar';
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -38,10 +41,14 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body className={`${playfair.variable} ${montserrat.variable} antialiased`}>
+          <LoadingBar />
+          <PageLoadingIndicator />
           <UserSync />
           <CartProvider>
             <WishlistProvider>
-              {children}
+              <PageTransition>
+                {children}
+              </PageTransition>
             </WishlistProvider>
           </CartProvider>
         </body>

@@ -54,7 +54,7 @@ export default function CheckoutPage() {
     try {
       const data = await getCart();
       setCart(data.data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching cart:', error);
     } finally {
       setLoading(false);
@@ -69,7 +69,7 @@ export default function CheckoutPage() {
         const defaultAddr = userData.data.addresses.find((a: any) => a.isDefault);
         setSelectedAddress(defaultAddr || userData.data.addresses[0]);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading user data:', error);
     }
   };
@@ -142,14 +142,14 @@ export default function CheckoutPage() {
             shippingAddress: selectedAddress,
             userEmail: checkoutMode === 'guest' ? guestInfo.email : '',
           },
-          (successData) => {
+          (successData: any) => {
             // Clear local cart for guest
             if (checkoutMode === 'guest') {
               localStorage.removeItem('cart');
             }
             router.push(`/order-confirmation/${order._id}`);
           },
-          (error) => {
+          (error: any) => {
             alert('Payment failed: ' + error);
             setProcessing(false);
           }

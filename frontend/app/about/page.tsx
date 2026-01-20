@@ -15,6 +15,7 @@ export default function AboutPage() {
             alt="UFLIX Manufacturing Facility"
             fill
             className="object-cover opacity-20"
+            loading="lazy"
           />
           <div className="absolute inset-0 flex items-center justify-center text-white">
             <div className="max-w-5xl mx-auto px-4 text-center">
@@ -45,6 +46,7 @@ export default function AboutPage() {
                   alt="UFLIX Manufacturing"
                   fill
                   className="object-cover"
+                  loading="lazy"
                 />
               </div>
             </div>
@@ -56,6 +58,7 @@ export default function AboutPage() {
                   alt="UFLIX Projects"
                   fill
                   className="object-cover"
+                  loading="lazy"
                 />
               </div>
               <div className="order-1 md:order-2">

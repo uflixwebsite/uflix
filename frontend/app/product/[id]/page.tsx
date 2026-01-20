@@ -140,6 +140,7 @@ export default function ProductDetailPage() {
                 alt={product.name}
                 fill
                 className="object-cover"
+                loading="lazy"
               />
             </div>
             <div className="grid grid-cols-3 gap-4">
@@ -151,7 +152,7 @@ export default function ProductDetailPage() {
                     selectedImage === index ? 'border-accent' : 'border-gray-200'
                   }`}
                 >
-                  <Image src={image.url} alt={`${product.name} ${index + 1}`} fill className="object-cover" />
+                  <Image src={image.url} alt={`${product.name} ${index + 1}`} fill className="object-cover" loading="lazy" />
                 </button>
               ))}
             </div>

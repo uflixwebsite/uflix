@@ -48,6 +48,7 @@ export default function FeaturedCollections() {
                   alt={collection.title}
                   fill
                   className="object-cover group-hover:scale-110 transition-transform duration-500"
+                  loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/40 to-transparent" />
               </div>

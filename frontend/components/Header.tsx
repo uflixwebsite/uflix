@@ -186,14 +186,6 @@ export default function Header() {
                   </div>
                   
                   <div className="border-t border-border pt-3">
-                    <Link href="/manufacturing" className="block font-semibold text-accent hover:text-secondary mb-1">
-                      Manufacturing
-                    </Link>
-                    <p className="text-xs text-neutral-dark mb-2">50,000+ sq ft facility with advanced CNC machinery</p>
-                    <Link href="/manufacturing" className="text-xs text-accent hover:underline">Read more →</Link>
-                  </div>
-                  
-                  <div className="border-t border-border pt-3">
                     <Link href="/quality" className="block font-semibold text-accent hover:text-secondary mb-1">
                       Quality & Certifications
                     </Link>
@@ -242,9 +234,6 @@ export default function Header() {
                 <div className="flex flex-col space-y-3 pl-2">
                   <Link href="/about" className="text-sm font-medium text-white hover:text-accent transition-colors">
                     About UFLIX
-                  </Link>
-                  <Link href="/manufacturing" className="text-sm font-medium text-white hover:text-accent transition-colors">
-                    Manufacturing
                   </Link>
                   <Link href="/quality" className="text-sm font-medium text-white hover:text-accent transition-colors">
                     Quality & Certifications
