@@ -4,8 +4,6 @@ const Order = require('../models/Order');
 const Cart = require('../models/Cart');
 const Product = require('../models/Product');
 const { protect, admin, optionalProtect } = require('../middleware/auth');
-const { sendOrderConfirmation, sendOrderStatusUpdate } = require('../utils/emailService');
-const { generateAndUploadInvoice } = require('../utils/invoiceGenerator');
 
 // @route   POST /api/orders
 // @desc    Create new order (supports guest checkout)
@@ -114,39 +112,12 @@ router.post('/', optionalProtect, async (req, res) => {
       );
     }
 
-    // Generate and upload invoice to Cloudinary
-    let invoiceUrl = null;
-    try {
-      const customerInfo = req.isGuest ? order.guestCustomer : req.user;
-      const invoiceData = await generateAndUploadInvoice(order, customerInfo);
-      invoiceUrl = invoiceData.url;
-      
-      // Update order with invoice URL
-      await Order.findByIdAndUpdate(order._id, {
-        invoiceUrl: invoiceData.url,
-        invoicePublicId: invoiceData.publicId
-      });
-    } catch (invoiceError) {
-      console.error('Invoice generation failed:', invoiceError);
-    }
-
-    // Send confirmation email
-    try {
-      const customerInfo = req.isGuest ? order.guestCustomer : req.user;
-      await sendOrderConfirmation(order, customerInfo);
-    } catch (emailError) {
-      console.error('Email sending failed:', emailError);
-    }
-
     const populatedOrder = await Order.findById(order._id)
       .populate('items.product', 'name images');
 
     res.status(201).json({
       success: true,
-      data: {
-        ...populatedOrder.toObject(),
-        invoiceUrl
-      }
+      data: populatedOrder
     });
   } catch (error) {
     res.status(500).json({
@@ -193,8 +164,8 @@ router.get('/', protect, async (req, res) => {
 
 // @route   GET /api/orders/:id
 // @desc    Get order by ID
-// @access  Private
-router.get('/:id', protect, async (req, res) => {
+// @access  Public/Private (supports guest orders)
+router.get('/:id', optionalProtect, async (req, res) => {
   try {
     const order = await Order.findById(req.params.id)
       .populate('items.product', 'name images price')
@@ -207,13 +178,16 @@ router.get('/:id', protect, async (req, res) => {
       });
     }
 
-    // Check if user owns this order or is admin
-    if (order.user._id.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to access this order'
-      });
+    // For logged-in users, check if they own this order or are admin
+    if (!req.isGuest && req.user) {
+      if (order.user && order.user._id.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+        return res.status(403).json({
+          success: false,
+          message: 'Not authorized to access this order'
+        });
+      }
     }
+    // Guest orders are accessible by anyone with the order ID (like a receipt)
 
     res.json({
       success: true,

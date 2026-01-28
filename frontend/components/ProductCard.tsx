@@ -52,14 +52,11 @@ export default function ProductCard({ _id, name, price, discountPrice, images, c
     }
   };
 
-  // Convert string _id to number for cart/wishlist compatibility
-  const numericId = parseInt(_id, 10) || 0;
-
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     addToCart({ 
-      id: numericId, 
+      id: _id, // Use original MongoDB _id string
       name, 
       price: `₹${discountPrice || price}`, 
       image, 
@@ -71,11 +68,11 @@ export default function ProductCard({ _id, name, price, discountPrice, images, c
   const handleWishlistToggle = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (isInWishlist(numericId)) {
-      removeFromWishlist(numericId);
+    if (isInWishlist(_id)) {
+      removeFromWishlist(_id);
     } else {
       addToWishlist({ 
-        id: numericId, 
+        id: _id, // Use original MongoDB _id string
         name, 
         price: `₹${discountPrice || price}`, 
         image, 
@@ -85,7 +82,7 @@ export default function ProductCard({ _id, name, price, discountPrice, images, c
     }
   };
 
-  const inWishlist = isInWishlist(numericId);
+  const inWishlist = isInWishlist(_id);
 
   return (
     <Link href={`/product/${_id}`} className="group bg-white rounded-lg overflow-hidden border border-border hover:shadow-xl transition-all duration-300 flex flex-col h-full">

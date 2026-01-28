@@ -4,9 +4,6 @@ const User = require('../models/User');
 // Protect routes - verify Clerk session
 exports.protect = async (req, res, next) => {
   try {
-    console.log('Auth check - req.auth:', req.auth);
-    console.log('Authorization header:', req.headers.authorization);
-    
     // Clerk middleware adds auth object to req
     if (!req.auth || !req.auth.userId) {
       return res.status(401).json({
@@ -21,20 +18,11 @@ exports.protect = async (req, res, next) => {
     }
 
     // Find or create user in database
-    console.log('Looking for user with clerkId:', req.auth.userId);
     let user = await User.findOne({ clerkId: req.auth.userId });
-    console.log('User found:', !!user);
 
     if (!user) {
       // Fetch full user data from Clerk API since sessionClaims doesn't include email/name
-      console.log('Fetching user data from Clerk API...');
       const clerkUser = await clerkClient.users.getUser(req.auth.userId);
-      
-      console.log('Creating new user with data:', {
-        clerkId: req.auth.userId,
-        email: clerkUser.emailAddresses[0]?.emailAddress,
-        name: clerkUser.firstName || clerkUser.username || 'User'
-      });
       
       // Auto-create user from Clerk data
       user = await User.create({
@@ -43,14 +31,11 @@ exports.protect = async (req, res, next) => {
         name: clerkUser.firstName || clerkUser.username || 'User',
         role: 'user'
       });
-      console.log('User created successfully:', user._id);
     }
 
     req.user = user;
-    console.log('Calling next() - auth successful');
     next();
   } catch (error) {
-    console.error('Error in protect middleware:', error);
     return res.status(401).json({
       success: false,
       message: 'Authentication failed',

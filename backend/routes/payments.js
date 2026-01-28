@@ -3,7 +3,7 @@ const router = express.Router();
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const Order = require('../models/Order');
-const { protect } = require('../middleware/auth');
+const { protect, optionalProtect } = require('../middleware/auth');
 
 // Initialize Razorpay
 const razorpay = new Razorpay({
@@ -13,8 +13,8 @@ const razorpay = new Razorpay({
 
 // @route   POST /api/payments/create-order
 // @desc    Create Razorpay order
-// @access  Private
-router.post('/create-order', protect, async (req, res) => {
+// @access  Public/Private
+router.post('/create-order', optionalProtect, async (req, res) => {
   try {
     const { amount, currency = 'INR', receipt } = req.body;
 
@@ -41,8 +41,8 @@ router.post('/create-order', protect, async (req, res) => {
 
 // @route   POST /api/payments/verify
 // @desc    Verify Razorpay payment
-// @access  Private
-router.post('/verify', protect, async (req, res) => {
+// @access  Public/Private
+router.post('/verify', optionalProtect, async (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, orderId } = req.body;
 

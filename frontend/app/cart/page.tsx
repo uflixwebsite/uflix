@@ -8,23 +8,30 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Breadcrumb from '@/components/Breadcrumb';
 import { getCart, updateCartItem, removeFromCart, clearCart } from '@/services/cartService';
-import { isAuthenticated } from '@/services/authService';
+import { useAuth } from '@clerk/nextjs';
 
 export default function CartPage() {
   const router = useRouter();
+  const { isSignedIn } = useAuth();
   const [cart, setCart] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchCart();
-  }, []);
+  }, [isSignedIn]);
 
   const fetchCart = async () => {
     try {
-      const data = await getCart();
-      setCart(data.data?.items || []);
+      // Always use localStorage for cart (simpler and works for both guest and logged-in users)
+      const localCart = localStorage.getItem('uflix-cart');
+      if (localCart) {
+        setCart(JSON.parse(localCart));
+      } else {
+        setCart([]);
+      }
     } catch (error) {
       console.error('Error fetching cart:', error);
+      setCart([]);
     } finally {
       setLoading(false);
     }
@@ -34,22 +41,38 @@ export default function CartPage() {
     return parseInt(priceStr.replace(/[^0-9]/g, ''));
   };
 
-  const updateQuantity = async (productId: string, quantity: number) => {
+  const updateQuantity = (productId: string | number, quantity: number) => {
     try {
-      await updateCartItem(productId, quantity);
-      fetchCart();
+      // Always update localStorage
+      const localCart = JSON.parse(localStorage.getItem('uflix-cart') || '[]');
+      const updatedCart = localCart.map((item: any) => 
+        String(item.id) === String(productId) ? { ...item, quantity } : item
+      ).filter((item: any) => item.quantity > 0);
+      localStorage.setItem('uflix-cart', JSON.stringify(updatedCart));
+      setCart(updatedCart);
     } catch (error) {
       console.error('Error updating quantity:', error);
     }
   };
 
-  const handleRemoveItem = async (productId: string) => {
+  const handleRemoveItem = (productId: string | number) => {
     try {
-      await removeFromCart(productId);
-      fetchCart();
+      // Always remove from localStorage
+      const localCart = JSON.parse(localStorage.getItem('uflix-cart') || '[]');
+      const updatedCart = localCart.filter((item: any) => String(item.id) !== String(productId));
+      localStorage.setItem('uflix-cart', JSON.stringify(updatedCart));
+      setCart(updatedCart);
     } catch (error) {
       console.error('Error removing item:', error);
     }
+  };
+
+  const handleProceedToCheckout = () => {
+    if (cart.length === 0) {
+      alert('Your cart is empty');
+      return;
+    }
+    router.push('/checkout');
   };
 
   const subtotal = cart && cart.length > 0 
@@ -188,7 +211,10 @@ export default function CartPage() {
                   </div>
                 </div>
                 
-                <button className="w-full bg-accent hover:bg-accent-dark text-white py-4 rounded-lg font-medium transition-colors mb-4">
+                <button 
+                  onClick={handleProceedToCheckout}
+                  className="w-full bg-accent hover:bg-accent-dark text-white py-4 rounded-lg font-medium transition-colors mb-4"
+                >
                   Proceed to Checkout
                 </button>
                 

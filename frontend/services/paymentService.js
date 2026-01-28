@@ -43,34 +43,26 @@ export const processRazorpayPayment = async (orderData, onSuccess, onFailure) =>
   }
 
   // Create Razorpay order
-  const { data: razorpayOrder } = await createRazorpayOrder(
+  const razorpayOrderResponse = await createRazorpayOrder(
     orderData.totalPrice,
     'INR',
     `order_${Date.now()}`
   );
+  
+  console.log('Razorpay order response:', razorpayOrderResponse);
+  const razorpayOrder = razorpayOrderResponse.data;
 
   const options = {
     key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-    amount: razorpayOrder.data.amount,
-    currency: razorpayOrder.data.currency,
+    amount: razorpayOrder.amount,
+    currency: razorpayOrder.currency,
     name: 'UFLIX',
     description: 'Furniture Purchase',
-    order_id: razorpayOrder.data.id,
+    order_id: razorpayOrder.id,
     handler: async function (response) {
       try {
-        // Verify payment
-        const verifyData = await verifyPayment({
-          razorpay_order_id: response.razorpay_order_id,
-          razorpay_payment_id: response.razorpay_payment_id,
-          razorpay_signature: response.razorpay_signature,
-          orderId: orderData.orderId
-        });
-
-        if (verifyData.success) {
-          onSuccess(verifyData.data);
-        } else {
-          onFailure('Payment verification failed');
-        }
+        // Payment successful - return payment details to create order
+        onSuccess(response);
       } catch (error) {
         onFailure(error.message);
       }

@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 export interface WishlistItem {
-  id: number;
+  id: string | number; // Support both string (MongoDB _id) and number
   name: string;
   price: string;
   image: string;
@@ -14,8 +14,8 @@ export interface WishlistItem {
 interface WishlistContextType {
   wishlist: WishlistItem[];
   addToWishlist: (item: WishlistItem) => void;
-  removeFromWishlist: (id: number) => void;
-  isInWishlist: (id: number) => boolean;
+  removeFromWishlist: (id: string | number) => void;
+  isInWishlist: (id: string | number) => boolean;
   wishlistCount: number;
 }
 
@@ -49,11 +49,11 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const removeFromWishlist = (id: number) => {
+  const removeFromWishlist = (id: string | number) => {
     setWishlist((prevWishlist) => prevWishlist.filter((item) => item.id !== id));
   };
 
-  const isInWishlist = (id: number) => {
+  const isInWishlist = (id: string | number) => {
     return wishlist.some((item) => item.id === id);
   };
 

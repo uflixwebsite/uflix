@@ -12,21 +12,70 @@ export default function ShopPage() {
   const [sortBy, setSortBy] = useState('featured');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [products, setProducts] = useState<any[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState<any>(null);
 
   useEffect(() => {
     fetchProducts();
   }, []);
 
+  useEffect(() => {
+    applyFilters();
+  }, [products, filters]);
+
   const fetchProducts = async () => {
     try {
       const data = await getProducts({ limit: 100 });
       setProducts(data.data);
+      setFilteredProducts(data.data);
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const applyFilters = () => {
+    if (!filters) {
+      setFilteredProducts(products);
+      return;
+    }
+
+    let filtered = [...products];
+
+    // Price range filter
+    if (filters.priceRange) {
+      filtered = filtered.filter(p => 
+        p.price >= filters.priceRange[0] && p.price <= filters.priceRange[1]
+      );
+    }
+
+    // Categories filter
+    if (filters.categories && filters.categories.length > 0) {
+      filtered = filtered.filter(p => 
+        p.categories?.some((cat: string) => 
+          filters.categories.some((filterCat: string) => 
+            cat.toLowerCase().includes(filterCat.toLowerCase())
+          )
+        )
+      );
+    }
+
+    // Subcategories filter
+    if (filters.subcategories && filters.subcategories.length > 0) {
+      filtered = filtered.filter(p => 
+        p.subcategories?.some((sub: string) => 
+          filters.subcategories.includes(sub)
+        )
+      );
+    }
+
+    setFilteredProducts(filtered);
+  };
+
+  const handleFilterChange = (newFilters: any) => {
+    setFilters(newFilters);
   };
 
   return (
@@ -74,7 +123,7 @@ export default function ShopPage() {
 
         <div className="grid lg:grid-cols-4 gap-8">
           <aside className="hidden lg:block">
-            <FilterSidebar />
+            <FilterSidebar onFilterChange={handleFilterChange} />
           </aside>
 
           <div className="lg:col-span-3">
@@ -82,17 +131,17 @@ export default function ShopPage() {
               <div className="flex justify-center items-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
               </div>
-            ) : products.length === 0 ? (
+            ) : filteredProducts.length === 0 ? (
               <div className="text-center py-12">
                 <div className="text-gray-400 text-6xl mb-4">
                   📦
                 </div>
-                <h3 className="text-xl font-semibold text-gray-600 mb-2">No Products Available</h3>
-                <p className="text-gray-500">We're adding new products. Check back soon!</p>
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">No Products Found</h3>
+                <p className="text-gray-500">Try adjusting your filters or check back soon!</p>
               </div>
             ) : (
               <div className={`grid ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'} gap-6`}>
-                {products.map((product) => (
+                {filteredProducts.map((product) => (
                   <ProductCard key={product._id} {...product} />
                 ))}
               </div>

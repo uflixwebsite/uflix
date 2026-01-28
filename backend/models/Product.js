@@ -23,14 +23,14 @@ const productSchema = new mongoose.Schema({
     type: Number,
     min: 0
   },
-  category: {
+  categories: [{
     type: String,
     trim: true
-  },
-  subCategory: {
+  }],
+  subcategories: [{
     type: String,
     trim: true
-  },
+  }],
   images: [{
     url: {
       type: String,

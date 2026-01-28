@@ -3,8 +3,7 @@ const mongoose = require('mongoose');
 const orderSchema = new mongoose.Schema({
   orderNumber: {
     type: String,
-    unique: true,
-    required: true
+    unique: true
   },
   user: {
     type: mongoose.Schema.Types.ObjectId,
@@ -132,7 +131,7 @@ const orderSchema = new mongoose.Schema({
 });
 
 // Generate order number before saving
-orderSchema.pre('save', async function(next) {
+orderSchema.pre('save', async function() {
   if (!this.orderNumber) {
     const date = new Date();
     const year = date.getFullYear().toString().slice(-2);
@@ -140,7 +139,6 @@ orderSchema.pre('save', async function(next) {
     const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
     this.orderNumber = `UFL${year}${month}${random}`;
   }
-  next();
 });
 
 module.exports = mongoose.model('Order', orderSchema);

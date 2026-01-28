@@ -29,3 +29,9 @@ export const trackOrder = async (id) => {
   const response = await api.get(`/orders/${id}/track`);
   return response.data;
 };
+
+// Update order status
+export const updateOrderStatus = async (id, status) => {
+  const response = await api.put(`/orders/${id}/status`, { status });
+  return response.data;
+};

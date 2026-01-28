@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getSubcategories } from '@/services/subcategoryService';
 
 interface FilterSidebarProps {
   onFilterChange?: (filters: any) => void;
@@ -9,6 +10,8 @@ interface FilterSidebarProps {
 export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
   const [priceRange, setPriceRange] = useState([0, 100000]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
+  const [subcategories, setSubcategories] = useState<any[]>([]);
 
   const categories = [
     'Living Room',
@@ -21,6 +24,29 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
 
   const materials = ['Wood', 'Metal', 'Fabric', 'Leather', 'Glass'];
   const colors = ['Beige', 'Brown', 'Black', 'White', 'Gray', 'Blue'];
+
+  useEffect(() => {
+    fetchSubcategories();
+  }, []);
+
+  const fetchSubcategories = async () => {
+    try {
+      const response = await getSubcategories();
+      setSubcategories(response.data || []);
+    } catch (error) {
+      console.error('Error fetching subcategories:', error);
+    }
+  };
+
+  const handleApplyFilters = () => {
+    if (onFilterChange) {
+      onFilterChange({
+        priceRange,
+        categories: selectedCategories,
+        subcategories: selectedSubcategories
+      });
+    }
+  };
 
   return (
     <div className="bg-white p-6 rounded-lg border border-border">
@@ -39,7 +65,7 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
           />
           <div className="flex justify-between text-sm text-neutral-dark">
             <span>₹0</span>
-            <span>₹{priceRange[1].toLocaleString()}</span>
+            <span>₹{priceRange[1]}</span>
           </div>
         </div>
       </div>
@@ -64,6 +90,33 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
               <span className="text-sm">{category}</span>
             </label>
           ))}
+        </div>
+      </div>
+
+      <div className="mb-8">
+        <h4 className="font-semibold mb-4">Subcategories</h4>
+        <div className="space-y-2 max-h-48 overflow-y-auto">
+          {subcategories.length === 0 ? (
+            <p className="text-sm text-gray-500">No subcategories available</p>
+          ) : (
+            subcategories.map((subcategory) => (
+              <label key={subcategory._id} className="flex items-center">
+                <input
+                  type="checkbox"
+                  className="mr-2 w-4 h-4 text-accent border-gray-300 rounded focus:ring-accent"
+                  checked={selectedSubcategories.includes(subcategory.name)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setSelectedSubcategories([...selectedSubcategories, subcategory.name]);
+                    } else {
+                      setSelectedSubcategories(selectedSubcategories.filter((s) => s !== subcategory.name));
+                    }
+                  }}
+                />
+                <span className="text-sm capitalize">{subcategory.name}</span>
+              </label>
+            ))
+          )}
         </div>
       </div>
 
@@ -96,7 +149,10 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
         </div>
       </div>
 
-      <button className="w-full bg-accent hover:bg-secondary text-white py-2 rounded-md font-medium transition-colors">
+      <button 
+        onClick={handleApplyFilters}
+        className="w-full bg-accent hover:bg-secondary text-white py-2 rounded-md font-medium transition-colors"
+      >
         Apply Filters
       </button>
     </div>

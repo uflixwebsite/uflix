@@ -9,15 +9,14 @@ import ProductCard from '@/components/ProductCard';
 import Image from 'next/image';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
-import { getProduct } from '@/services/productService';
-
-const relatedProducts: any[] = [];
+import { getProduct, getProducts } from '@/services/productService';
 
 export default function ProductDetailPage() {
   const params = useParams();
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -36,6 +35,28 @@ export default function ProductDetailPage() {
       fetchProduct();
     }
   }, [params.id]);
+
+  useEffect(() => {
+    const fetchRelatedProducts = async () => {
+      if (!product?.category) return;
+      
+      try {
+        const response = await getProducts({ 
+          category: product.category,
+          limit: 4 
+        });
+        // Filter out current product
+        const filtered = response.data.products.filter((p: any) => p._id !== product._id);
+        setRelatedProducts(filtered.slice(0, 4));
+      } catch (err) {
+        console.error('Error fetching related products:', err);
+      }
+    };
+
+    if (product) {
+      fetchRelatedProducts();
+    }
+  }, [product]);
 
   const { addToCart } = useCart();
   const { addToWishlist, isInWishlist, removeFromWishlist } = useWishlist();

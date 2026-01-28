@@ -97,13 +97,13 @@ export default function CheckoutPage() {
     // For user checkout, get from backend cart
     let orderItems = [];
     if (checkoutMode === 'guest') {
-      const localCart = JSON.parse(localStorage.getItem('cart') || '[]');
+      const localCart = JSON.parse(localStorage.getItem('uflix-cart') || '[]');
       if (localCart.length === 0) {
         alert('Your cart is empty');
         return;
       }
       orderItems = localCart.map((item: any) => ({
-        product: item.id,
+        product: item.id, // Already a string (MongoDB _id)
         quantity: item.quantity,
       }));
     } else {
@@ -131,38 +131,86 @@ export default function CheckoutPage() {
         orderData.guestCustomer = guestInfo;
       }
 
-      const orderResponse = await createOrder(orderData);
-      const order = orderResponse.data;
+      console.log('=== FRONTEND ORDER DATA ===');
+      console.log('Checkout mode:', checkoutMode);
+      console.log('Order items:', orderItems);
+      console.log('Full order data:', orderData);
 
       if (paymentMethod === 'razorpay') {
-        await processRazorpayPayment(
-          {
-            totalPrice: order.totalPrice,
-            orderId: order._id,
-            shippingAddress: selectedAddress,
-            userEmail: checkoutMode === 'guest' ? guestInfo.email : '',
-          },
-          (successData: any) => {
-            // Clear local cart for guest
-            if (checkoutMode === 'guest') {
-              localStorage.removeItem('cart');
-            }
-            router.push(`/order-confirmation/${order._id}`);
-          },
-          (error: any) => {
-            alert('Payment failed: ' + error);
-            setProcessing(false);
+        console.log('Processing Razorpay payment first...');
+        
+        // Calculate total for Razorpay
+        const itemsTotal = orderItems.reduce((sum: number, item: any) => {
+          const localCart = JSON.parse(localStorage.getItem('uflix-cart') || '[]');
+          const cartItem = localCart.find((ci: any) => String(ci.id) === String(item.product));
+          if (cartItem) {
+            const price = parseFloat(cartItem.price.replace(/[^0-9.]/g, ''));
+            return sum + (price * item.quantity);
           }
-        );
-      } else {
-        // Clear local cart for guest
-        if (checkoutMode === 'guest') {
-          localStorage.removeItem('cart');
+          return sum;
+        }, 0);
+        const tax = itemsTotal * 0.18;
+        const shipping = itemsTotal > 5000 ? 0 : 200;
+        const totalPrice = itemsTotal + tax + shipping;
+
+        try {
+          await processRazorpayPayment(
+            {
+              totalPrice: totalPrice,
+              orderId: null, // No order ID yet
+              shippingAddress: selectedAddress,
+              userEmail: checkoutMode === 'guest' ? guestInfo.email : '',
+            },
+            async (successData: any) => {
+              console.log('Payment successful, now creating order...');
+              
+              // Add payment info to order data
+              orderData.paymentInfo = {
+                razorpayOrderId: successData.razorpay_order_id,
+                razorpayPaymentId: successData.razorpay_payment_id,
+                razorpaySignature: successData.razorpay_signature,
+                status: 'completed',
+                paidAt: new Date()
+              };
+              
+              // Now create the order in DB after successful payment
+              const orderResponse = await createOrder(orderData);
+              console.log('Order created after payment:', orderResponse);
+              const order = orderResponse.data;
+              
+              // Clear cart for all users (guest and logged-in)
+              localStorage.removeItem('uflix-cart');
+              console.log('Cart cleared after successful order');
+              
+              router.push(`/order-confirmation/${order._id}`);
+            },
+            (error: any) => {
+              console.error('Payment error:', error);
+              alert('Payment failed: ' + error);
+              setProcessing(false);
+            }
+          );
+        } catch (razorpayError: any) {
+          console.error('Razorpay processing error:', razorpayError);
+          alert('Razorpay error: ' + razorpayError.message);
+          setProcessing(false);
         }
+      } else {
+        // For COD, create order immediately
+        console.log('Creating COD order...');
+        const orderResponse = await createOrder(orderData);
+        console.log('Order created:', orderResponse);
+        const order = orderResponse.data;
+        
+        // Clear cart for all users
+        localStorage.removeItem('uflix-cart');
+        console.log('Cart cleared after successful order');
+        
         router.push(`/order-confirmation/${order._id}`);
       }
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Failed to place order');
+      console.error('Order creation error:', error);
+      alert(error.response?.data?.message || 'Failed to place order: ' + error.message);
       setProcessing(false);
     }
   };
@@ -256,12 +304,19 @@ export default function CheckoutPage() {
     );
   }
 
-  // Calculate totals
+  // Get cart items based on checkout mode
+  let cartItems: any[] = [];
   let subtotal = 0;
+  
   if (checkoutMode === 'guest') {
-    const localCart = JSON.parse(localStorage.getItem('cart') || '[]');
-    subtotal = localCart.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
+    const localCart = JSON.parse(localStorage.getItem('uflix-cart') || '[]');
+    cartItems = localCart;
+    subtotal = localCart.reduce((sum: number, item: any) => {
+      const price = parseFloat(item.price.replace(/[^0-9.]/g, ''));
+      return sum + (price * item.quantity);
+    }, 0);
   } else {
+    cartItems = cart?.items || [];
     subtotal = cart?.totalPrice || 0;
   }
   
@@ -481,22 +536,38 @@ export default function CheckoutPage() {
               <h2 className="text-xl font-bold mb-6">Order Summary</h2>
 
               <div className="space-y-3 mb-6">
-                {cart.items.map((item: any) => (
-                  <div key={item._id} className="flex gap-3">
+                {cartItems.map((item: any, index: number) => (
+                  <div key={item._id || index} className="flex gap-3">
                     <div className="w-16 h-16 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
-                      {item.product.images && item.product.images[0] && (
-                        <img
-                          src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${item.product.images[0].url}`}
-                          alt={item.product.name}
-                          className="w-full h-full object-cover"
-                        />
+                      {checkoutMode === 'guest' ? (
+                        item.image && (
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="w-full h-full object-cover"
+                          />
+                        )
+                      ) : (
+                        item.product?.images && item.product.images[0] && (
+                          <img
+                            src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${item.product.images[0].url}`}
+                            alt={item.product.name}
+                            className="w-full h-full object-cover"
+                          />
+                        )
                       )}
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-semibold line-clamp-2">{item.product.name}</p>
+                      <p className="text-sm font-semibold line-clamp-2">
+                        {checkoutMode === 'guest' ? item.name : item.product?.name}
+                      </p>
                       <p className="text-sm text-neutral-dark">Qty: {item.quantity}</p>
                       <p className="text-sm font-semibold text-accent">
-                        ₹{((item.discountPrice || item.price) * item.quantity).toLocaleString()}
+                        {checkoutMode === 'guest' ? (
+                          item.price
+                        ) : (
+                          `₹${((item.discountPrice || item.price) * item.quantity).toLocaleString()}`
+                        )}
                       </p>
                     </div>
                   </div>

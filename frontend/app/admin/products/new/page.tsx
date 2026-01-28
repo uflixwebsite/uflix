@@ -8,6 +8,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { getCurrentUser } from '@/services/authService';
 import api from '@/services/api';
+import { getSubcategories, createSubcategory } from '@/services/subcategoryService';
 
 export default function AddProductPage() {
   const router = useRouter();
@@ -15,6 +16,10 @@ export default function AddProductPage() {
   const [uploading, setUploading] = useState(false);
   const [authorized, setAuthorized] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
+  const [subcategories, setSubcategories] = useState<any[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
+  const [newSubcategory, setNewSubcategory] = useState('');
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [formData, setFormData] = useState({
@@ -22,7 +27,6 @@ export default function AddProductPage() {
     description: '',
     price: '',
     discountPrice: '',
-    category: '',
     material: '',
     dimensions: {
       length: '',
@@ -57,7 +61,7 @@ export default function AddProductPage() {
     }
   };
 
-  const fetchCategories = () => {
+  const fetchCategories = async () => {
     // Hardcoded categories - no API call needed
     const categories = [
       { _id: 'living-room', name: 'Living Room' },
@@ -72,6 +76,14 @@ export default function AddProductPage() {
       { _id: 'decor', name: 'Decor' }
     ];
     setCategories(categories);
+
+    // Fetch subcategories from backend
+    try {
+      const response = await getSubcategories();
+      setSubcategories(response.data || []);
+    } catch (error) {
+      console.error('Error fetching subcategories:', error);
+    }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,6 +109,39 @@ export default function AddProductPage() {
     const newUrls = previewUrls.filter((_, i) => i !== index);
     setSelectedFiles(newFiles);
     setPreviewUrls(newUrls);
+  };
+
+  const toggleCategory = (categoryId: string) => {
+    setSelectedCategories(prev => 
+      prev.includes(categoryId) 
+        ? prev.filter(id => id !== categoryId)
+        : [...prev, categoryId]
+    );
+  };
+
+  const toggleSubcategory = (subcategoryName: string) => {
+    setSelectedSubcategories(prev => 
+      prev.includes(subcategoryName) 
+        ? prev.filter(name => name !== subcategoryName)
+        : [...prev, subcategoryName]
+    );
+  };
+
+  const handleAddSubcategory = async () => {
+    if (!newSubcategory.trim()) {
+      alert('Please enter a subcategory name');
+      return;
+    }
+
+    try {
+      const response = await createSubcategory(newSubcategory.trim());
+      setSubcategories([...subcategories, response.data]);
+      setSelectedSubcategories([...selectedSubcategories, response.data.name]);
+      setNewSubcategory('');
+      alert('Subcategory added successfully!');
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Failed to add subcategory');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -139,7 +184,8 @@ export default function AddProductPage() {
         description: formData.description,
         price: formData.price ? parseFloat(formData.price) : 0,
         discountPrice: formData.discountPrice ? parseFloat(formData.discountPrice) : undefined,
-        category: formData.category || undefined,
+        categories: selectedCategories,
+        subcategories: selectedSubcategories,
         material: formData.material || undefined,
         weight: formData.weight ? { value: parseFloat(formData.weight), unit: 'kg' } : undefined,
         dimensions: {
@@ -277,37 +323,79 @@ export default function AddProductPage() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-2">Category</label>
-                
-                {/* Quick Fill Buttons */}
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {['living-room', 'bedroom', 'office', 'outdoor', 'accessories'].map((cat) => (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium mb-2">Categories (Select Multiple)</label>
+                <div className="flex flex-wrap gap-2 p-3 border border-gray-300 rounded-md min-h-[100px]">
+                  {categories.map((cat) => (
                     <button
-                      key={cat}
+                      key={cat._id}
                       type="button"
-                      onClick={() => setFormData({ ...formData, category: cat })}
-                      className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                        formData.category === cat
+                      onClick={() => toggleCategory(cat._id)}
+                      className={`px-4 py-2 text-sm rounded-md transition-colors ${
+                        selectedCategories.includes(cat._id)
                           ? 'bg-accent text-white'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
-                      {cat.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                      {cat.name}
                     </button>
                   ))}
                 </div>
+                {selectedCategories.length > 0 && (
+                  <p className="text-xs text-gray-600 mt-1">
+                    Selected: {selectedCategories.map(id => categories.find(c => c._id === id)?.name).join(', ')}
+                  </p>
+                )}
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium mb-2">Subcategories (e.g., Tables, Chairs, Sofas)</label>
                 
-                <select
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
-                >
-                  <option value="">Select Category</option>
-                  {categories.map((cat) => (
-                    <option key={cat._id} value={cat._id}>{cat.name}</option>
-                  ))}
-                </select>
+                {/* Add New Subcategory */}
+                <div className="flex gap-2 mb-3">
+                  <input
+                    type="text"
+                    value={newSubcategory}
+                    onChange={(e) => setNewSubcategory(e.target.value)}
+                    placeholder="Add new subcategory..."
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddSubcategory())}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddSubcategory}
+                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                  >
+                    Add
+                  </button>
+                </div>
+
+                {/* Existing Subcategories */}
+                <div className="flex flex-wrap gap-2 p-3 border border-gray-300 rounded-md min-h-[100px]">
+                  {subcategories.length === 0 ? (
+                    <p className="text-sm text-gray-500">No subcategories yet. Add one above!</p>
+                  ) : (
+                    subcategories.map((sub) => (
+                      <button
+                        key={sub._id}
+                        type="button"
+                        onClick={() => toggleSubcategory(sub.name)}
+                        className={`px-4 py-2 text-sm rounded-md transition-colors ${
+                          selectedSubcategories.includes(sub.name)
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {sub.name}
+                      </button>
+                    ))
+                  )}
+                </div>
+                {selectedSubcategories.length > 0 && (
+                  <p className="text-xs text-gray-600 mt-1">
+                    Selected: {selectedSubcategories.join(', ')}
+                  </p>
+                )}
               </div>
 
               <div>

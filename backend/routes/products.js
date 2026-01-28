@@ -17,9 +17,14 @@ router.get('/', async (req, res) => {
     // Build query
     let query = { isActive: true };
 
-    // Category filter
+    // Category filter - support multiple categories
     if (req.query.category) {
-      query.category = req.query.category;
+      query.categories = { $in: [req.query.category] };
+    }
+
+    // Subcategory filter
+    if (req.query.subcategory) {
+      query.subcategories = { $in: req.query.subcategory.split(',') };
     }
 
     // Price range filter
