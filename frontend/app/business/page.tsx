@@ -1,9 +1,12 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import ProductCard from '@/components/ProductCard';
 import Image from 'next/image';
 import Link from 'next/link';
-
-const businessProducts: any[] = [];
+import { getProducts } from '@/services/productService';
 
 const caseStudies = [
   {
@@ -33,6 +36,27 @@ const caseStudies = [
 ];
 
 export default function BusinessPage() {
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const response = await getProducts({ 
+        category: 'for-businesses',
+        limit: 6 
+      });
+      setProducts(response.data || []);
+    } catch (error) {
+      console.error('Error fetching business products:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -121,115 +145,57 @@ export default function BusinessPage() {
 
         <section id="products" className="py-20 bg-neutral-light">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
+            <div className="text-center mb-12">
               <h2 className="text-4xl md:text-5xl font-bold mb-4">Premium Business Furniture Collection</h2>
               <p className="text-lg text-neutral-dark max-w-3xl mx-auto">Handpicked furniture designed for productivity, comfort, and style</p>
             </div>
             
-            {businessProducts.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="text-gray-400 text-6xl mb-4">
-                  📦
-                </div>
-                <h3 className="text-xl font-semibold text-gray-600 mb-2">No Business Products Available</h3>
-                <p className="text-gray-500">Contact us for custom business furniture solutions!</p>
-                <Link href="/contact" className="inline-block mt-4 bg-accent hover:bg-secondary text-white px-6 py-3 rounded-md font-semibold transition-colors">
-                  Contact Sales Team
-                </Link>
-              </div>
-            ) : (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {businessProducts.map((product) => (
-                  <div key={product.id} className="group bg-white rounded-lg overflow-hidden border border-border hover:shadow-2xl transition-all duration-300">
-                    <div className="relative h-64 overflow-hidden">
-                      <Image
-                        src={product.image}
-                        alt={product.name}
-                        fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                      {product.discount && (
-                        <span className="absolute top-4 left-4 bg-accent text-white px-4 py-2 rounded-md text-sm font-bold shadow-lg">
-                          {product.discount} Off
-                        </span>
-                      )}
-                      <span className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-foreground px-3 py-1 rounded-md text-xs font-semibold">
-                        {product.category}
-                      </span>
-                    </div>
-                    <div className="p-6">
-                      <h3 className="text-xl font-bold mb-3 group-hover:text-accent transition-colors">{product.name}</h3>
-                      <div className="flex items-baseline gap-3 mb-4">
-                        <span className="text-2xl font-bold text-foreground">{product.price}</span>
-                        {product.originalPrice && (
-                          <span className="text-base text-neutral-dark line-through">{product.originalPrice}</span>
-                        )}
-                      </div>
-                      <Link href="/contact" className="block w-full text-center bg-accent hover:bg-secondary text-white py-3 rounded-md font-semibold transition-colors">
-                        Request Quote
-                      </Link>
-                    </div>
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="bg-gray-200 h-64 rounded-lg mb-4"></div>
+                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
                   </div>
                 ))}
               </div>
+            ) : products.length === 0 ? (
+              <div className="text-center py-16">
+                <svg className="w-24 h-24 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <h3 className="text-xl font-semibold text-gray-700 mb-2">No Business Products Available</h3>
+                <p className="text-gray-500">Business products will appear here once added.</p>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {products.map((product) => (
+                    <ProductCard key={product._id} {...product} />
+                  ))}
+                </div>
+                <div className="text-center mt-12">
+                  <Link href="/business/products" className="inline-block bg-accent hover:bg-secondary text-white px-8 py-3 rounded-md font-semibold transition-colors shadow-md">
+                    Show More Products
+                  </Link>
+                </div>
+              </>
             )}
           </div>
         </section>
 
         <section className="py-20 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold mb-4">Success Stories</h2>
-              <p className="text-lg text-neutral-dark max-w-3xl mx-auto">See how we've transformed workspaces for leading companies</p>
-            </div>
-            
-            <div className="grid md:grid-cols-3 gap-8">
-              {caseStudies.map((study, index) => (
-                <div key={index} className="bg-white rounded-xl overflow-hidden border border-border hover:shadow-2xl transition-all duration-300">
-                  <div className="relative h-48">
-                    <Image
-                      src={study.image}
-                      alt={study.company}
-                      fill
-                      className="object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 to-transparent" />
-                    <div className="absolute bottom-4 left-4">
-                      <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center font-bold text-accent text-lg">
-                        {study.logo}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold mb-2">{study.company}</h3>
-                    <div className="flex gap-4 mb-4 text-sm text-neutral-dark">
-                      <span>{study.industry}</span>
-                      <span>•</span>
-                      <span>{study.employees} employees</span>
-                    </div>
-                    <p className="text-neutral-dark italic">"{study.testimonial}"</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-4xl font-bold mb-6">Need Bulk Orders?</h2>
+            <p className="text-xl text-neutral-dark mb-10">Get special pricing for bulk orders and business furniture solutions</p>
+            <Link href="/contact" className="inline-block bg-accent hover:bg-secondary text-white px-10 py-4 rounded-lg font-bold transition-colors shadow-xl text-lg">
+              Request Bulk Order Quote
+            </Link>
           </div>
         </section>
 
-        <section className="py-20 bg-gradient-to-br from-accent to-secondary">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">Transform Your Workspace Today</h2>
-            <p className="text-xl text-white/90 mb-10 max-w-3xl mx-auto">Get a personalized consultation and custom quote from our business furniture experts</p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Link href="/contact" className="inline-block bg-white text-accent hover:bg-neutral-light px-10 py-4 rounded-md font-bold transition-colors shadow-xl text-lg">
-                Schedule Consultation
-              </Link>
-              <Link href="tel:+911234567890" className="inline-block bg-transparent border-2 border-white text-white hover:bg-white hover:text-accent px-10 py-4 rounded-md font-bold transition-colors text-lg">
-                Call: +91 123 456 7890
-              </Link>
-            </div>
-          </div>
-        </section>
-      </main>
+              </main>
 
       <Footer />
     </div>

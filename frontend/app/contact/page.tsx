@@ -85,8 +85,8 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-semibold mb-1">Address</h3>
-                      <p className="text-neutral-dark">B-71, Sector - 80</p>
-                      <p className="text-neutral-dark">Gautam Budh Nagar, 201306</p>
+                      <p className="text-neutral-dark">Sector 80, Greater Noida, Noida</p>
+                      <p className="text-neutral-dark">Uttar Pradesh 201305</p>
                       <p className="text-neutral-dark">India</p>
                     </div>
                   </div>

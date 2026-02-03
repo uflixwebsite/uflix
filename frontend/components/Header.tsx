@@ -1,22 +1,28 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { useState, useEffect, useRef } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useUser, SignOutButton } from '@clerk/nextjs';
 import { getCurrentUser } from '@/services/authService';
+import { getProducts } from '@/services/productService';
 
 export default function Header() {
   const pathname = usePathname();
   const isHomePage = pathname === '/';
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCompanyOpen, setIsCompanyOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'homes' | 'business'>('homes');
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { cartCount } = useCart();
   const { wishlistCount } = useWishlist();
   const { isSignedIn, user } = useUser();
@@ -36,6 +42,56 @@ export default function Header() {
 
     fetchUserRole();
   }, [isSignedIn]);
+
+  useEffect(() => {
+    if (searchQuery.trim().length > 0) {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+
+      searchTimeoutRef.current = setTimeout(() => {
+        searchProducts(searchQuery);
+      }, 300);
+    } else {
+      setSearchResults([]);
+    }
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchQuery]);
+
+  const searchProducts = async (query: string) => {
+    try {
+      setIsSearching(true);
+      const response = await getProducts({ search: query, limit: 10 });
+      setSearchResults(response.data || []);
+    } catch (error) {
+      console.error('Error searching products:', error);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/shop?search=${encodeURIComponent(searchQuery)}`);
+      setIsSearchOpen(false);
+      setSearchQuery('');
+      setSearchResults([]);
+    }
+  };
+
+  const handleProductClick = (productId: string) => {
+    router.push(`/product/${productId}`);
+    setIsSearchOpen(false);
+    setSearchQuery('');
+    setSearchResults([]);
+  };
   
   // Text color based on page
   const textColor = isHomePage ? 'text-white' : 'text-gray-900';
@@ -45,20 +101,20 @@ export default function Header() {
     <header className="bg-transparent absolute top-0 left-0 right-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          {/* Left: For Homes/For Businesses Tabs - Hidden on mobile */}
+          {/* Left: Shop Fittings/For Businesses Tabs - Hidden on mobile */}
           <div className="hidden lg:flex gap-2">
-            <button
-              onClick={() => setActiveTab('homes')}
+            <Link
+              href="/shop-fittings"
               className={`px-6 py-2 rounded-lg font-semibold transition-all text-sm ${
                 activeTab === 'homes'
                   ? 'bg-accent text-white shadow-lg'
                   : 'bg-white/90 text-foreground hover:bg-white shadow-md'
               }`}
             >
-              For Homes
-            </button>
-            <button
-              onClick={() => setActiveTab('business')}
+              Shop Fittings
+            </Link>
+            <Link
+              href="/business"
               className={`px-6 py-2 rounded-lg font-semibold transition-all text-sm ${
                 activeTab === 'business'
                   ? 'bg-accent text-white shadow-lg'
@@ -66,7 +122,7 @@ export default function Header() {
               }`}
             >
               For Businesses
-            </button>
+            </Link>
           </div>
 
           {/* Logo - Left on mobile, Center on desktop */}
@@ -184,23 +240,88 @@ export default function Header() {
 
         {/* Search Bar Overlay */}
         {isSearchOpen && (
-          <div className="absolute top-full left-0 right-0 mt-2 px-4">
-            <div className="max-w-2xl mx-auto">
-              <div className="relative">
-                <input
-                  type="search"
-                  placeholder="Search for furniture..."
-                  className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent shadow-xl"
-                  autoFocus
-                />
-                <button 
-                  onClick={() => setIsSearchOpen(false)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2"
-                >
-                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+          <div className="absolute top-full left-0 right-0 mt-2 z-50 flex justify-center">
+            <div className="max-w-2xl w-full mx-4">
+              <div className="rounded-lg overflow-hidden">
+                  <form onSubmit={handleSearchSubmit} className="relative">
+                    <input
+                      type="search"
+                      placeholder="Search for furniture, chairs, tables..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent text-white placeholder:text-white/70 [&::-webkit-search-cancel-button]:hidden"
+                      autoFocus
+                    />
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        setIsSearchOpen(false);
+                        setSearchQuery('');
+                        setSearchResults([]);
+                      }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2"
+                    >
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </form>
+
+                {/* Search Results Dropdown */}
+                {searchQuery.trim().length > 0 && (
+                  <div className="bg-white border-t border-gray-200 max-h-[400px] overflow-y-auto rounded-b-lg">
+                  {isSearching ? (
+                    <div className="flex items-center justify-center py-6">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-accent"></div>
+                    </div>
+                  ) : searchResults.length > 0 ? (
+                    <div className="py-1">
+                      {searchResults.slice(0, 5).map((product) => (
+                        <button
+                          key={product._id}
+                          onClick={() => handleProductClick(product._id)}
+                          className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 transition-colors text-left"
+                        >
+                          <img
+                            src={product.images?.[0]?.url || product.images?.[0] || 'https://via.placeholder.com/150?text=No+Image'}
+                            alt={product.name}
+                            className="w-12 h-12 object-cover rounded flex-shrink-0 bg-gray-100"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = 'https://via.placeholder.com/150?text=No+Image';
+                            }}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-sm text-foreground truncate">{product.name}</h4>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-accent font-semibold text-sm">₹{product.discountPrice || product.price}</span>
+                              {product.discountPrice && (
+                                <span className="text-xs text-gray-400 line-through">₹{product.price}</span>
+                              )}
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                      <div className="border-t border-gray-200 px-3 py-2">
+                        <button
+                          onClick={handleSearchSubmit}
+                          className="text-xs text-accent hover:text-secondary font-medium"
+                        >
+                          View all {searchResults.length} results for "{searchQuery}" →
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="py-6 px-4 text-center">
+                      <svg className="w-10 h-10 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <p className="text-gray-500 text-sm">No products found</p>
+                      <p className="text-gray-400 text-xs mt-1">Try different keywords</p>
+                    </div>
+                  )}
+                </div>
+              )}
               </div>
             </div>
           </div>

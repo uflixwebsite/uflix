@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Breadcrumb from '@/components/Breadcrumb';
@@ -9,6 +10,8 @@ import FilterSidebar from '@/components/FilterSidebar';
 import { getProducts } from '@/services/productService';
 
 export default function ShopPage() {
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams.get('search') || '';
   const [sortBy, setSortBy] = useState('featured');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [products, setProducts] = useState<any[]>([]);
@@ -18,15 +21,20 @@ export default function ShopPage() {
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [searchQuery]);
 
   useEffect(() => {
     applyFilters();
-  }, [products, filters]);
+  }, [products, filters, searchQuery]);
 
   const fetchProducts = async () => {
     try {
-      const data = await getProducts({ limit: 100 });
+      setLoading(true);
+      const params: any = { limit: 100 };
+      if (searchQuery) {
+        params.search = searchQuery;
+      }
+      const data = await getProducts(params);
       setProducts(data.data);
       setFilteredProducts(data.data);
     } catch (error) {
@@ -86,7 +94,12 @@ export default function ShopPage() {
         <Breadcrumb items={[{ label: 'Shop' }]} />
         
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold">All Products</h1>
+          <div>
+            <h1 className="text-4xl font-bold">{searchQuery ? `Search Results for "${searchQuery}"` : 'All Products'}</h1>
+            {searchQuery && (
+              <p className="text-neutral-dark mt-2">{filteredProducts.length} products found</p>
+            )}
+          </div>
           
           <div className="flex items-center gap-4">
             <select

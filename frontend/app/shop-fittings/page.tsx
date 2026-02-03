@@ -1,9 +1,34 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import ProductCard from '@/components/ProductCard';
 import Image from 'next/image';
 import Link from 'next/link';
+import { getProducts } from '@/services/productService';
 
 export default function ShopFittingsPage() {
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const response = await getProducts({ 
+        category: 'shop-fittings',
+        limit: 6 
+      });
+      setProducts(response.data || []);
+    } catch (error) {
+      console.error('Error fetching shop fittings products:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   const fittingCategories = [
     {
       title: 'Display Fixtures & Merchandising',
@@ -207,48 +232,48 @@ export default function ShopFittingsPage() {
           </div>
         </section>
 
+        {/* Products Section */}
         <section className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold mb-4">Our Shop Fitting Process</h2>
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold mb-4">Our Shop Fitting Products</h2>
               <p className="text-lg text-neutral-dark max-w-3xl mx-auto">
-                Streamlined workflow from initial consultation to final installation
+                Browse our selection of professional shop fitting solutions
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-              <div className="relative">
-                <div className="bg-gradient-to-br from-accent to-secondary text-white p-8 rounded-2xl shadow-lg h-full">
-                  <div className="text-5xl font-bold mb-4 opacity-50">01</div>
-                  <h3 className="text-2xl font-bold mb-3">Consultation & Survey</h3>
-                  <p className="opacity-90">Site visit, space measurement, and understanding your merchandising requirements and brand guidelines</p>
-                </div>
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="bg-gray-200 h-64 rounded-lg mb-4"></div>
+                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                ))}
               </div>
-
-              <div className="relative">
-                <div className="bg-gradient-to-br from-accent to-secondary text-white p-8 rounded-2xl shadow-lg h-full">
-                  <div className="text-5xl font-bold mb-4 opacity-50">02</div>
-                  <h3 className="text-2xl font-bold mb-3">Design & Planning</h3>
-                  <p className="opacity-90">3D visualization, material selection, and detailed technical drawings for approval</p>
-                </div>
+            ) : products.length === 0 ? (
+              <div className="text-center py-16">
+                <svg className="w-24 h-24 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                </svg>
+                <h3 className="text-xl font-semibold text-gray-700 mb-2">No Products Available</h3>
+                <p className="text-gray-500">Shop fitting products will appear here once added.</p>
               </div>
-
-              <div className="relative">
-                <div className="bg-gradient-to-br from-accent to-secondary text-white p-8 rounded-2xl shadow-lg h-full">
-                  <div className="text-5xl font-bold mb-4 opacity-50">03</div>
-                  <h3 className="text-2xl font-bold mb-3">Manufacturing</h3>
-                  <p className="opacity-90">Precision fabrication using advanced machinery with quality checks at every stage</p>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {products.map((product) => (
+                    <ProductCard key={product._id} {...product} />
+                  ))}
                 </div>
-              </div>
-
-              <div className="relative">
-                <div className="bg-gradient-to-br from-accent to-secondary text-white p-8 rounded-2xl shadow-lg h-full">
-                  <div className="text-5xl font-bold mb-4 opacity-50">04</div>
-                  <h3 className="text-2xl font-bold mb-3">Installation & Handover</h3>
-                  <p className="opacity-90">Professional installation, final adjustments, and comprehensive after-sales support</p>
+                <div className="text-center mt-12">
+                  <Link href="/shop-fittings/products" className="inline-block bg-accent hover:bg-secondary text-white px-8 py-3 rounded-md font-semibold transition-colors shadow-md">
+                    Show More Products
+                  </Link>
                 </div>
-              </div>
-            </div>
+              </>
+            )}
           </div>
         </section>
 
@@ -261,7 +286,7 @@ export default function ShopFittingsPage() {
               </p>
             </div>
 
-            <div className="flex justify-center gap-8 flex-wrap mb-12">
+            <div className="flex justify-center gap-8 flex-wrap">
               {clientLogos.map((client, index) => (
                 <div key={index} className="bg-white p-8 rounded-xl shadow-md hover:shadow-lg transition-shadow">
                   <img
@@ -272,24 +297,16 @@ export default function ShopFittingsPage() {
                 </div>
               ))}
             </div>
+          </div>
+        </section>
 
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
-                <div className="text-5xl font-bold text-accent mb-3">500+</div>
-                <div className="text-lg font-semibold mb-2">Stores Fitted</div>
-                <p className="text-sm text-neutral-dark">Across retail, fashion, and F&B sectors</p>
-              </div>
-              <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
-                <div className="text-5xl font-bold text-accent mb-3">50+</div>
-                <div className="text-lg font-semibold mb-2">Retail Chains</div>
-                <p className="text-sm text-neutral-dark">Multi-location rollouts completed</p>
-              </div>
-              <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
-                <div className="text-5xl font-bold text-accent mb-3">95%</div>
-                <div className="text-lg font-semibold mb-2">Client Satisfaction</div>
-                <p className="text-sm text-neutral-dark">Repeat business and referrals</p>
-              </div>
-            </div>
+        <section className="py-20 bg-white">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-4xl font-bold mb-6">Need Bulk Orders?</h2>
+            <p className="text-xl text-neutral-dark mb-10">Get special pricing for bulk orders and multi-location projects</p>
+            <Link href="/contact" className="inline-block bg-accent hover:bg-secondary text-white px-10 py-4 rounded-lg font-bold transition-colors shadow-xl text-lg">
+              Request Bulk Order Quote
+            </Link>
           </div>
         </section>
 

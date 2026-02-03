@@ -3,6 +3,7 @@ import Hero from '@/components/Hero';
 import CategoryNav from '@/components/CategoryNav';
 import FeaturedCollections from '@/components/FeaturedCollections';
 import ProductShowcase from '@/components/ProductShowcase';
+import NewArrivals from '@/components/NewArrivals';
 import BrandStory from '@/components/BrandStory';
 import Benefits from '@/components/Benefits';
 import ClientCarousel from '@/components/ClientCarousel';
@@ -70,6 +71,7 @@ export default function Home() {
         <CategoryNav />
         <FeaturedCollections />
         <ProductShowcase />
+        <NewArrivals />
         <TestimonialsSection
           title="Loved by Thousands of Happy Customers"
           description="See what our customers have to say about their Uflix furniture experience"

@@ -39,7 +39,8 @@ export default function AddProductPage() {
     features: '',
     warranty: '',
     isActive: true,
-    isFeatured: false
+    isFeatured: false,
+    newArrival: false
   });
 
   useEffect(() => {
@@ -73,7 +74,9 @@ export default function AddProductPage() {
       { _id: 'sofas-seating', name: 'Sofas & Seating' },
       { _id: 'tables', name: 'Tables' },
       { _id: 'lighting', name: 'Lighting' },
-      { _id: 'decor', name: 'Decor' }
+      { _id: 'decor', name: 'Decor' },
+      { _id: 'shop-fittings', name: 'Shop Fittings' },
+      { _id: 'for-businesses', name: 'For Businesses' }
     ];
     setCategories(categories);
 
@@ -201,7 +204,8 @@ export default function AddProductPage() {
         }).filter(s => s) : [],
         images: images,
         isActive: formData.isActive,
-        isFeatured: formData.isFeatured
+        isFeatured: formData.isFeatured,
+        newArrival: formData.newArrival
       };
 
       await api.post('/products', productData);
@@ -349,52 +353,82 @@ export default function AddProductPage() {
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium mb-2">Subcategories (e.g., Tables, Chairs, Sofas)</label>
+                <label className="block text-sm font-medium mb-2">Subcategories</label>
                 
-                {/* Add New Subcategory */}
-                <div className="flex gap-2 mb-3">
-                  <input
-                    type="text"
-                    value={newSubcategory}
-                    onChange={(e) => setNewSubcategory(e.target.value)}
-                    placeholder="Add new subcategory..."
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddSubcategory())}
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddSubcategory}
-                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-                  >
-                    Add
-                  </button>
-                </div>
-
-                {/* Existing Subcategories */}
-                <div className="flex flex-wrap gap-2 p-3 border border-gray-300 rounded-md min-h-[100px]">
-                  {subcategories.length === 0 ? (
-                    <p className="text-sm text-gray-500">No subcategories yet. Add one above!</p>
-                  ) : (
-                    subcategories.map((sub) => (
+                {/* Business Subcategories - Show when for-businesses category is selected */}
+                {selectedCategories.includes('for-businesses') ? (
+                  <div>
+                    <p className="text-xs text-gray-600 mb-3">Business Subcategories:</p>
+                    <div className="flex flex-wrap gap-2 p-3 border border-gray-300 rounded-md min-h-[100px]">
+                      {['Workstations', 'Education', 'Healthcare', 'Seating and Desking', 'Office Storage'].map((subcat) => (
+                        <button
+                          key={subcat}
+                          type="button"
+                          onClick={() => toggleSubcategory(subcat)}
+                          className={`px-4 py-2 text-sm rounded-md transition-colors ${
+                            selectedSubcategories.includes(subcat)
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {subcat}
+                        </button>
+                      ))}
+                    </div>
+                    {selectedSubcategories.length > 0 && (
+                      <p className="text-xs text-gray-600 mt-1">
+                        Selected: {selectedSubcategories.join(', ')}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    {/* Add New Subcategory */}
+                    <div className="flex gap-2 mb-3">
+                      <input
+                        type="text"
+                        value={newSubcategory}
+                        onChange={(e) => setNewSubcategory(e.target.value)}
+                        placeholder="Add new subcategory..."
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddSubcategory())}
+                      />
                       <button
-                        key={sub._id}
                         type="button"
-                        onClick={() => toggleSubcategory(sub.name)}
-                        className={`px-4 py-2 text-sm rounded-md transition-colors ${
-                          selectedSubcategories.includes(sub.name)
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
+                        onClick={handleAddSubcategory}
+                        className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
                       >
-                        {sub.name}
+                        Add
                       </button>
-                    ))
-                  )}
-                </div>
-                {selectedSubcategories.length > 0 && (
-                  <p className="text-xs text-gray-600 mt-1">
-                    Selected: {selectedSubcategories.join(', ')}
-                  </p>
+                    </div>
+
+                    {/* Existing Subcategories */}
+                    <div className="flex flex-wrap gap-2 p-3 border border-gray-300 rounded-md min-h-[100px]">
+                      {subcategories.length === 0 ? (
+                        <p className="text-sm text-gray-500">No subcategories yet. Add one above!</p>
+                      ) : (
+                        subcategories.map((sub) => (
+                          <button
+                            key={sub._id}
+                            type="button"
+                            onClick={() => toggleSubcategory(sub.name)}
+                            className={`px-4 py-2 text-sm rounded-md transition-colors ${
+                              selectedSubcategories.includes(sub.name)
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                          >
+                            {sub.name}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                    {selectedSubcategories.length > 0 && (
+                      <p className="text-xs text-gray-600 mt-1">
+                        Selected: {selectedSubcategories.join(', ')}
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
 
@@ -568,6 +602,15 @@ export default function AddProductPage() {
                     className="w-4 h-4"
                   />
                   <span className="text-sm font-medium">⭐ Featured on Homepage</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.newArrival}
+                    onChange={(e) => setFormData({ ...formData, newArrival: e.target.checked })}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-sm font-medium">🆕 New Arrival</span>
                 </label>
               </div>
             </div>

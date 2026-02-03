@@ -74,6 +74,21 @@ const orderSchema = new mongoose.Schema({
     },
     paidAt: Date
   },
+  invoiceInfo: {
+    razorpayInvoiceId: String,
+    invoiceNumber: String,
+    invoiceUrl: String,
+    invoiceStatus: {
+      type: String,
+      enum: ['pending', 'issued', 'paid', 'cancelled'],
+      default: 'pending'
+    },
+    issuedAt: Date,
+    webhookProcessed: {
+      type: Boolean,
+      default: false
+    }
+  },
   itemsPrice: {
     type: Number,
     required: true,

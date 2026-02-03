@@ -30,6 +30,12 @@ app.get('/health', (req, res) => {
 /* ======================================================
    GLOBAL MIDDLEWARE
 ====================================================== */
+// Raw body parser for webhook signature verification
+app.use('/api/webhooks', express.raw({ type: 'application/json' }), (req, res, next) => {
+  req.rawBody = req.body.toString('utf8');
+  next();
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -70,6 +76,7 @@ app.use('/api/cart', require('./routes/cart'));
 app.use('/api/wishlist', require('./routes/wishlist'));
 app.use('/api/orders', require('./routes/orders'));
 app.use('/api/payments', require('./routes/payments'));
+app.use('/api/webhooks', require('./routes/webhooks'));
 app.use('/api/reviews', require('./routes/reviews'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/upload', require('./routes/upload'));
