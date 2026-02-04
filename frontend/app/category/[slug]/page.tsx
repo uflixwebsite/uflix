@@ -10,8 +10,8 @@ import FilterSidebar from '@/components/FilterSidebar';
 import { getProducts } from '@/services/productService';
 
 const categoryData: Record<string, { name: string; description: string; banner: string }> = {
-  'living-room': {
-    name: 'Living Room',
+  'living': {
+    name: 'Living',
     description: 'Transform your living space with our curated collection of sofas, coffee tables, and entertainment units',
     banner: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1920&q=80',
   },
@@ -20,55 +20,20 @@ const categoryData: Record<string, { name: string; description: string; banner: 
     description: 'Create your perfect sanctuary with our range of beds, wardrobes, and bedroom essentials',
     banner: 'https://images.unsplash.com/photo-1505693314120-0d443867891c?w=1920&q=80',
   },
-  'dining': {
-    name: 'Dining',
-    description: 'Gather in style with our elegant dining tables, chairs, and storage solutions',
-    banner: 'https://images.unsplash.com/photo-1617806118233-18e1de247200?w=1920&q=80',
-  },
-  'dining-room': {
-    name: 'Dining Room',
-    description: 'Gather in style with our elegant dining tables, chairs, and storage solutions',
-    banner: 'https://images.unsplash.com/photo-1617806118233-18e1de247200?w=1920&q=80',
-  },
-  'office': {
-    name: 'Office',
+  'home-office': {
+    name: 'Home Office',
     description: 'Boost productivity with our ergonomic desks, chairs, and office furniture',
     banner: 'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=1920&q=80',
   },
-  'outdoor': {
-    name: 'Outdoor',
-    description: 'Extend your living space outdoors with our weather-resistant patio furniture',
-    banner: 'https://images.unsplash.com/photo-1600210492493-0946911123ea?w=1920&q=80',
+  'modular-kitchen': {
+    name: 'Modular Kitchen',
+    description: 'Gather in style with our elegant kitchen cabinets, islands, and dining solutions',
+    banner: 'https://images.unsplash.com/photo-1556911220-bff31c812dba?w=1920&q=80',
   },
   'storage': {
     name: 'Storage',
     description: 'Organize your space with our versatile shelving units, cabinets, and storage solutions',
     banner: 'https://images.unsplash.com/photo-1594620302200-9a762244a156?w=1920&q=80',
-  },
-  'accessories': {
-    name: 'Accessories',
-    description: 'Complete your space with our curated selection of home accessories and decor',
-    banner: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1920&q=80',
-  },
-  'sofas-seating': {
-    name: 'Sofas & Seating',
-    description: 'Discover comfort and style with our premium sofas and seating solutions',
-    banner: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1920&q=80',
-  },
-  'tables': {
-    name: 'Tables',
-    description: 'Find the perfect table for every room in your home',
-    banner: 'https://images.unsplash.com/photo-1595428774223-ef52624120d2?w=1920&q=80',
-  },
-  'lighting': {
-    name: 'Lighting',
-    description: 'Illuminate your space with our stunning lighting fixtures',
-    banner: 'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=1920&q=80',
-  },
-  'decor': {
-    name: 'Decor',
-    description: 'Add personality to your home with our decorative pieces',
-    banner: 'https://images.unsplash.com/photo-1615529328331-f8917597711f?w=1920&q=80',
   },
 };
 

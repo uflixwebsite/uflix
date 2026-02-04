@@ -49,6 +49,11 @@ router.get('/', async (req, res) => {
       query.isFeatured = true;
     }
 
+    // New Arrival filter
+    if (req.query.newArrival === 'true') {
+      query.newArrival = true;
+    }
+
     // Sorting
     let sort = {};
     if (req.query.sort) {

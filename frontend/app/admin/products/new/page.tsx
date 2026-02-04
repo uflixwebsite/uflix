@@ -65,18 +65,13 @@ export default function AddProductPage() {
   const fetchCategories = async () => {
     // Hardcoded categories - no API call needed
     const categories = [
-      { _id: 'living-room', name: 'Living Room' },
+      { _id: 'living', name: 'Living' },
       { _id: 'bedroom', name: 'Bedroom' },
-      { _id: 'dining-room', name: 'Dining Room' },
-      { _id: 'office', name: 'Office' },
+      { _id: 'home-office', name: 'Home Office' },
+      { _id: 'modular-kitchen', name: 'Modular Kitchen' },
       { _id: 'storage', name: 'Storage' },
-      { _id: 'outdoor', name: 'Outdoor' },
-      { _id: 'sofas-seating', name: 'Sofas & Seating' },
-      { _id: 'tables', name: 'Tables' },
-      { _id: 'lighting', name: 'Lighting' },
-      { _id: 'decor', name: 'Decor' },
       { _id: 'shop-fittings', name: 'Shop Fittings' },
-      { _id: 'for-businesses', name: 'For Businesses' }
+      { _id: 'for-businesses', name: 'For Business' }
     ];
     setCategories(categories);
 

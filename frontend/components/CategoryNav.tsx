@@ -2,8 +2,8 @@ import Link from "next/link";
 
 const categories = [
   {
-    name: "Living Room",
-    slug: "living-room",
+    name: "Living",
+    slug: "living",
     icon: (
       <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
@@ -36,22 +36,8 @@ const categories = [
     ),
   },
   {
-    name: "Dining",
-    slug: "dining",
-    icon: (
-      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={1.5}
-          d="M3 10h18M3 10a2 2 0 012-2h14a2 2 0 012 2M3 10v8a2 2 0 002 2h14a2 2 0 002-2v-8M7 8V6m10 2V6"
-        />
-      </svg>
-    ),
-  },
-  {
-    name: "Office",
-    slug: "office",
+    name: "Home Office",
+    slug: "home-office",
     icon: (
       <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
@@ -64,15 +50,15 @@ const categories = [
     ),
   },
   {
-    name: "Outdoor",
-    slug: "outdoor",
+    name: "Modular Kitchen",
+    slug: "modular-kitchen",
     icon: (
       <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeWidth={1.5}
-          d="M3 21h18M5 21V10l7-7 7 7v11M9 21v-6a2 2 0 012-2h2a2 2 0 012 2v6"
+          d="M3 10h18M3 10a2 2 0 012-2h14a2 2 0 012 2M3 10v8a2 2 0 002 2h14a2 2 0 002-2v-8M7 8V6m10 2V6"
         />
       </svg>
     ),

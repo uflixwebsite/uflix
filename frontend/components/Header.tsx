@@ -249,7 +249,7 @@ export default function Header() {
                       placeholder="Search for furniture, chairs, tables..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent text-white placeholder:text-white/70 [&::-webkit-search-cancel-button]:hidden"
+                      className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent text-black placeholder:text-gray-400 [&::-webkit-search-cancel-button]:hidden"
                       autoFocus
                     />
                     <button 
