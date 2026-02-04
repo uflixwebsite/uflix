@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -9,7 +9,10 @@ import ProductCard from '@/components/ProductCard';
 import FilterSidebar from '@/components/FilterSidebar';
 import { getProducts } from '@/services/productService';
 
-export default function ShopPage() {
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
+function ShopContent() {
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get('search') || '';
   const [sortBy, setSortBy] = useState('featured');
@@ -165,5 +168,23 @@ export default function ShopPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function ShopPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    }>
+      <ShopContent />
+    </Suspense>
   );
 }
