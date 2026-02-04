@@ -165,7 +165,7 @@ export default function AddProductPage() {
     try {
       // Step 1: Upload images to Cloudinary
       setUploading(true);
-      const categoryFolder = formData.category || 'uncategorized';
+      const categoryFolder = selectedCategories[0] || 'uncategorized';
       const uploadFormData = new FormData();
       selectedFiles.forEach((file) => {
         uploadFormData.append('images', file);
