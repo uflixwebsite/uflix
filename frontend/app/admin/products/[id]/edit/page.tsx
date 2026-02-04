@@ -210,7 +210,7 @@ export default function EditProductPage() {
       // Upload new images if any
       if (selectedFiles.length > 0) {
         setUploading(true);
-        const categoryFolder = formData.category || 'uncategorized';
+        const categoryFolder = selectedCategories[0] || 'uncategorized';
         const uploadFormData = new FormData();
         selectedFiles.forEach((file) => {
           uploadFormData.append('images', file);
