@@ -131,7 +131,7 @@ export default function CategoryPage() {
 
           <div className="grid lg:grid-cols-4 gap-8">
             <aside className="hidden lg:block">
-              <FilterSidebar onFilterChange={handleFilterChange} />
+              <FilterSidebar onFilterChange={handleFilterChange} currentCategory={slug} />
             </aside>
 
             <div className="lg:col-span-3">

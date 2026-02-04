@@ -5,22 +5,13 @@ import { getSubcategories } from '@/services/subcategoryService';
 
 interface FilterSidebarProps {
   onFilterChange?: (filters: any) => void;
+  currentCategory?: string;
 }
 
-export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
+export default function FilterSidebar({ onFilterChange, currentCategory }: FilterSidebarProps) {
   const [priceRange, setPriceRange] = useState([0, 100000]);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
   const [subcategories, setSubcategories] = useState<any[]>([]);
-
-  const categories = [
-    'Living Room',
-    'Bedroom',
-    'Dining',
-    'Office',
-    'Outdoor',
-    'Storage',
-  ];
 
   const materials = ['Wood', 'Metal', 'Fabric', 'Leather', 'Glass'];
   const colors = ['Beige', 'Brown', 'Black', 'White', 'Gray', 'Blue'];
@@ -31,7 +22,8 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
 
   const fetchSubcategories = async () => {
     try {
-      const response = await getSubcategories();
+      const params = currentCategory ? { category: currentCategory } : {};
+      const response = await getSubcategories(params);
       setSubcategories(response.data || []);
     } catch (error) {
       console.error('Error fetching subcategories:', error);
@@ -42,7 +34,6 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
     if (onFilterChange) {
       onFilterChange({
         priceRange,
-        categories: selectedCategories,
         subcategories: selectedSubcategories
       });
     }
@@ -67,29 +58,6 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
             <span>₹0</span>
             <span>₹{priceRange[1]}</span>
           </div>
-        </div>
-      </div>
-
-      <div className="mb-8">
-        <h4 className="font-semibold mb-4">Categories</h4>
-        <div className="space-y-2">
-          {categories.map((category) => (
-            <label key={category} className="flex items-center">
-              <input
-                type="checkbox"
-                className="mr-2 w-4 h-4 text-accent border-gray-300 rounded focus:ring-accent"
-                checked={selectedCategories.includes(category)}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    setSelectedCategories([...selectedCategories, category]);
-                  } else {
-                    setSelectedCategories(selectedCategories.filter((c) => c !== category));
-                  }
-                }}
-              />
-              <span className="text-sm">{category}</span>
-            </label>
-          ))}
         </div>
       </div>
 

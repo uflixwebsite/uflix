@@ -74,15 +74,25 @@ export default function AddProductPage() {
       { _id: 'for-businesses', name: 'For Business' }
     ];
     setCategories(categories);
+  };
 
+  const fetchSubcategories = async () => {
     // Fetch subcategories from backend
     try {
-      const response = await getSubcategories();
+      let params: any = {};
+      if (selectedCategories.length > 0) {
+        params.category = selectedCategories[0];
+      }
+      const response = await getSubcategories(params);
       setSubcategories(response.data || []);
     } catch (error) {
       console.error('Error fetching subcategories:', error);
     }
   };
+
+  useEffect(() => {
+    fetchSubcategories();
+  }, [selectedCategories]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newFiles = Array.from(e.target.files || []);
@@ -131,8 +141,13 @@ export default function AddProductPage() {
       return;
     }
 
+    if (selectedCategories.length === 0) {
+      alert('Please select a category first');
+      return;
+    }
+
     try {
-      const response = await createSubcategory(newSubcategory.trim());
+      const response = await createSubcategory(newSubcategory.trim(), selectedCategories[0]);
       setSubcategories([...subcategories, response.data]);
       setSelectedSubcategories([...selectedSubcategories, response.data.name]);
       setNewSubcategory('');

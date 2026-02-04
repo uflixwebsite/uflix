@@ -4,11 +4,18 @@ const Subcategory = require('../models/Subcategory');
 const { protect, admin } = require('../middleware/auth');
 
 // @route   GET /api/subcategories
-// @desc    Get all subcategories
+// @desc    Get all subcategories (optionally filtered by category)
 // @access  Public
 router.get('/', async (req, res) => {
   try {
-    const subcategories = await Subcategory.find().sort({ name: 1 });
+    let query = {};
+    
+    // Filter by category if provided
+    if (req.query.category) {
+      query.category = req.query.category;
+    }
+    
+    const subcategories = await Subcategory.find(query).sort({ name: 1 });
     res.json({
       success: true,
       data: subcategories
@@ -26,17 +33,30 @@ router.get('/', async (req, res) => {
 // @access  Private/Admin
 router.post('/', protect, admin, async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, category } = req.body;
 
-    const existingSubcategory = await Subcategory.findOne({ name: name.toLowerCase() });
-    if (existingSubcategory) {
+    if (!name || !category) {
       return res.status(400).json({
         success: false,
-        message: 'Subcategory already exists'
+        message: 'Name and category are required'
       });
     }
 
-    const subcategory = await Subcategory.create({ name: name.toLowerCase() });
+    const existingSubcategory = await Subcategory.findOne({ 
+      name: name.toLowerCase(),
+      category: category
+    });
+    if (existingSubcategory) {
+      return res.status(400).json({
+        success: false,
+        message: 'Subcategory already exists in this category'
+      });
+    }
+
+    const subcategory = await Subcategory.create({ 
+      name: name.toLowerCase(), 
+      category 
+    });
     res.status(201).json({
       success: true,
       data: subcategory
