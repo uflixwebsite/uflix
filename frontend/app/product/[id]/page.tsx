@@ -38,15 +38,15 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     const fetchRelatedProducts = async () => {
-      if (!product?.category) return;
+      if (!product?.categories || product.categories.length === 0) return;
       
       try {
         const response = await getProducts({ 
-          category: product.category,
+          category: product.categories[0],
           limit: 4 
         });
         // Filter out current product
-        const filtered = response.data.products.filter((p: any) => p._id !== product._id);
+        const filtered = response.data.filter((p: any) => p._id !== product._id);
         setRelatedProducts(filtered.slice(0, 4));
       } catch (err) {
         console.error('Error fetching related products:', err);
@@ -149,8 +149,8 @@ export default function ProductDetailPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Breadcrumb items={[
           { label: 'Shop', href: '/shop' },
-          { label: product.category, href: `/category/${product.category.toLowerCase().replace(' ', '-')}` },
-          { label: product.name }
+          ...(product.categories && product.categories.length > 0 ? [{ label: product.categories[0], href: `/category/${product.categories[0].toLowerCase().replace(' ', '-')}` }] : []),
+          { label: product.name.length > 25 ? product.name.substring(0, 25) + '...' : product.name }
         ]} />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
@@ -312,10 +312,10 @@ export default function ProductDetailPage() {
 
           {activeTab === 'specifications' && (
             <div className="grid md:grid-cols-2 gap-4">
-              {Object.entries(product.specifications).map(([key, value]) => (
-                <div key={key} className="flex justify-between p-4 bg-neutral-light rounded-lg">
-                  <span className="font-medium">{key}</span>
-                  <span className="text-neutral-dark">{value as string}</span>
+              {product.specifications?.map((spec: any, index: number) => (
+                <div key={index} className="flex justify-between p-4 bg-neutral-light rounded-lg">
+                  <span className="font-medium">{spec.key}</span>
+                  <span className="text-neutral-dark">{spec.value}</span>
                 </div>
               ))}
             </div>

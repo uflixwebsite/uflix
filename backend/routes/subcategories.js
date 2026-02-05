@@ -35,15 +35,22 @@ router.post('/', protect, admin, async (req, res) => {
   try {
     const { name, category } = req.body;
 
-    if (!name || !category) {
+    if (!name) {
       return res.status(400).json({
         success: false,
-        message: 'Name and category are required'
+        message: 'Name is required'
+      });
+    }
+
+    if (!category) {
+      return res.status(400).json({
+        success: false,
+        message: 'Category is required'
       });
     }
 
     const existingSubcategory = await Subcategory.findOne({ 
-      name: name.toLowerCase(),
+      name: name?.toLowerCase() || '',
       category: category
     });
     if (existingSubcategory) {
@@ -54,7 +61,7 @@ router.post('/', protect, admin, async (req, res) => {
     }
 
     const subcategory = await Subcategory.create({ 
-      name: name.toLowerCase(), 
+      name: name?.toLowerCase() || '', 
       category 
     });
     res.status(201).json({

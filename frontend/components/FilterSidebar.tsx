@@ -18,7 +18,7 @@ export default function FilterSidebar({ onFilterChange, currentCategory }: Filte
 
   useEffect(() => {
     fetchSubcategories();
-  }, []);
+  }, [currentCategory]);
 
   const fetchSubcategories = async () => {
     try {

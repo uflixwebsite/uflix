@@ -8,7 +8,6 @@ const subcategorySchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    required: true,
     enum: ['living', 'bedroom', 'home-office', 'modular-kitchen', 'storage', 'shop-fittings', 'for-businesses']
   }
 }, {

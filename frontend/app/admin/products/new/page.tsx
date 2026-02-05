@@ -36,7 +36,7 @@ export default function AddProductPage() {
     },
     weight: '',
     colors: '',
-    features: '',
+    features: [{ key: '', value: '' }],
     warranty: '',
     isActive: true,
     isFeatured: false,
@@ -91,8 +91,10 @@ export default function AddProductPage() {
   };
 
   useEffect(() => {
-    fetchSubcategories();
-  }, [selectedCategories]);
+    if (authorized) {
+      fetchSubcategories();
+    }
+  }, [selectedCategories, authorized]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newFiles = Array.from(e.target.files || []);
@@ -157,6 +159,34 @@ export default function AddProductPage() {
     }
   };
 
+  const addFeature = () => {
+    if (formData.features.length < 5) {
+      setFormData({
+        ...formData,
+        features: [...formData.features, { key: '', value: '' }]
+      });
+    } else {
+      alert('Maximum 5 features allowed');
+    }
+  };
+
+  const removeFeature = (index: number) => {
+    const newFeatures = formData.features.filter((_: any, i: number) => i !== index);
+    setFormData({
+      ...formData,
+      features: newFeatures.length > 0 ? newFeatures : [{ key: '', value: '' }]
+    });
+  };
+
+  const updateFeature = (index: number, field: 'key' | 'value', value: string) => {
+    const newFeatures = [...formData.features];
+    newFeatures[index] = { ...newFeatures[index], [field]: value };
+    setFormData({
+      ...formData,
+      features: newFeatures
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -208,10 +238,7 @@ export default function AddProductPage() {
           unit: formData.dimensions.unit
         },
         colors: formData.colors ? formData.colors.split(',').map(c => c.trim()).filter(c => c) : [],
-        specifications: formData.features ? formData.features.split('\n').map(f => {
-          const [key, value] = f.split(':').map(s => s.trim());
-          return key && value ? { key, value } : null;
-        }).filter(s => s) : [],
+        specifications: formData.features ? formData.features.filter((f: any) => f.key && f.value) : [],
         images: images,
         isActive: formData.isActive,
         isFeatured: formData.isFeatured,
@@ -584,14 +611,45 @@ export default function AddProductPage() {
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium mb-2">Features (one per line)</label>
-                <textarea
-                  value={formData.features}
-                  onChange={(e) => setFormData({ ...formData, features: e.target.value })}
-                  rows={4}
-                  placeholder="Enter each feature on a new line"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
-                />
+                <label className="block text-sm font-medium mb-2">Product Features</label>
+                <div className="space-y-3">
+                  {formData.features.map((feature: any, index: number) => (
+                    <div key={index} className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Feature name (e.g., Material)"
+                        value={feature.key}
+                        onChange={(e) => updateFeature(index, 'key', e.target.value)}
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Value (e.g., Solid Wood)"
+                        value={feature.value}
+                        onChange={(e) => updateFeature(index, 'value', e.target.value)}
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+                      />
+                      {formData.features.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeFeature(index)}
+                          className="px-3 py-2 text-red-600 border border-red-300 rounded-md hover:bg-red-50 transition-colors"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  {formData.features.length < 5 && (
+                    <button
+                      type="button"
+                      onClick={addFeature}
+                      className="px-4 py-2 text-accent border border-accent rounded-md hover:bg-accent hover:text-white transition-colors"
+                    >
+                      Add Another Feature
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="md:col-span-2 space-y-3">
