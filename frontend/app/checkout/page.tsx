@@ -3,17 +3,17 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuth } from '@clerk/nextjs';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { getCart } from '@/services/cartService';
 import { createOrder } from '@/services/orderService';
 import { processRazorpayPayment } from '@/services/paymentService';
 import { getCurrentUser } from '@/services/authService';
+import { useAuthState } from '@/hooks/useAuthState';
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { isSignedIn } = useAuth();
+  const { status } = useAuthState();
   const [cart, setCart] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
@@ -39,16 +39,21 @@ export default function CheckoutPage() {
   });
 
   useEffect(() => {
-    // If user is signed in, skip prompt and go to user mode
-    if (isSignedIn) {
+    // Wait for auth to finish loading
+    if (status === 'loading') {
+      return;
+    }
+
+    // If user is authenticated, skip prompt and go to user mode
+    if (status === 'authenticated') {
       setCheckoutMode('user');
       fetchCart();
       loadUserData();
     } else {
-      // Show prompt for guest/login
+      // User is not authenticated, show prompt for guest/login
       setLoading(false);
     }
-  }, [isSignedIn]);
+  }, [status]);
 
   const fetchCart = async () => {
     try {

@@ -2,16 +2,19 @@
 
 import { useEffect, useRef } from 'react';
 import { useUser, useAuth } from '@clerk/nextjs';
+import { useAuthState } from '@/hooks/useAuthState';
 import api from '@/services/api';
 
 export default function UserSync() {
   const { isSignedIn, user, isLoaded } = useUser();
   const { getToken } = useAuth();
+  const { status } = useAuthState();
   const syncedRef = useRef(false);
 
   useEffect(() => {
     const syncUser = async () => {
-      if (!isLoaded || !isSignedIn || !user || syncedRef.current) {
+      // Wait for auth to finish loading
+      if (status === 'loading' || !isLoaded || !isSignedIn || !user || syncedRef.current) {
         return;
       }
 
@@ -32,7 +35,7 @@ export default function UserSync() {
     };
 
     syncUser();
-  }, [isSignedIn, user, isLoaded, getToken]);
+  }, [status, isSignedIn, user, isLoaded, getToken]);
 
   return null;
 }

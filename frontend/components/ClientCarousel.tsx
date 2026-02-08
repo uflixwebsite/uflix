@@ -6,7 +6,6 @@ export default function ClientCarousel() {
     { name: 'L&T', image: '/Logos/lnt.png' },
     { name: 'NBCC', image: '/Logos/nbcc.png' },
     { name: 'IRCON', image: '/Logos/ircon.png' },
-    { name: 'Jindal Steel', image: '/Logos/jindalsteel.png' },
     { name: 'Lifestyle', image: '/Logos/lifetsyle.png' },
     { name: 'Landmark Group', image: '/Logos/landmark.jpg' },
     { name: 'Daikin', image: '/Logos/daikin.jpg' },

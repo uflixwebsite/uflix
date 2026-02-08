@@ -80,6 +80,7 @@ app.use('/api/webhooks', require('./routes/webhooks'));
 app.use('/api/reviews', require('./routes/reviews'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/upload', require('./routes/upload'));
+app.use('/api/quotations', require('./routes/quotations'));
 
 /* ======================================================
    ERROR HANDLING

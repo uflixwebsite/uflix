@@ -78,8 +78,6 @@ export default function ProjectsPage() {
     { name: 'HSCC', image: '/Logos/hscc.jpg' },
     { name: 'HLL', image: '/Logos/hll.jpg' },
     { name: 'IGL', image: '/Logos/igl.png' },
-    { name: 'Jindal Steel', image: '/Logos/jindalsteel.png' },
-    { name: 'Jindal Metal', image: '/Logos/jindalmetal.png' },
     { name: 'Daikin', image: '/Logos/daikin.jpg' },
     { name: 'Lifestyle', image: '/Logos/lifetsyle.png' },
     { name: 'Landmark Group', image: '/Logos/landmark.jpg' },
@@ -255,40 +253,7 @@ export default function ProjectsPage() {
           </div>
         </section>
 
-        <section className="py-20 bg-neutral-light">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold mb-4">Project Success Metrics</h2>
-              <p className="text-lg text-neutral-dark max-w-3xl mx-auto">
-                Our commitment to excellence is reflected in our project delivery statistics
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-              <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
-                <div className="text-5xl font-bold text-accent mb-3">98%</div>
-                <div className="text-lg font-semibold mb-2">On-Time Delivery</div>
-                <p className="text-sm text-neutral-dark">Projects completed within agreed timeline</p>
-              </div>
-              <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
-                <div className="text-5xl font-bold text-accent mb-3">1000+</div>
-                <div className="text-lg font-semibold mb-2">Projects Completed</div>
-                <p className="text-sm text-neutral-dark">Across India and Middle East</p>
-              </div>
-              <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
-                <div className="text-5xl font-bold text-accent mb-3">95%</div>
-                <div className="text-lg font-semibold mb-2">Client Retention</div>
-                <p className="text-sm text-neutral-dark">Repeat business from satisfied clients</p>
-              </div>
-              <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
-                <div className="text-5xl font-bold text-accent mb-3">Zero</div>
-                <div className="text-lg font-semibold mb-2">Compromise</div>
-                <p className="text-sm text-neutral-dark">On quality and safety standards</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
+        
         <section className="py-20 bg-gradient-to-br from-accent to-secondary">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
             <h2 className="text-4xl font-bold mb-6">Start Your Project with UFLIX</h2>

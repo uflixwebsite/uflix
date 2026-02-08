@@ -8,17 +8,21 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Breadcrumb from '@/components/Breadcrumb';
 import { getCart, updateCartItem, removeFromCart, clearCart } from '@/services/cartService';
-import { useAuth } from '@clerk/nextjs';
+import { useAuthState } from '@/hooks/useAuthState';
 
 export default function CartPage() {
   const router = useRouter();
-  const { isSignedIn } = useAuth();
+  const { status } = useAuthState();
   const [cart, setCart] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Wait for auth to finish loading
+    if (status === 'loading') {
+      return;
+    }
     fetchCart();
-  }, [isSignedIn]);
+  }, [status]);
 
   const fetchCart = async () => {
     try {

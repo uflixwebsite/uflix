@@ -10,6 +10,7 @@ import Image from 'next/image';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { getProduct, getProducts } from '@/services/productService';
+import QuotationDialog from '@/components/QuotationDialog';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -21,17 +22,27 @@ export default function ProductDetailPage() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
+        console.log('Fetching product with ID:', params.id);
         const response = await getProduct(params.id as string);
+        console.log('Product response:', response);
+        
+        if (!response || !response.data) {
+          throw new Error('Invalid response from server');
+        }
+        
         setProduct(response.data);
-      } catch (err) {
+        setError(null);
+      } catch (err: any) {
         console.error('Error fetching product:', err);
-        setError('Product not found');
+        console.error('Error details:', err.response?.data || err.message);
+        setError(err.response?.data?.message || 'Product not found');
       } finally {
         setLoading(false);
       }
     };
 
     if (params.id) {
+      setLoading(true);
       fetchProduct();
     }
   }, [params.id]);
@@ -64,6 +75,7 @@ export default function ProductDetailPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<'description' | 'specifications' | 'reviews'>('description');
+  const [isQuotationDialogOpen, setIsQuotationDialogOpen] = useState(false);
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -112,6 +124,10 @@ export default function ProductDetailPage() {
               </div>
             </div>
           </div>
+          <div className="text-center mt-8">
+            <p className="text-sm text-neutral-dark">Loading product details...</p>
+            <p className="text-xs text-neutral-dark mt-2">If this takes too long, please refresh the page</p>
+          </div>
         </main>
         <Footer />
       </div>
@@ -123,18 +139,21 @@ export default function ProductDetailPage() {
       <div className="min-h-screen bg-background">
         <Header />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center py-12">
-            <div className="text-gray-400 text-6xl mb-4">
-              📦
+          <div className="text-center py-16">
+            <h2 className="text-2xl font-bold mb-4">Product Not Found</h2>
+            <p className="text-neutral-dark mb-4">{error || "The product you're looking for doesn't exist."}</p>
+            <p className="text-sm text-neutral-dark mb-8">Product ID: {params.id}</p>
+            <div className="flex gap-4 justify-center">
+              <a href="/shop" className="bg-accent text-white px-6 py-3 rounded-md hover:bg-secondary transition-colors">
+                Back to Shop
+              </a>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="bg-gray-200 text-foreground px-6 py-3 rounded-md hover:bg-gray-300 transition-colors"
+              >
+                Retry
+              </button>
             </div>
-            <h2 className="text-2xl font-bold text-gray-600 mb-2">Product Not Found</h2>
-            <p className="text-gray-500 mb-6">The product you're looking for doesn't exist or has been removed.</p>
-            <button
-              onClick={() => window.history.back()}
-              className="bg-accent text-white px-6 py-2 rounded-md hover:bg-secondary transition-colors"
-            >
-              Go Back
-            </button>
           </div>
         </main>
         <Footer />
@@ -200,12 +219,21 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
-            <div className="flex items-baseline gap-4 mb-6">
-              <span className="text-4xl font-bold text-accent">₹{product.discountPrice || product.price}</span>
-              {product.discountPrice && (
-                <span className="text-xl text-neutral-dark line-through">₹{product.price}</span>
-              )}
-            </div>
+            {product.availableOnQuotation ? (
+              <div className="bg-accent/10 border-2 border-accent rounded-lg p-4 mb-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-lg font-semibold text-accent">💬 Available on Quotation</span>
+                </div>
+                <p className="text-sm text-neutral-dark">Contact us for pricing and customization options</p>
+              </div>
+            ) : (
+              <div className="flex items-baseline gap-4 mb-6">
+                <span className="text-4xl font-bold text-accent">₹{product.discountPrice || product.price}</span>
+                {product.discountPrice && (
+                  <span className="text-xl text-neutral-dark line-through">₹{product.price}</span>
+                )}
+              </div>
+            )}
 
             <p className="text-neutral-dark mb-6 leading-relaxed">{product.description}</p>
 
@@ -223,31 +251,42 @@ export default function ProductDetailPage() {
               </ul>
             </div>
 
-            <div className="flex items-center gap-4 mb-6">
-              <div className="flex items-center border border-gray-300 rounded-lg">
-                <button
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="px-4 py-2 hover:bg-gray-100"
-                >
-                  -
-                </button>
-                <span className="px-6 py-2 border-x border-gray-300">{quantity}</span>
-                <button
-                  onClick={() => setQuantity(quantity + 1)}
-                  className="px-4 py-2 hover:bg-gray-100"
-                >
-                  +
-                </button>
+            {!product.availableOnQuotation && (
+              <div className="flex items-center gap-4 mb-6">
+                <div className="flex items-center border border-gray-300 rounded-lg">
+                  <button
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    className="px-4 py-2 hover:bg-gray-100"
+                  >
+                    -
+                  </button>
+                  <span className="px-6 py-2 border-x border-gray-300">{quantity}</span>
+                  <button
+                    onClick={() => setQuantity(quantity + 1)}
+                    className="px-4 py-2 hover:bg-gray-100"
+                  >
+                    +
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="flex gap-4 mb-6">
-              <button 
-                onClick={handleAddToCart}
-                className="flex-1 bg-accent hover:bg-secondary text-white py-4 rounded-lg font-semibold transition-colors"
-              >
-                Add to Cart
-              </button>
+              {product.availableOnQuotation ? (
+                <button
+                  onClick={() => setIsQuotationDialogOpen(true)}
+                  className="flex-1 bg-accent hover:bg-secondary text-white py-4 rounded-lg font-semibold transition-colors"
+                >
+                  Request Quotation
+                </button>
+              ) : (
+                <button 
+                  onClick={handleAddToCart}
+                  className="flex-1 bg-accent hover:bg-secondary text-white py-4 rounded-lg font-semibold transition-colors"
+                >
+                  Add to Cart
+                </button>
+              )}
               <button 
                 onClick={handleWishlistToggle}
                 className={`px-6 py-4 border-2 rounded-lg transition-colors ${
@@ -349,6 +388,13 @@ export default function ProductDetailPage() {
       </main>
 
       <Footer />
+      
+      {/* Quotation Dialog */}
+      <QuotationDialog
+        isOpen={isQuotationDialogOpen}
+        onClose={() => setIsQuotationDialogOpen(false)}
+        preSelectedProduct={product ? { id: product._id, name: product.name } : null}
+      />
     </div>
   );
 }

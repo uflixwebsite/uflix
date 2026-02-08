@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useUser, SignOutButton } from '@clerk/nextjs';
-import { getCurrentUser } from '@/services/authService';
+import { useAuthState } from '@/hooks/useAuthState';
 import { getProducts } from '@/services/productService';
 
 export default function Header() {
@@ -18,30 +18,85 @@ export default function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'homes' | 'business'>('homes');
-  const [userRole, setUserRole] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const companyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const userMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { cartCount } = useCart();
   const { wishlistCount } = useWishlist();
   const { isSignedIn, user } = useUser();
+  const { status, userRole, isAdmin } = useAuthState();
+
+  const handleCompanyMouseEnter = () => {
+    if (companyTimeoutRef.current) {
+      clearTimeout(companyTimeoutRef.current);
+    }
+    setIsCompanyOpen(true);
+  };
+
+  const handleCompanyMouseLeave = () => {
+    companyTimeoutRef.current = setTimeout(() => {
+      setIsCompanyOpen(false);
+    }, 2500); // 2.5 seconds delay
+  };
+
+  const handleUserMenuMouseEnter = () => {
+    if (userMenuTimeoutRef.current) {
+      clearTimeout(userMenuTimeoutRef.current);
+    }
+    setIsUserMenuOpen(true);
+  };
+
+  const handleUserMenuMouseLeave = () => {
+    userMenuTimeoutRef.current = setTimeout(() => {
+      setIsUserMenuOpen(false);
+    }, 2500); // 2.5 seconds delay
+  };
 
   useEffect(() => {
-    const fetchUserRole = async () => {
-      if (isSignedIn) {
-        try {
-          const userData = await getCurrentUser();
-          setUserRole(userData.data?.role || 'user');
-        } catch (error) {
-          console.error('Error fetching user role:', error);
-          setUserRole('user');
+    return () => {
+      if (companyTimeoutRef.current) {
+        clearTimeout(companyTimeoutRef.current);
+      }
+      if (userMenuTimeoutRef.current) {
+        clearTimeout(userMenuTimeoutRef.current);
+      }
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      
+      // Check if click is outside company dropdown
+      const companyDropdown = target.closest('[data-company-dropdown]');
+      if (!companyDropdown && isCompanyOpen) {
+        if (companyTimeoutRef.current) {
+          clearTimeout(companyTimeoutRef.current);
         }
+        setIsCompanyOpen(false);
+      }
+      
+      // Check if click is outside user menu
+      const userMenuDropdown = target.closest('[data-user-menu-dropdown]');
+      if (!userMenuDropdown && isUserMenuOpen) {
+        if (userMenuTimeoutRef.current) {
+          clearTimeout(userMenuTimeoutRef.current);
+        }
+        setIsUserMenuOpen(false);
       }
     };
 
-    fetchUserRole();
-  }, [isSignedIn]);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isCompanyOpen, isUserMenuOpen]);
 
   useEffect(() => {
     if (searchQuery.trim().length > 0) {
@@ -101,10 +156,10 @@ export default function Header() {
     <header className="bg-transparent absolute top-0 left-0 right-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          {/* Left: Shop Fittings/For Businesses Tabs - Hidden on mobile */}
+          {/* Left: For Homes/For Businesses Tabs - Hidden on mobile */}
           <div className="hidden lg:flex gap-2">
             <Link
-              href="/shop-fittings"
+              href="/categories"
               className={`px-6 py-2 rounded-lg font-semibold transition-all text-sm ${
                 activeTab === 'homes'
                   ? 'bg-accent text-white shadow-lg'
@@ -145,8 +200,9 @@ export default function Header() {
 {isSignedIn ? (
               <div 
                 className="relative"
-                onMouseEnter={() => setIsUserMenuOpen(true)}
-                onMouseLeave={() => setIsUserMenuOpen(false)}
+                onMouseEnter={handleUserMenuMouseEnter}
+                onMouseLeave={handleUserMenuMouseLeave}
+                data-user-menu-dropdown
               >
                 <button 
                   className={`p-2 ${textColor} ${hoverColor} transition-colors`} 
@@ -160,8 +216,9 @@ export default function Header() {
                 {isUserMenuOpen && (
                   <div 
                     className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-border py-2"
-                    onMouseEnter={() => setIsUserMenuOpen(true)}
-                    onMouseLeave={() => setIsUserMenuOpen(false)}
+                    onMouseEnter={handleUserMenuMouseEnter}
+                    onMouseLeave={handleUserMenuMouseLeave}
+                    data-user-menu-dropdown
                   >
                     <div className="px-4 py-2 border-b border-border">
                       <p className="text-sm font-semibold text-foreground">{user?.firstName || 'User'}</p>
@@ -338,8 +395,9 @@ export default function Header() {
           
           <div 
             className="relative"
-            onMouseEnter={() => setIsCompanyOpen(true)}
-            onMouseLeave={() => setIsCompanyOpen(false)}
+            onMouseEnter={handleCompanyMouseEnter}
+            onMouseLeave={handleCompanyMouseLeave}
+            data-company-dropdown
           >
             <button className={`text-sm font-medium ${textColor} ${hoverColor} transition-colors flex items-center gap-1`}>
               Company
@@ -349,7 +407,12 @@ export default function Header() {
             </button>
             
             {isCompanyOpen && (
-              <div className="absolute top-full left-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-border py-4 px-6">
+              <div 
+                className="absolute top-full left-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-border py-4 px-6"
+                onMouseEnter={handleCompanyMouseEnter}
+                onMouseLeave={handleCompanyMouseLeave}
+                data-company-dropdown
+              >
                 <div className="space-y-4">
                   <div>
                     <Link href="/about" className="block font-semibold text-accent hover:text-secondary mb-1">

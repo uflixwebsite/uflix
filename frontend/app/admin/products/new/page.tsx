@@ -9,12 +9,13 @@ import Footer from '@/components/Footer';
 import { getCurrentUser } from '@/services/authService';
 import api from '@/services/api';
 import { getSubcategories, createSubcategory } from '@/services/subcategoryService';
+import { useAuthState } from '@/hooks/useAuthState';
 
 export default function AddProductPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const { status, isAdmin } = useAuthState();
+  const [dataLoading, setDataLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [authorized, setAuthorized] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
   const [subcategories, setSubcategories] = useState<any[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -22,11 +23,14 @@ export default function AddProductPage() {
   const [newSubcategory, setNewSubcategory] = useState('');
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [selectedVideo, setSelectedVideo] = useState<File | null>(null);
+  const [videoPreviewUrl, setVideoPreviewUrl] = useState<string>('');
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     price: '',
     discountPrice: '',
+    sku: '',
     material: '',
     dimensions: {
       length: '',
@@ -38,6 +42,7 @@ export default function AddProductPage() {
     colors: '',
     features: [{ key: '', value: '' }],
     warranty: '',
+    availableOnQuotation: false,
     isActive: true,
     isFeatured: false,
     newArrival: false
@@ -67,10 +72,11 @@ export default function AddProductPage() {
     const categories = [
       { _id: 'living', name: 'Living' },
       { _id: 'bedroom', name: 'Bedroom' },
+      { _id: 'dining', name: 'Dining' },
       { _id: 'home-office', name: 'Home Office' },
       { _id: 'modular-kitchen', name: 'Modular Kitchen' },
       { _id: 'storage', name: 'Storage' },
-      { _id: 'shop-fittings', name: 'Shop Fittings' },
+      { _id: 'for-homes', name: 'For Homes' },
       { _id: 'for-businesses', name: 'For Business' }
     ];
     setCategories(categories);
@@ -119,6 +125,34 @@ export default function AddProductPage() {
     const newUrls = previewUrls.filter((_, i) => i !== index);
     setSelectedFiles(newFiles);
     setPreviewUrls(newUrls);
+  };
+
+  const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Check if file is a video
+      if (!file.type.startsWith('video/')) {
+        alert('Please select a video file');
+        return;
+      }
+      
+      // Check file size (max 50MB)
+      if (file.size > 50 * 1024 * 1024) {
+        alert('Video size should be less than 50MB');
+        return;
+      }
+      
+      setSelectedVideo(file);
+      setVideoPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
+  const removeVideo = () => {
+    setSelectedVideo(null);
+    if (videoPreviewUrl) {
+      URL.revokeObjectURL(videoPreviewUrl);
+      setVideoPreviewUrl('');
+    }
   };
 
   const toggleCategory = (categoryId: string) => {
@@ -221,12 +255,25 @@ export default function AddProductPage() {
         alt: formData.name
       }));
 
-      // Step 2: Create product with uploaded image URLs
+      // Step 2: Upload video if selected
+      let videoUrl = null;
+      if (selectedVideo) {
+        const videoFormData = new FormData();
+        videoFormData.append('video', selectedVideo);
+        
+        const videoUploadResponse = await api.post(`/upload/video?folder=products/${categoryFolder}`, videoFormData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        videoUrl = videoUploadResponse.data.data.url;
+      }
+
+      // Step 3: Create product with uploaded image and video URLs
       const productData = {
         name: formData.name,
         description: formData.description,
         price: formData.price ? parseFloat(formData.price) : 0,
         discountPrice: formData.discountPrice ? parseFloat(formData.discountPrice) : undefined,
+        sku: formData.sku || null,
         categories: selectedCategories,
         subcategories: selectedSubcategories,
         material: formData.material || undefined,
@@ -240,6 +287,8 @@ export default function AddProductPage() {
         colors: formData.colors ? formData.colors.split(',').map(c => c.trim()).filter(c => c) : [],
         specifications: formData.features ? formData.features.filter((f: any) => f.key && f.value) : [],
         images: images,
+        video: videoUrl,
+        availableOnQuotation: formData.availableOnQuotation,
         isActive: formData.isActive,
         isFeatured: formData.isFeatured,
         newArrival: formData.newArrival
@@ -340,6 +389,51 @@ export default function AddProductPage() {
             )}
           </div>
 
+          {/* Video Upload */}
+          <div className="mb-8">
+            <h2 className="text-xl font-bold mb-4">Product Video (Optional)</h2>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
+              <input
+                type="file"
+                accept="video/*"
+                onChange={handleVideoSelect}
+                className="hidden"
+                id="video-upload"
+              />
+              <label
+                htmlFor="video-upload"
+                className="cursor-pointer flex flex-col items-center justify-center"
+              >
+                <svg className="w-12 h-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                <p className="text-sm text-gray-600 mb-1">Click to upload product video</p>
+                <p className="text-xs text-gray-500">MP4, WebM, MOV up to 50MB (Max 1 video)</p>
+              </label>
+            </div>
+            
+            {videoPreviewUrl && (
+              <div className="mt-4">
+                <div className="relative group">
+                  <video
+                    src={videoPreviewUrl}
+                    controls
+                    className="w-full h-64 object-cover rounded-md bg-black"
+                  />
+                  <button
+                    type="button"
+                    onClick={removeVideo}
+                    className="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Basic Information */}
           <div className="mb-8">
             <h2 className="text-xl font-bold mb-4">Basic Information</h2>
@@ -360,6 +454,17 @@ export default function AddProductPage() {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={4}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">SKU (Optional)</label>
+                <input
+                  type="text"
+                  value={formData.sku}
+                  onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                  placeholder="e.g., FURN-001"
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
                 />
               </div>
@@ -679,6 +784,15 @@ export default function AddProductPage() {
                     className="w-4 h-4"
                   />
                   <span className="text-sm font-medium">🆕 New Arrival</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.availableOnQuotation}
+                    onChange={(e) => setFormData({ ...formData, availableOnQuotation: e.target.checked })}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-sm font-medium">💬 Available on Quotation (No price display)</span>
                 </label>
               </div>
             </div>

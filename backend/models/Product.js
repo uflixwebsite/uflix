@@ -14,6 +14,10 @@ const productSchema = new mongoose.Schema({
   description: {
     type: String
   },
+  sku: {
+    type: String,
+    default: null
+  },
   price: {
     type: Number,
     min: 0,
@@ -38,6 +42,10 @@ const productSchema = new mongoose.Schema({
     },
     alt: String
   }],
+  video: {
+    type: String,
+    default: null
+  },
   specifications: [{
     key: String,
     value: String
@@ -60,6 +68,10 @@ const productSchema = new mongoose.Schema({
     default: false
   },
   newArrival: {
+    type: Boolean,
+    default: false
+  },
+  availableOnQuotation: {
     type: Boolean,
     default: false
   },

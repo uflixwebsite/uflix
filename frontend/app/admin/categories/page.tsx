@@ -6,41 +6,46 @@ import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { getCategories, deleteCategory } from '@/services/categoryService';
-import { getCurrentUser } from '@/services/authService';
+import { useAuthState } from '@/hooks/useAuthState';
 
 export default function AdminCategoriesPage() {
   const router = useRouter();
+  const { status, isAdmin } = useAuthState();
   const [categories, setCategories] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [authorized, setAuthorized] = useState(false);
+  const [dataLoading, setDataLoading] = useState(false);
 
   useEffect(() => {
-    checkAdminAccess();
-  }, []);
-
-  const checkAdminAccess = async () => {
-    try {
-      const userData = await getCurrentUser();
-      if (userData.data?.role !== 'admin') {
-        router.push('/');
-        return;
-      }
-      setAuthorized(true);
-      fetchCategories();
-    } catch (error) {
-      console.error('Error checking admin access:', error);
-      router.push('/sign-in');
+    // Wait for auth to finish loading
+    if (status === 'loading') {
+      return;
     }
-  };
+
+    // Only redirect when we know the auth state
+    if (status === 'unauthenticated') {
+      router.push('/sign-in');
+      return;
+    }
+
+    if (status === 'authenticated' && !isAdmin) {
+      router.push('/');
+      return;
+    }
+
+    // User is authenticated and is admin - fetch categories
+    if (status === 'authenticated' && isAdmin) {
+      fetchCategories();
+    }
+  }, [status, isAdmin, router]);
 
   const fetchCategories = async () => {
+    setDataLoading(true);
     try {
       const data = await getCategories();
       setCategories(data.data);
     } catch (error) {
       console.error('Error fetching categories:', error);
     } finally {
-      setLoading(false);
+      setDataLoading(false);
     }
   };
 
@@ -56,7 +61,8 @@ export default function AdminCategoriesPage() {
     }
   };
 
-  if (loading || !authorized) {
+  // Show loading while auth is hydrating OR while fetching categories data
+  if (status === 'loading' || (status === 'authenticated' && isAdmin && dataLoading && !categories.length)) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -71,6 +77,11 @@ export default function AdminCategoriesPage() {
         <Footer />
       </div>
     );
+  }
+
+  // Don't render content if not authorized (will redirect)
+  if (status === 'unauthenticated' || !isAdmin) {
+    return null;
   }
 
   return (

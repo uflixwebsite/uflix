@@ -2,15 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { SignOutButton } from '@clerk/nextjs';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { getCurrentUser } from '@/services/authService';
-import { isAuthenticated, logout } from '@/services/authService';
 import { getOrders, trackOrder, cancelOrder } from '@/services/orderService';
+import { useAuthState } from '@/hooks/useAuthState';
 import api from '@/services/api';
 
 export default function ProfilePage() {
   const router = useRouter();
+  const { status, user: authUser } = useAuthState();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('profile');
@@ -43,12 +45,22 @@ export default function ProfilePage() {
   });
 
   useEffect(() => {
-    if (!isAuthenticated()) {
-      router.push('/login');
+    // Wait for auth to finish loading
+    if (status === 'loading') {
       return;
     }
-    fetchUser();
-  }, []);
+
+    // Only redirect when we know the auth state
+    if (status === 'unauthenticated') {
+      router.push('/sign-in');
+      return;
+    }
+
+    // User is authenticated - fetch user data
+    if (status === 'authenticated') {
+      fetchUser();
+    }
+  }, [status, router]);
 
   useEffect(() => {
     if (activeTab === 'orders' && orders.length === 0) {
@@ -204,13 +216,8 @@ export default function ProfilePage() {
     setShowAddressForm(true);
   };
 
-  const handleLogout = () => {
-    if (confirm('Are you sure you want to logout?')) {
-      logout();
-    }
-  };
-
-  if (loading) {
+  // Show loading while auth is hydrating OR while fetching user data
+  if (status === 'loading' || (status === 'authenticated' && loading)) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -223,6 +230,11 @@ export default function ProfilePage() {
         <Footer />
       </div>
     );
+  }
+
+  // Don't render content if not authorized (will redirect)
+  if (status === 'unauthenticated') {
+    return null;
   }
 
   return (
@@ -268,12 +280,11 @@ export default function ProfilePage() {
               >
                 My Orders
               </button>
-              <button
-                onClick={handleLogout}
-                className="w-full text-left px-4 py-3 rounded-md hover:bg-red-50 text-red-600 transition-colors"
-              >
-                Logout
-              </button>
+              <SignOutButton>
+                <button className="w-full text-left px-4 py-3 rounded-md hover:bg-red-50 text-red-600 transition-colors">
+                  Logout
+                </button>
+              </SignOutButton>
             </div>
           </div>
 

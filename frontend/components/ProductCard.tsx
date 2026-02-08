@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/contexts/CartContext';
@@ -16,9 +16,10 @@ interface ProductCardProps {
   rating?: number;
   reviews?: number;
   isActive?: boolean;
+  availableOnQuotation?: boolean;
 }
 
-export default function ProductCard({ _id, name, price, discountPrice, images, category }: ProductCardProps) {
+export default function ProductCard({ _id, name, price, discountPrice, images, category, availableOnQuotation }: ProductCardProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   // Get the current image or use a placeholder
@@ -31,17 +32,6 @@ export default function ProductCard({ _id, name, price, discountPrice, images, c
   const originalPrice = discountPrice ? `₹${price}` : null;
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
-
-  // Auto-rotate images every 3 seconds
-  useEffect(() => {
-    if (!images || images.length <= 1) return;
-    
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [images]);
 
   // Handle manual image navigation
   const handleImageClick = (e: React.MouseEvent) => {
@@ -143,18 +133,36 @@ export default function ProductCard({ _id, name, price, discountPrice, images, c
         <h3 className="text-base font-semibold mb-2 text-foreground line-clamp-2 group-hover:text-accent transition-colors min-h-[3rem]">
           {name}
         </h3>
-        <div className="flex items-baseline gap-2 mb-3 mt-auto">
-          <span className="text-lg font-bold text-foreground">₹{discountPrice || price}</span>
-          {discountPrice && (
-            <span className="text-sm text-neutral-dark line-through">₹{price}</span>
-          )}
-        </div>
-        <button
-          onClick={handleAddToCart}
-          className="w-full bg-accent hover:bg-secondary text-white py-2 rounded-md font-medium transition-colors"
-        >
-          Add to Cart
-        </button>
+        {availableOnQuotation ? (
+          <>
+            <div className="flex items-center gap-2 mb-3 mt-auto">
+              <span className="text-sm font-semibold text-accent bg-accent/10 px-3 py-1 rounded-md">
+                💬 Available on Quotation
+              </span>
+            </div>
+            <Link
+              href={`/product/${_id}`}
+              className="w-full bg-accent hover:bg-secondary text-white py-2 rounded-md font-medium transition-colors text-center block"
+            >
+              Request Quotation
+            </Link>
+          </>
+        ) : (
+          <>
+            <div className="flex items-baseline gap-2 mb-3 mt-auto">
+              <span className="text-lg font-bold text-foreground">₹{discountPrice || price}</span>
+              {discountPrice && (
+                <span className="text-sm text-neutral-dark line-through">₹{price}</span>
+              )}
+            </div>
+            <button
+              onClick={handleAddToCart}
+              className="w-full bg-accent hover:bg-secondary text-white py-2 rounded-md font-medium transition-colors"
+            >
+              Add to Cart
+            </button>
+          </>
+        )}
       </div>
     </Link>
   );

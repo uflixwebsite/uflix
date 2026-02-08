@@ -6,43 +6,48 @@ import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { getAllOrders, updateOrderStatus } from '@/services/adminService';
-import { getCurrentUser } from '@/services/authService';
+import { useAuthState } from '@/hooks/useAuthState';
 
 export default function AdminOrdersPage() {
   const router = useRouter();
+  const { status, isAdmin } = useAuthState();
   const [orders, setOrders] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [authorized, setAuthorized] = useState(false);
+  const [dataLoading, setDataLoading] = useState(false);
   const [filterStatus, setFilterStatus] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    checkAdminAccess();
-  }, []);
-
-  const checkAdminAccess = async () => {
-    try {
-      const userData = await getCurrentUser();
-      if (userData.data?.role !== 'admin') {
-        router.push('/');
-        return;
-      }
-      setAuthorized(true);
-      fetchOrders();
-    } catch (error) {
-      console.error('Error checking admin access:', error);
-      router.push('/sign-in');
+    // Wait for auth to finish loading
+    if (status === 'loading') {
+      return;
     }
-  };
+
+    // Only redirect when we know the auth state
+    if (status === 'unauthenticated') {
+      router.push('/sign-in');
+      return;
+    }
+
+    if (status === 'authenticated' && !isAdmin) {
+      router.push('/');
+      return;
+    }
+
+    // User is authenticated and is admin - fetch orders
+    if (status === 'authenticated' && isAdmin) {
+      fetchOrders();
+    }
+  }, [status, isAdmin, router]);
 
   const fetchOrders = async () => {
+    setDataLoading(true);
     try {
       const data = await getAllOrders();
       setOrders(data.data);
     } catch (error) {
       console.error('Error fetching orders:', error);
     } finally {
-      setLoading(false);
+      setDataLoading(false);
     }
   };
 
@@ -76,7 +81,8 @@ export default function AdminOrdersPage() {
     return matchesStatus && matchesSearch;
   });
 
-  if (loading || !authorized) {
+  // Show loading while auth is hydrating OR while fetching orders data
+  if (status === 'loading' || (status === 'authenticated' && isAdmin && dataLoading && !orders.length)) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -91,6 +97,11 @@ export default function AdminOrdersPage() {
         <Footer />
       </div>
     );
+  }
+
+  // Don't render content if not authorized (will redirect)
+  if (status === 'unauthenticated' || !isAdmin) {
+    return null;
   }
 
   return (

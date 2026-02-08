@@ -6,45 +6,51 @@ import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { getDashboard } from '@/services/adminService';
-import { getCurrentUser } from '@/services/authService';
+import { useAuthState } from '@/hooks/useAuthState';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
+  const { status, isAdmin } = useAuthState();
   const [dashboard, setDashboard] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [authorized, setAuthorized] = useState(false);
+  const [dataLoading, setDataLoading] = useState(false);
 
   useEffect(() => {
-    checkAdminAccess();
-  }, []);
-
-  const checkAdminAccess = async () => {
-    try {
-      const userData = await getCurrentUser();
-      if (userData.data?.role !== 'admin') {
-        router.push('/');
-        return;
-      }
-      setAuthorized(true);
-      fetchDashboard();
-    } catch (error) {
-      console.error('Error checking admin access:', error);
-      router.push('/sign-in');
+    // Wait for auth to finish loading
+    if (status === 'loading') {
+      return;
     }
-  };
+
+    // Only redirect when we know the auth state
+    if (status === 'unauthenticated') {
+      router.push('/sign-in');
+      return;
+    }
+
+    if (status === 'authenticated' && !isAdmin) {
+      router.push('/');
+      return;
+    }
+
+    // User is authenticated and is admin - fetch dashboard
+    if (status === 'authenticated' && isAdmin) {
+      fetchDashboard();
+    }
+  }, [status, isAdmin, router]);
 
   const fetchDashboard = async () => {
+    setDataLoading(true);
     try {
       const data = await getDashboard();
       setDashboard(data.data);
     } catch (error) {
       console.error('Error fetching dashboard:', error);
     } finally {
-      setLoading(false);
+      setDataLoading(false);
     }
   };
 
-  if (loading || !authorized) {
+  // Show loading while auth is hydrating OR while fetching dashboard data
+  if (status === 'loading' || (status === 'authenticated' && isAdmin && dataLoading && !dashboard)) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -61,6 +67,11 @@ export default function AdminDashboardPage() {
         <Footer />
       </div>
     );
+  }
+
+  // Don't render content if not authorized (will redirect)
+  if (status === 'unauthenticated' || !isAdmin) {
+    return null;
   }
 
   return (
@@ -251,13 +262,13 @@ export default function AdminDashboardPage() {
               <p className="font-semibold">Add Product</p>
             </Link>
             <Link
-              href="/admin/categories"
+              href="/admin/quotations"
               className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-accent hover:bg-accent/5 transition-colors text-center"
             >
               <svg className="w-8 h-8 mx-auto mb-2 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              <p className="font-semibold">Manage Categories</p>
+              <p className="font-semibold">Quotation Requests</p>
             </Link>
             <Link
               href="/admin/users"

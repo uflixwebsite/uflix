@@ -28,7 +28,6 @@ export default function IndustriesPage() {
       image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80',
       clientLogos: [
         { name: 'L&T', image: '/Logos/lnt.png' },
-        { name: 'Jindal Steel', image: '/Logos/jindalsteel.png' },
         { name: 'Daikin', image: '/Logos/daikin.jpg' }
       ],
       solutions: [
@@ -78,7 +77,6 @@ export default function IndustriesPage() {
       description: 'Heavy-duty storage racks, industrial workbenches, material handling equipment, and warehouse organization systems.',
       image: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&q=80',
       clientLogos: [
-        { name: 'Jindal Metal', image: '/Logos/jindalmetal.png' },
         { name: 'ECIL', image: '/Logos/ecil.jpg' },
         { name: 'Falcon', image: '/Logos/falcon.png' }
       ],

@@ -6,43 +6,66 @@ import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { getProducts, deleteProduct } from '@/services/productService';
-import { getCurrentUser } from '@/services/authService';
+import { useAuthState } from '@/hooks/useAuthState';
 
 export default function AdminProductsPage() {
   const router = useRouter();
+  const { status, isAdmin } = useAuthState();
   const [products, setProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [authorized, setAuthorized] = useState(false);
+  const [dataLoading, setDataLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   useEffect(() => {
-    checkAdminAccess();
-  }, []);
-
-  const checkAdminAccess = async () => {
-    try {
-      const userData = await getCurrentUser();
-      if (userData.data?.role !== 'admin') {
-        router.push('/');
-        return;
-      }
-      setAuthorized(true);
-      fetchProducts();
-    } catch (error) {
-      console.error('Error checking admin access:', error);
-      router.push('/sign-in');
+    // Wait for auth to finish loading
+    if (status === 'loading') {
+      return;
     }
-  };
+
+    // Only redirect when we know the auth state
+    if (status === 'unauthenticated') {
+      router.push('/sign-in');
+      return;
+    }
+
+    if (status === 'authenticated' && !isAdmin) {
+      router.push('/');
+      return;
+    }
+
+    // User is authenticated and is admin - fetch products
+    if (status === 'authenticated' && isAdmin) {
+      fetchProducts();
+    }
+  }, [status, isAdmin, router]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.relative')) {
+        setOpenMenuId(null);
+      }
+    };
+
+    if (openMenuId) {
+      document.addEventListener('click', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [openMenuId]);
 
   const fetchProducts = async () => {
+    setDataLoading(true);
     try {
       const data = await getProducts({ limit: 100 });
       setProducts(data.data);
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
-      setLoading(false);
+      setDataLoading(false);
     }
   };
 
@@ -66,7 +89,8 @@ export default function AdminProductsPage() {
     return matchesSearch && matchesCategory;
   });
 
-  if (loading || !authorized) {
+  // Show loading while auth is hydrating OR while fetching products data
+  if (status === 'loading' || (status === 'authenticated' && isAdmin && dataLoading && !products.length)) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -83,6 +107,11 @@ export default function AdminProductsPage() {
         <Footer />
       </div>
     );
+  }
+
+  // Don't render content if not authorized (will redirect)
+  if (status === 'unauthenticated' || !isAdmin) {
+    return null;
   }
 
   return (
@@ -141,7 +170,7 @@ export default function AdminProductsPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -163,7 +192,12 @@ export default function AdminProductsPage() {
                           )}
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{product.name}</div>
+                          <div 
+                            className="text-sm font-medium text-gray-900 cursor-pointer hover:text-accent" 
+                            title={product.name}
+                          >
+                            {product.name.length > 60 ? product.name.substring(0, 60) + '...' : product.name}
+                          </div>
                           <div className="text-sm text-gray-500">SKU: {product.sku || 'N/A'}</div>
                         </div>
                       </div>
@@ -185,19 +219,47 @@ export default function AdminProductsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex gap-2">
-                        <Link
-                          href={`/admin/products/${product._id}/edit`}
-                          className="text-accent hover:text-secondary"
-                        >
-                          Edit
-                        </Link>
+                      <div className="relative flex justify-end">
                         <button
-                          onClick={() => handleDelete(product._id, product.name)}
-                          className="text-red-600 hover:text-red-800"
+                          onClick={() => setOpenMenuId(openMenuId === product._id ? null : product._id)}
+                          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                         >
-                          Delete
+                          <svg className="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                          </svg>
                         </button>
+                        {openMenuId === product._id && (
+                          <div className="absolute right-0 top-10 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                            <div className="py-1">
+                              <Link
+                                href={`/admin/products/${product._id}/edit`}
+                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                onClick={() => setOpenMenuId(null)}
+                              >
+                                <span className="flex items-center gap-2">
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                  </svg>
+                                  Edit Product
+                                </span>
+                              </Link>
+                              <button
+                                onClick={() => {
+                                  setOpenMenuId(null);
+                                  handleDelete(product._id, product.name);
+                                }}
+                                className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                              >
+                                <span className="flex items-center gap-2">
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                  Delete Product
+                                </span>
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </td>
                   </tr>
