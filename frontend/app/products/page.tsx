@@ -20,6 +20,7 @@ export default function ProductsPage() {
   });
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   useEffect(() => {
     fetchCategories();
@@ -69,8 +70,26 @@ export default function ProductsPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Filters Sidebar */}
-          <aside className="lg:w-64 space-y-6">
+          {/* Mobile Filter Toggle */}
+          <div className="lg:hidden mb-4">
+            <button
+              onClick={() => setShowMobileFilters(!showMobileFilters)}
+              className="flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-dark transition-colors w-full sm:w-auto"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.707A1 1 0 013 7V4z" />
+              </svg>
+              Filters
+              {(filters.category || filters.minPrice || filters.maxPrice || filters.search) && (
+                <span className="bg-white text-accent text-xs px-2 py-1 rounded-full">
+                  Active
+                </span>
+              )}
+            </button>
+          </div>
+
+          {/* Desktop Filters Sidebar */}
+          <aside className="hidden lg:block lg:w-64 space-y-6">
             <div className="bg-white rounded-lg border border-border p-6">
               <h2 className="text-lg font-bold mb-4">Filters</h2>
 
@@ -157,6 +176,119 @@ export default function ProductsPage() {
               </button>
             </div>
           </aside>
+
+          {/* Mobile Filters */}
+          {showMobileFilters && (
+            <div className="lg:hidden fixed inset-0 z-50 flex">
+              {/* Backdrop */}
+              <div 
+                className="fixed inset-0 bg-black bg-opacity-50"
+                onClick={() => setShowMobileFilters(false)}
+              />
+              
+              {/* Filter Panel */}
+              <div className="relative bg-white w-80 h-full overflow-y-auto">
+                <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex justify-between items-center">
+                  <h3 className="text-lg font-semibold">Filters</h3>
+                  <button
+                    onClick={() => setShowMobileFilters(false)}
+                    className="p-2 hover:bg-gray-100 rounded-md"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="p-6 space-y-6">
+                  <div>
+                    <h2 className="text-lg font-bold mb-4">Filters</h2>
+
+                    {/* Search */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium mb-2">Search</label>
+                      <input
+                        type="text"
+                        value={filters.search}
+                        onChange={(e) => handleFilterChange('search', e.target.value)}
+                        placeholder="Search products..."
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+                      />
+                    </div>
+
+                    {/* Category */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium mb-2">Category</label>
+                      <select
+                        value={filters.category}
+                        onChange={(e) => handleFilterChange('category', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+                      >
+                        <option value="">All Categories</option>
+                        {categories.map((cat) => (
+                          <option key={cat._id} value={cat._id}>
+                            {cat.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Price Range */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium mb-2">Price Range</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="number"
+                          value={filters.minPrice}
+                          onChange={(e) => handleFilterChange('minPrice', e.target.value)}
+                          placeholder="Min"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+                        />
+                        <input
+                          type="number"
+                          value={filters.maxPrice}
+                          onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
+                          placeholder="Max"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Sort */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium mb-2">Sort By</label>
+                      <select
+                        value={filters.sort}
+                        onChange={(e) => handleFilterChange('sort', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+                      >
+                        <option value="newest">Newest</option>
+                        <option value="price-asc">Price: Low to High</option>
+                        <option value="price-desc">Price: High to Low</option>
+                        <option value="popular">Most Popular</option>
+                        <option value="rating">Highest Rated</option>
+                      </select>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        setFilters({
+                          category: '',
+                          minPrice: '',
+                          maxPrice: '',
+                          sort: 'newest',
+                          search: '',
+                        });
+                        setPage(1);
+                      }}
+                      className="w-full px-4 py-2 border border-accent text-accent rounded-md hover:bg-accent hover:text-white transition-colors"
+                    >
+                      Clear Filters
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Products Grid */}
           <div className="flex-1">

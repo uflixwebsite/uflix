@@ -49,23 +49,27 @@ export default function AddProductPage() {
   });
 
   useEffect(() => {
-    checkAdminAccess();
-  }, []);
-
-  const checkAdminAccess = async () => {
-    try {
-      const userData = await getCurrentUser();
-      if (userData.data?.role !== 'admin') {
-        router.push('/');
-        return;
-      }
-      setAuthorized(true);
-      fetchCategories();
-    } catch (error) {
-      console.error('Error checking admin access:', error);
-      router.push('/sign-in');
+    // Wait for auth to finish loading
+    if (status === 'loading') {
+      return;
     }
-  };
+
+    // Only redirect when we know the auth state
+    if (status === 'unauthenticated') {
+      router.push('/sign-in');
+      return;
+    }
+
+    if (status === 'authenticated' && !isAdmin) {
+      router.push('/');
+      return;
+    }
+
+    // User is authenticated and is admin - fetch categories
+    if (status === 'authenticated' && isAdmin) {
+      fetchCategories();
+    }
+  }, [status, isAdmin, router]);
 
   const fetchCategories = async () => {
     // Hardcoded categories - no API call needed
@@ -97,10 +101,10 @@ export default function AddProductPage() {
   };
 
   useEffect(() => {
-    if (authorized) {
+    if (status === 'authenticated' && isAdmin) {
       fetchSubcategories();
     }
-  }, [selectedCategories, authorized]);
+  }, [selectedCategories, status, isAdmin]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newFiles = Array.from(e.target.files || []);
@@ -234,7 +238,7 @@ export default function AddProductPage() {
       return;
     }
 
-    setLoading(true);
+    setDataLoading(true);
 
     try {
       // Step 1: Upload images to Cloudinary
@@ -301,24 +305,34 @@ export default function AddProductPage() {
       console.error('Error creating product:', error);
       alert(error.response?.data?.message || 'Failed to create product');
     } finally {
-      setLoading(false);
+      setDataLoading(false);
       setUploading(false);
     }
   };
 
-  if (!authorized) {
+  // Show loading while auth is hydrating OR while creating product
+  if (status === 'loading' || (status === 'authenticated' && isAdmin && dataLoading)) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="animate-pulse">
             <div className="h-8 bg-gray-200 rounded w-1/4 mb-8"></div>
-            <div className="h-96 bg-gray-200 rounded"></div>
+            <div className="space-y-4">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="h-20 bg-gray-200 rounded"></div>
+              ))}
+            </div>
           </div>
         </main>
         <Footer />
       </div>
     );
+  }
+
+  // Don't render content if not authorized (will redirect)
+  if (status === 'unauthenticated' || !isAdmin) {
+    return null;
   }
 
   return (
@@ -802,10 +816,10 @@ export default function AddProductPage() {
           <div className="flex gap-4">
             <button
               type="submit"
-              disabled={loading || uploading}
+              disabled={dataLoading || uploading}
               className="px-6 py-3 bg-accent text-white rounded-md hover:bg-secondary transition-colors font-semibold disabled:opacity-50"
             >
-              {uploading ? 'Uploading Images...' : loading ? 'Creating Product...' : 'Create Product'}
+              {uploading ? 'Uploading Images...' : dataLoading ? 'Creating Product...' : 'Create Product'}
             </button>
             <Link
               href="/admin/products"

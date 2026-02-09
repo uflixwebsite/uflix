@@ -45,6 +45,7 @@ export default function CategoryPage() {
   const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<any>(null);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   
   const category = categoryData[slug] || { name: 'Category', description: '', banner: '' };
 
@@ -114,25 +115,73 @@ export default function CategoryPage() {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
             <p className="text-neutral-dark">{filteredProducts.length} products</p>
             
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
-            >
-              <option value="featured">Featured</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
-              <option value="newest">Newest</option>
-            </select>
+            <div className="flex items-center gap-4 w-full sm:w-auto">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent flex-1 sm:flex-none"
+              >
+                <option value="featured">Featured</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="newest">Newest</option>
+              </select>
+              
+              {/* Mobile Filter Toggle */}
+              <button
+                onClick={() => setShowMobileFilters(!showMobileFilters)}
+                className="lg:hidden flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-dark transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.707A1 1 0 013 7V4z" />
+                </svg>
+                Filters
+                {filters && (
+                  <span className="bg-white text-accent text-xs px-2 py-1 rounded-full">
+                    Active
+                  </span>
+                )}
+              </button>
+            </div>
           </div>
 
           <div className="grid lg:grid-cols-4 gap-8">
+            {/* Desktop Filters */}
             <aside className="hidden lg:block">
               <FilterSidebar onFilterChange={handleFilterChange} currentCategory={slug} />
             </aside>
+
+            {/* Mobile Filters */}
+            {showMobileFilters && (
+              <div className="lg:hidden fixed inset-0 z-50 flex">
+                {/* Backdrop */}
+                <div 
+                  className="fixed inset-0 bg-black bg-opacity-50"
+                  onClick={() => setShowMobileFilters(false)}
+                />
+                
+                {/* Filter Panel */}
+                <div className="relative bg-white w-80 h-full overflow-y-auto">
+                  <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex justify-between items-center">
+                    <h3 className="text-lg font-semibold">Filters</h3>
+                    <button
+                      onClick={() => setShowMobileFilters(false)}
+                      className="p-2 hover:bg-gray-100 rounded-md"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div className="p-4">
+                    <FilterSidebar onFilterChange={handleFilterChange} currentCategory={slug} />
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="lg:col-span-3">
               {loading ? (
