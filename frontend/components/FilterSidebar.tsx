@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { getSubcategories } from '@/services/subcategoryService';
+import { getMaterials } from '@/services/materialsService';
 
 interface FilterSidebarProps {
   onFilterChange?: (filters: any) => void;
@@ -11,15 +12,25 @@ interface FilterSidebarProps {
 export default function FilterSidebar({ onFilterChange, currentCategory }: FilterSidebarProps) {
   const [priceRange, setPriceRange] = useState([0, 100000]);
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
+  const [selectedMaterials, setSelectedMaterials] = useState<string[]>([]);
   const [subcategories, setSubcategories] = useState<any[]>([]);
   const [groupedSubcategories, setGroupedSubcategories] = useState<Record<string, any[]>>({});
-
-  const materials = ['Wood', 'Metal', 'Fabric', 'Leather', 'Glass'];
+  const [materials, setMaterials] = useState<any[]>([]);
   const colors = ['Beige', 'Brown', 'Black', 'White', 'Gray', 'Blue'];
 
   useEffect(() => {
     fetchSubcategories();
+    fetchMaterials();
   }, [currentCategory]);
+
+  const fetchMaterials = async () => {
+    try {
+      const response = await getMaterials();
+      setMaterials(response.data || []);
+    } catch (error) {
+      console.error('Error fetching materials:', error);
+    }
+  };
 
   const fetchSubcategories = async () => {
     try {
@@ -47,13 +58,20 @@ export default function FilterSidebar({ onFilterChange, currentCategory }: Filte
     if (onFilterChange) {
       onFilterChange({
         priceRange,
-        subcategories: selectedSubcategories
+        subcategories: selectedSubcategories,
+        materials: selectedMaterials
       });
     }
   };
 
   const toggleSubcategory = (name: string) => {
     setSelectedSubcategories(prev =>
+      prev.includes(name) ? prev.filter(s => s !== name) : [...prev, name]
+    );
+  };
+
+  const toggleMaterial = (name: string) => {
+    setSelectedMaterials(prev =>
       prev.includes(name) ? prev.filter(s => s !== name) : [...prev, name]
     );
   };
@@ -67,6 +85,18 @@ export default function FilterSidebar({ onFilterChange, currentCategory }: Filte
         onChange={() => toggleSubcategory(subcategory.name)}
       />
       <span className="text-sm capitalize">{subcategory.name}</span>
+    </label>
+  );
+
+  const renderMaterialCheckbox = (material: any) => (
+    <label key={material._id} className="flex items-center">
+      <input
+        type="checkbox"
+        className="mr-2 w-4 h-4 text-accent border-gray-300 rounded focus:ring-accent"
+        checked={selectedMaterials.includes(material.name)}
+        onChange={() => toggleMaterial(material.name)}
+      />
+      <span className="text-sm capitalize">{material.name}</span>
     </label>
   );
 
@@ -114,16 +144,12 @@ export default function FilterSidebar({ onFilterChange, currentCategory }: Filte
 
       <div className="mb-8">
         <h4 className="font-semibold mb-4">Material</h4>
-        <div className="space-y-2">
-          {materials.map((material) => (
-            <label key={material} className="flex items-center">
-              <input
-                type="checkbox"
-                className="mr-2 w-4 h-4 text-accent border-gray-300 rounded focus:ring-accent"
-              />
-              <span className="text-sm">{material}</span>
-            </label>
-          ))}
+        <div className="space-y-2 max-h-64 overflow-y-auto">
+          {materials.length === 0 ? (
+            <p className="text-sm text-gray-500">No materials available</p>
+          ) : (
+            materials.map(renderMaterialCheckbox)
+          )}
         </div>
       </div>
 

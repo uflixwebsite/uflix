@@ -92,6 +92,15 @@ function ShopContent() {
       );
     }
 
+    // Materials filter
+    if (filters.materials && filters.materials.length > 0) {
+      filtered = filtered.filter(p => 
+        filters.materials.some((material: string) => 
+          p.material && p.material.toLowerCase() === material.toLowerCase()
+        )
+      );
+    }
+
     setFilteredProducts(filtered);
   };
 

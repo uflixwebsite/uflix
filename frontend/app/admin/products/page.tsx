@@ -16,6 +16,10 @@ export default function AdminProductsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
     // Wait for auth to finish loading
@@ -57,11 +61,33 @@ export default function AdminProductsPage() {
     };
   }, [openMenuId]);
 
+  useEffect(() => {
+    if (status === 'authenticated' && isAdmin) {
+      fetchProducts();
+    }
+  }, [page]);
+
+  useEffect(() => {
+    if (status === 'authenticated' && isAdmin) {
+      setPage(1);
+      fetchProducts();
+    }
+  }, [searchTerm, filterCategory]);
+
   const fetchProducts = async () => {
     setDataLoading(true);
     try {
-      const data = await getProducts({ limit: 100 });
+      const params: any = { page, limit: ITEMS_PER_PAGE };
+      if (searchTerm) {
+        params.search = searchTerm;
+      }
+      if (filterCategory) {
+        params.category = filterCategory;
+      }
+      const data = await getProducts(params);
       setProducts(data.data);
+      setTotalPages(data.pagination?.pages || 1);
+      setTotalProducts(data.pagination?.total || 0);
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
@@ -83,11 +109,7 @@ export default function AdminProductsPage() {
     }
   };
 
-  const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !filterCategory || product.category?._id === filterCategory;
-    return matchesSearch && matchesCategory;
-  });
+  // No frontend filtering needed - backend handles it
 
   // Show loading while auth is hydrating OR while fetching products data
   if (status === 'loading' || (status === 'authenticated' && isAdmin && dataLoading && !products.length)) {
@@ -176,7 +198,7 @@ export default function AdminProductsPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredProducts.map((product) => (
+                {products.map((product: any) => (
                   <tr key={product._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
@@ -268,12 +290,61 @@ export default function AdminProductsPage() {
             </table>
           </div>
 
-          {filteredProducts.length === 0 && (
+          {products.length === 0 && (
             <div className="text-center py-12">
               <p className="text-neutral-dark">No products found</p>
             </div>
           )}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between mt-6">
+            <p className="text-sm text-gray-600">
+              Showing {((page - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(page * ITEMS_PER_PAGE, totalProducts)} of {totalProducts} products
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Previous
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(p => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+                .reduce((acc: (number | string)[], p, i, arr) => {
+                  if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push('...');
+                  acc.push(p);
+                  return acc;
+                }, [])
+                .map((p, i) =>
+                  typeof p === 'string' ? (
+                    <span key={`ellipsis-${i}`} className="px-2 text-gray-400">...</span>
+                  ) : (
+                    <button
+                      key={p}
+                      onClick={() => setPage(p)}
+                      className={`px-3 py-2 text-sm rounded-md transition-colors ${
+                        page === p
+                          ? 'bg-accent text-white'
+                          : 'border border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  )
+                )}
+              <button
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="mt-6">
           <Link href="/admin" className="text-accent hover:text-secondary">

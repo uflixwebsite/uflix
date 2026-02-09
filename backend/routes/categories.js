@@ -8,7 +8,7 @@ const { protect, admin } = require('../middleware/auth');
 // @access  Public
 router.get('/', async (req, res) => {
   try {
-    const categories = await Category.find({ isActive: true })
+    const categories = await Category.find()
       .populate('parent', 'name slug')
       .sort({ order: 1, name: 1 });
 

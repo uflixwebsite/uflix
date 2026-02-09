@@ -27,6 +27,11 @@ router.get('/', async (req, res) => {
       query.subcategories = { $in: req.query.subcategory.split(',') };
     }
 
+    // Material filter
+    if (req.query.material) {
+      query.material = { $in: req.query.material.split(',') };
+    }
+
     // Price range filter
     if (req.query.minPrice || req.query.maxPrice) {
       query.price = {};

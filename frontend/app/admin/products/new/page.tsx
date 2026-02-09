@@ -17,7 +17,15 @@ export default function AddProductPage() {
   const { status, isAdmin } = useAuthState();
   const [dataLoading, setDataLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories] = useState<any[]>([
+    { _id: 'living', name: 'Living' },
+    { _id: 'bedroom', name: 'Bedroom' },
+    { _id: 'home-office', name: 'Home Office' },
+    { _id: 'modular-kitchen', name: 'Modular Kitchen' },
+    { _id: 'storage', name: 'Storage' },
+    { _id: 'shop-fitting', name: 'Shop Fitting' },
+    { _id: 'for-businesses', name: 'For Business' },
+  ]);
   const [subcategories, setSubcategories] = useState<any[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
@@ -67,24 +75,7 @@ export default function AddProductPage() {
       return;
     }
 
-    // User is authenticated and is admin - fetch categories
-    if (status === 'authenticated' && isAdmin) {
-      fetchCategories();
-    }
   }, [status, isAdmin, router]);
-
-  const fetchCategories = async () => {
-    try {
-      const response = await getCategories();
-      const cats = (response.data || []).map((cat: any) => ({
-        _id: cat.slug || cat._id,
-        name: cat.name
-      }));
-      setCategories(cats);
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-    }
-  };
 
   const fetchSubcategories = async () => {
     // Fetch subcategories from backend
