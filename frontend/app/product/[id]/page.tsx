@@ -7,6 +7,7 @@ import Footer from '@/components/Footer';
 import Breadcrumb from '@/components/Breadcrumb';
 import ProductCard from '@/components/ProductCard';
 import Image from 'next/image';
+import ImageZoom from '@/components/ImageZoom';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { getProduct, getProducts } from '@/services/productService';
@@ -172,18 +173,14 @@ export default function ProductDetailPage() {
         ]} />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
-          {/* Left: Vertically stacked images */}
+          {/* Left: All images with zoom feature */}
           <div className="space-y-4">
             {product.images.map((image: any, index: number) => (
-              <div key={index} className="relative w-full aspect-square bg-white rounded-2xl overflow-hidden border border-gray-200">
-                <Image
-                  src={image.url}
-                  alt={`${product.name} ${index + 1}`}
-                  fill
-                  className="object-cover"
-                  loading={index === 0 ? 'eager' : 'lazy'}
-                />
-              </div>
+              <ImageZoom
+                key={index}
+                src={image.url}
+                alt={`${product.name} ${index + 1}`}
+              />
             ))}
           </div>
 
