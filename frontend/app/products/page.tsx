@@ -42,7 +42,7 @@ export default function ProductsPage() {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const params: any = { page, limit: 12 };
+      const params: any = { page, limit: 15 };
       if (filters.category) params.category = filters.category;
       if (filters.minPrice) params.minPrice = filters.minPrice;
       if (filters.maxPrice) params.maxPrice = filters.maxPrice;

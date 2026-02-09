@@ -33,15 +33,6 @@ export default function ProductCard({ _id, name, price, discountPrice, images, c
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
 
-  // Handle manual image navigation
-  const handleImageClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (images && images.length > 1) {
-      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }
-  };
-
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -77,10 +68,7 @@ export default function ProductCard({ _id, name, price, discountPrice, images, c
   return (
     <Link href={`/product/${_id}`} className="group bg-white rounded-lg overflow-hidden border border-border hover:shadow-xl transition-all duration-300 flex flex-col h-full">
       <div className="relative h-64 overflow-hidden bg-neutral-light flex-shrink-0">
-        <div 
-          onClick={handleImageClick}
-          className="relative w-full h-full cursor-pointer"
-        >
+        <div className="relative w-full h-full">
           <Image
             src={image}
             alt={name}

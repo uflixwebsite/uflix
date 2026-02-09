@@ -22,10 +22,18 @@ function ShopContent() {
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<any>(null);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+
+  useEffect(() => {
+    setPage(1);
+    fetchProducts();
+  }, [searchQuery]);
 
   useEffect(() => {
     fetchProducts();
-  }, [searchQuery]);
+  }, [page]);
 
   useEffect(() => {
     applyFilters();
@@ -34,13 +42,14 @@ function ShopContent() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const params: any = { limit: 100 };
+      const params: any = { page, limit: 15 };
       if (searchQuery) {
         params.search = searchQuery;
       }
       const data = await getProducts(params);
       setProducts(data.data);
-      setFilteredProducts(data.data);
+      setTotalProducts(data.pagination.total);
+      setTotalPages(data.pagination.pages);
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
@@ -101,7 +110,12 @@ function ShopContent() {
           <div className="mb-4">
             <h1 className="text-3xl sm:text-4xl font-bold">{searchQuery ? `Search Results for "${searchQuery}"` : 'All Products'}</h1>
             {searchQuery && (
-              <p className="text-neutral-dark mt-2">{filteredProducts.length} products found</p>
+              <p className="text-neutral-dark mt-2">
+                {totalProducts > 0 
+                  ? `Showing ${(page - 1) * 15 + 1}-{Math.min(page * 15, totalProducts)} of ${totalProducts} products`
+                  : 'No products found'
+                }
+              </p>
             )}
           </div>
           
@@ -205,11 +219,46 @@ function ShopContent() {
                 <p className="text-gray-500">Try adjusting your filters or check back soon!</p>
               </div>
             ) : (
-              <div className={`grid ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'} gap-6`}>
-                {filteredProducts.map((product) => (
-                  <ProductCard key={product._id} {...product} />
-                ))}
-              </div>
+              <>
+                <div className={`grid ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'} gap-6`}>
+                  {filteredProducts.map((product) => (
+                    <ProductCard key={product._id} {...product} />
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex justify-center gap-2 mt-8">
+                    <button
+                      onClick={() => setPage(page - 1)}
+                      disabled={page === 1}
+                      className="px-4 py-2 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                    >
+                      Previous
+                    </button>
+                    {[...Array(totalPages)].map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setPage(i + 1)}
+                        className={`px-4 py-2 border rounded-md ${
+                          page === i + 1
+                            ? 'bg-accent text-white border-accent'
+                            : 'border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => setPage(page + 1)}
+                      disabled={page === totalPages}
+                      className="px-4 py-2 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

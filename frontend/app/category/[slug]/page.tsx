@@ -46,12 +46,20 @@ export default function CategoryPage() {
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<any>(null);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   
   const category = categoryData[slug] || { name: 'Category', description: '', banner: '' };
 
   useEffect(() => {
+    setPage(1);
     fetchProducts();
   }, [slug]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [page]);
 
   useEffect(() => {
     applyFilters();
@@ -60,9 +68,10 @@ export default function CategoryPage() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const data = await getProducts({ category: slug, limit: 100 });
+      const data = await getProducts({ category: slug, page, limit: 15 });
       setProducts(data.data);
-      setFilteredProducts(data.data);
+      setTotalProducts(data.pagination.total);
+      setTotalPages(data.pagination.pages);
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
@@ -116,7 +125,12 @@ export default function CategoryPage() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
-            <p className="text-neutral-dark">{filteredProducts.length} products</p>
+            <p className="text-neutral-dark">
+              {totalProducts > 0 
+                ? `Showing ${(page - 1) * 15 + 1}-{Math.min(page * 15, totalProducts)} of ${totalProducts} products`
+                : 'No products found'
+              }
+            </p>
             
             <div className="flex items-center gap-4 w-full sm:w-auto">
               <select
@@ -197,11 +211,46 @@ export default function CategoryPage() {
                   <p className="text-gray-500">No products found in {category.name} category.</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredProducts.map((product) => (
-                    <ProductCard key={product._id} {...product} />
-                  ))}
-                </div>
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredProducts.map((product) => (
+                      <ProductCard key={product._id} {...product} />
+                    ))}
+                  </div>
+
+                  {/* Pagination */}
+                  {totalPages > 1 && (
+                    <div className="flex justify-center gap-2 mt-8">
+                      <button
+                        onClick={() => setPage(page - 1)}
+                        disabled={page === 1}
+                        className="px-4 py-2 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                      >
+                        Previous
+                      </button>
+                      {[...Array(totalPages)].map((_, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setPage(i + 1)}
+                          className={`px-4 py-2 border rounded-md ${
+                            page === i + 1
+                              ? 'bg-accent text-white border-accent'
+                              : 'border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          {i + 1}
+                        </button>
+                      ))}
+                      <button
+                        onClick={() => setPage(page + 1)}
+                        disabled={page === totalPages}
+                        className="px-4 py-2 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>

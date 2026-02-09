@@ -72,7 +72,6 @@ export default function ProductDetailPage() {
   const { addToCart } = useCart();
   const { addToWishlist, isInWishlist, removeFromWishlist } = useWishlist();
   
-  const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<'description' | 'specifications' | 'reviews'>('description');
   const [isQuotationDialogOpen, setIsQuotationDialogOpen] = useState(false);
@@ -173,32 +172,23 @@ export default function ProductDetailPage() {
         ]} />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
-          <div>
-            <div className="relative h-96 md:h-[500px] bg-white rounded-2xl overflow-hidden mb-4 border border-gray-200">
-              <Image
-                src={product.images[selectedImage]?.url}
-                alt={product.name}
-                fill
-                className="object-cover"
-                loading="lazy"
-              />
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              {product.images.map((image: any, index: number) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedImage(index)}
-                  className={`relative h-24 rounded-lg overflow-hidden border-2 transition-all ${
-                    selectedImage === index ? 'border-accent' : 'border-gray-200'
-                  }`}
-                >
-                  <Image src={image.url} alt={`${product.name} ${index + 1}`} fill className="object-cover" loading="lazy" />
-                </button>
-              ))}
-            </div>
+          {/* Left: Vertically stacked images */}
+          <div className="space-y-4">
+            {product.images.map((image: any, index: number) => (
+              <div key={index} className="relative w-full aspect-square bg-white rounded-2xl overflow-hidden border border-gray-200">
+                <Image
+                  src={image.url}
+                  alt={`${product.name} ${index + 1}`}
+                  fill
+                  className="object-cover"
+                  loading={index === 0 ? 'eager' : 'lazy'}
+                />
+              </div>
+            ))}
           </div>
 
-          <div>
+          {/* Right: Product details (sticky) */}
+          <div className="lg:sticky lg:top-8 lg:self-start">
             <h1 className="text-3xl md:text-4xl font-bold mb-4">{product.name}</h1>
             
             <div className="flex items-center gap-4 mb-6">
