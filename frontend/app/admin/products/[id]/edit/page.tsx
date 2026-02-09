@@ -7,7 +7,33 @@ import Footer from '@/components/Footer';
 import { getCurrentUser } from '@/services/authService';
 import api from '@/services/api';
 import { getSubcategories, createSubcategory } from '@/services/subcategoryService';
+import { getCategories } from '@/services/categoryService';
 import { useAuthState } from '@/hooks/useAuthState';
+import { deleteFile } from '@/services/uploadService';
+
+function extractCloudinaryPublicId(url: string): string | null {
+  if (!url || !url.includes('res.cloudinary.com')) return null;
+  try {
+    const match = url.match(/\/upload\/(?:v\d+\/)?(.+)$/);
+    if (match && match[1]) {
+      return match[1].replace(/\.[^.]+$/, '');
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
+async function deleteCloudinaryAsset(url: string, resourceType: string = 'image') {
+  const publicId = extractCloudinaryPublicId(url);
+  if (publicId) {
+    try {
+      await deleteFile(publicId, resourceType);
+    } catch (error) {
+      console.error('Failed to delete asset from Cloudinary:', error);
+    }
+  }
+}
 
 export default function EditProductPage() {
   const router = useRouter();
@@ -48,7 +74,8 @@ export default function EditProductPage() {
     availableOnQuotation: false,
     isActive: true,
     isFeatured: false,
-    newArrival: false
+    newArrival: false,
+    bestSeller: false
   });
 
   useEffect(() => {
@@ -82,17 +109,16 @@ export default function EditProductPage() {
   }, [selectedCategories, status, isAdmin]);
 
   const fetchCategories = async () => {
-    const categories = [
-      { _id: 'living', name: 'Living' },
-      { _id: 'bedroom', name: 'Bedroom' },
-      { _id: 'dining', name: 'Dining' },
-      { _id: 'home-office', name: 'Home Office' },
-      { _id: 'modular-kitchen', name: 'Modular Kitchen' },
-      { _id: 'storage', name: 'Storage' },
-      { _id: 'for-homes', name: 'For Homes' },
-      { _id: 'for-businesses', name: 'For Business' }
-    ];
-    setCategories(categories);
+    try {
+      const response = await getCategories();
+      const cats = (response.data || []).map((cat: any) => ({
+        _id: cat.slug || cat._id,
+        name: cat.name
+      }));
+      setCategories(cats);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
   };
 
   const fetchSubcategories = async () => {
@@ -133,7 +159,8 @@ export default function EditProductPage() {
         availableOnQuotation: product.availableOnQuotation || false,
         isActive: product.isActive !== undefined ? product.isActive : true,
         isFeatured: product.isFeatured || false,
-        newArrival: product.newArrival || false
+        newArrival: product.newArrival || false,
+        bestSeller: product.bestSeller || false
       });
       
       setSelectedCategories(product.categories || []);
@@ -172,7 +199,11 @@ export default function EditProductPage() {
     setPreviewUrls(newUrls);
   };
 
-  const removeExistingImage = (index: number) => {
+  const removeExistingImage = async (index: number) => {
+    const image = existingImages[index];
+    if (image?.url) {
+      await deleteCloudinaryAsset(image.url, 'image');
+    }
     const newImages = existingImages.filter((_, i) => i !== index);
     setExistingImages(newImages);
   };
@@ -205,7 +236,10 @@ export default function EditProductPage() {
     }
   };
 
-  const removeExistingVideo = () => {
+  const removeExistingVideo = async () => {
+    if (existingVideo) {
+      await deleteCloudinaryAsset(existingVideo, 'video');
+    }
     setExistingVideo('');
   };
 
@@ -350,7 +384,8 @@ export default function EditProductPage() {
         availableOnQuotation: formData.availableOnQuotation,
         isActive: formData.isActive,
         isFeatured: formData.isFeatured,
-        newArrival: formData.newArrival
+        newArrival: formData.newArrival,
+        bestSeller: formData.bestSeller
       };
 
       await api.put(`/products/${productId}`, productData);
@@ -643,33 +678,8 @@ export default function EditProductPage() {
 
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium mb-2">Subcategories</label>
-                
-                {/* Business Subcategories - Show when for-businesses category is selected */}
-                {selectedCategories.includes('for-businesses') ? (
-                  <div>
-                    <p className="text-xs text-gray-600 mb-3">Business Subcategories:</p>
-                    <div className="flex flex-wrap gap-2 p-3 border border-gray-300 rounded-md min-h-[100px]">
-                      {['Workstations', 'Education', 'Healthcare', 'Seating and Desking', 'Office Storage'].map((subcat) => (
-                        <button
-                          key={subcat}
-                          type="button"
-                          onClick={() => toggleSubcategory(subcat)}
-                          className={`px-4 py-2 text-sm rounded-md transition-colors ${
-                            selectedSubcategories.includes(subcat)
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          }`}
-                        >
-                          {subcat}
-                        </button>
-                      ))}
-                    </div>
-                    {selectedSubcategories.length > 0 && (
-                      <p className="text-xs text-gray-600 mt-1">
-                        Selected: {selectedSubcategories.join(', ')}
-                      </p>
-                    )}
-                  </div>
+                {selectedCategories.length === 0 ? (
+                  <p className="text-sm text-gray-500 p-3 border border-gray-300 rounded-md">Select a category first to manage subcategories.</p>
                 ) : (
                   <div>
                     {/* Add New Subcategory */}
@@ -694,14 +704,14 @@ export default function EditProductPage() {
                     {/* Existing Subcategories */}
                     <div className="flex flex-wrap gap-2 p-3 border border-gray-300 rounded-md min-h-[100px]">
                       {subcategories.length === 0 ? (
-                        <p className="text-sm text-gray-500">No subcategories yet. Add one above!</p>
+                        <p className="text-sm text-gray-500">No subcategories yet for this category. Add one above!</p>
                       ) : (
                         subcategories.map((sub) => (
                           <button
                             key={sub._id}
                             type="button"
                             onClick={() => toggleSubcategory(sub.name)}
-                            className={`px-4 py-2 text-sm rounded-md transition-colors ${
+                            className={`px-4 py-2 text-sm rounded-md transition-colors capitalize ${
                               selectedSubcategories.includes(sub.name)
                                 ? 'bg-blue-600 text-white'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -894,6 +904,15 @@ export default function EditProductPage() {
                   className="w-4 h-4 text-accent border-gray-300 rounded focus:ring-accent"
                 />
                 <span className="ml-2 text-sm">🆕 New Arrival</span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.bestSeller}
+                  onChange={(e) => setFormData({ ...formData, bestSeller: e.target.checked })}
+                  className="w-4 h-4 text-accent border-gray-300 rounded focus:ring-accent"
+                />
+                <span className="ml-2 text-sm">🔥 Best Seller</span>
               </label>
               <label className="flex items-center">
                 <input

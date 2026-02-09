@@ -166,7 +166,7 @@ export default function Header() {
                   : 'bg-white/90 text-foreground hover:bg-white shadow-md'
               }`}
             >
-              Shop Fittings
+              For Homes
             </Link>
             <Link
               href="/business"

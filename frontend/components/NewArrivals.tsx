@@ -5,17 +5,24 @@ import ProductCard from './ProductCard';
 import Link from 'next/link';
 import { getProducts } from '@/services/productService';
 
-export default function NewArrivals() {
+interface NewArrivalsProps {
+  title?: string;
+  subtitle?: string;
+  limit?: number;
+}
+
+export default function NewArrivals({ title, subtitle, limit }: NewArrivalsProps) {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const productLimit = limit || 8;
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [productLimit]);
 
   const fetchProducts = async () => {
     try {
-      const data = await getProducts({ limit: 8, newArrival: true });
+      const data = await getProducts({ limit: productLimit, newArrival: true });
       setProducts(data.data);
     } catch (error) {
       console.error('Error fetching new arrival products:', error);
@@ -28,9 +35,9 @@ export default function NewArrivals() {
     <section className="py-16 bg-neutral-light">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">New Arrivals</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">{title || 'New Arrivals'}</h2>
           <p className="text-lg text-neutral-dark max-w-2xl mx-auto">
-            Discover our latest furniture collections and designs
+            {subtitle || 'Discover our latest furniture collections and designs'}
           </p>
         </div>
 

@@ -9,6 +9,7 @@ import Footer from '@/components/Footer';
 import { getCurrentUser } from '@/services/authService';
 import api from '@/services/api';
 import { getSubcategories, createSubcategory } from '@/services/subcategoryService';
+import { getCategories } from '@/services/categoryService';
 import { useAuthState } from '@/hooks/useAuthState';
 
 export default function AddProductPage() {
@@ -45,7 +46,8 @@ export default function AddProductPage() {
     availableOnQuotation: false,
     isActive: true,
     isFeatured: false,
-    newArrival: false
+    newArrival: false,
+    bestSeller: false
   });
 
   useEffect(() => {
@@ -72,18 +74,16 @@ export default function AddProductPage() {
   }, [status, isAdmin, router]);
 
   const fetchCategories = async () => {
-    // Hardcoded categories - no API call needed
-    const categories = [
-      { _id: 'living', name: 'Living' },
-      { _id: 'bedroom', name: 'Bedroom' },
-      { _id: 'dining', name: 'Dining' },
-      { _id: 'home-office', name: 'Home Office' },
-      { _id: 'modular-kitchen', name: 'Modular Kitchen' },
-      { _id: 'storage', name: 'Storage' },
-      { _id: 'for-homes', name: 'For Homes' },
-      { _id: 'for-businesses', name: 'For Business' }
-    ];
-    setCategories(categories);
+    try {
+      const response = await getCategories();
+      const cats = (response.data || []).map((cat: any) => ({
+        _id: cat.slug || cat._id,
+        name: cat.name
+      }));
+      setCategories(cats);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
   };
 
   const fetchSubcategories = async () => {
@@ -295,7 +295,8 @@ export default function AddProductPage() {
         availableOnQuotation: formData.availableOnQuotation,
         isActive: formData.isActive,
         isFeatured: formData.isFeatured,
-        newArrival: formData.newArrival
+        newArrival: formData.newArrival,
+        bestSeller: formData.bestSeller
       };
 
       await api.post('/products', productData);
@@ -510,33 +511,8 @@ export default function AddProductPage() {
 
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium mb-2">Subcategories</label>
-                
-                {/* Business Subcategories - Show when for-businesses category is selected */}
-                {selectedCategories.includes('for-businesses') ? (
-                  <div>
-                    <p className="text-xs text-gray-600 mb-3">Business Subcategories:</p>
-                    <div className="flex flex-wrap gap-2 p-3 border border-gray-300 rounded-md min-h-[100px]">
-                      {['Workstations', 'Education', 'Healthcare', 'Seating and Desking', 'Office Storage'].map((subcat) => (
-                        <button
-                          key={subcat}
-                          type="button"
-                          onClick={() => toggleSubcategory(subcat)}
-                          className={`px-4 py-2 text-sm rounded-md transition-colors ${
-                            selectedSubcategories.includes(subcat)
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          }`}
-                        >
-                          {subcat}
-                        </button>
-                      ))}
-                    </div>
-                    {selectedSubcategories.length > 0 && (
-                      <p className="text-xs text-gray-600 mt-1">
-                        Selected: {selectedSubcategories.join(', ')}
-                      </p>
-                    )}
-                  </div>
+                {selectedCategories.length === 0 ? (
+                  <p className="text-sm text-gray-500 p-3 border border-gray-300 rounded-md">Select a category first to manage subcategories.</p>
                 ) : (
                   <div>
                     {/* Add New Subcategory */}
@@ -561,14 +537,14 @@ export default function AddProductPage() {
                     {/* Existing Subcategories */}
                     <div className="flex flex-wrap gap-2 p-3 border border-gray-300 rounded-md min-h-[100px]">
                       {subcategories.length === 0 ? (
-                        <p className="text-sm text-gray-500">No subcategories yet. Add one above!</p>
+                        <p className="text-sm text-gray-500">No subcategories yet for this category. Add one above!</p>
                       ) : (
                         subcategories.map((sub) => (
                           <button
                             key={sub._id}
                             type="button"
                             onClick={() => toggleSubcategory(sub.name)}
-                            className={`px-4 py-2 text-sm rounded-md transition-colors ${
+                            className={`px-4 py-2 text-sm rounded-md transition-colors capitalize ${
                               selectedSubcategories.includes(sub.name)
                                 ? 'bg-blue-600 text-white'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -798,6 +774,15 @@ export default function AddProductPage() {
                     className="w-4 h-4"
                   />
                   <span className="text-sm font-medium">🆕 New Arrival</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.bestSeller}
+                    onChange={(e) => setFormData({ ...formData, bestSeller: e.target.checked })}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-sm font-medium">🔥 Best Seller</span>
                 </label>
                 <label className="flex items-center gap-2">
                   <input

@@ -54,6 +54,11 @@ router.get('/', async (req, res) => {
       query.newArrival = true;
     }
 
+    // Best Seller filter
+    if (req.query.bestSeller === 'true') {
+      query.bestSeller = true;
+    }
+
     // Sorting
     let sort = {};
     if (req.query.sort) {

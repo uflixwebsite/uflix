@@ -3,15 +3,21 @@ const mongoose = require('mongoose');
 const subcategorySchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true,
-    trim: true
+    required: [true, 'Subcategory name is required'],
+    trim: true,
+    lowercase: true
   },
   category: {
     type: String,
-    enum: ['living', 'bedroom', 'dining', 'home-office', 'modular-kitchen', 'storage', 'for-homes', 'for-businesses']
+    required: [true, 'Category is required'],
+    trim: true,
+    lowercase: true
   }
 }, {
   timestamps: true
 });
+
+// Compound unique index: same name allowed in different categories, but not duplicated within one category
+subcategorySchema.index({ name: 1, category: 1 }, { unique: true });
 
 module.exports = mongoose.model('Subcategory', subcategorySchema);

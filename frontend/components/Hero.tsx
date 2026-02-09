@@ -4,25 +4,36 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-const slides = [
+const defaultSlides = [
   {
     image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1920&q=80',
     title: 'Transform Your Living Space',
     subtitle: 'Discover premium furniture that combines style and comfort',
+    buttonText: 'Shop Now',
+    buttonLink: '/shop',
   },
   {
     image: 'https://images.unsplash.com/photo-1540574163026-643ea20ade25?w=1920&q=80',
     title: 'Bedroom Elegance',
     subtitle: 'Create your perfect sanctuary with our curated collection',
+    buttonText: 'Shop Now',
+    buttonLink: '/shop',
   },
   {
     image: 'https://images.unsplash.com/photo-1615066390971-03e4e1c36ddf?w=1920&q=80',
     title: 'Dining in Style',
     subtitle: 'Gather around beautiful furniture made for memorable moments',
+    buttonText: 'Shop Now',
+    buttonLink: '/shop',
   },
 ];
 
-export default function Hero() {
+interface HeroProps {
+  slides?: Array<{ image: string; title: string; subtitle?: string; buttonText?: string; buttonLink?: string }>;
+}
+
+export default function Hero({ slides: propSlides }: HeroProps) {
+  const slides = propSlides && propSlides.length > 0 ? propSlides : defaultSlides;
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
@@ -78,10 +89,10 @@ export default function Hero() {
             
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Link
-                href="/shop"
+                href={slides[currentSlide].buttonLink || '/shop'}
                 className="bg-accent hover:bg-secondary text-white px-6 sm:px-8 py-3 rounded-md font-semibold transition-colors text-center"
               >
-                Shop Now
+                {slides[currentSlide].buttonText || 'Shop Now'}
               </Link>
               <Link
                 href="/categories"

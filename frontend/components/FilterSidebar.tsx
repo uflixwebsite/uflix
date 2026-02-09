@@ -12,6 +12,7 @@ export default function FilterSidebar({ onFilterChange, currentCategory }: Filte
   const [priceRange, setPriceRange] = useState([0, 100000]);
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
   const [subcategories, setSubcategories] = useState<any[]>([]);
+  const [groupedSubcategories, setGroupedSubcategories] = useState<Record<string, any[]>>({});
 
   const materials = ['Wood', 'Metal', 'Fabric', 'Leather', 'Glass'];
   const colors = ['Beige', 'Brown', 'Black', 'White', 'Gray', 'Blue'];
@@ -24,7 +25,19 @@ export default function FilterSidebar({ onFilterChange, currentCategory }: Filte
     try {
       const params = currentCategory ? { category: currentCategory } : {};
       const response = await getSubcategories(params);
-      setSubcategories(response.data || []);
+      const data = response.data || [];
+      setSubcategories(data);
+
+      // Group by category when showing all subcategories (no currentCategory filter)
+      if (!currentCategory) {
+        const grouped: Record<string, any[]> = {};
+        data.forEach((sub: any) => {
+          const cat = sub.category || 'other';
+          if (!grouped[cat]) grouped[cat] = [];
+          grouped[cat].push(sub);
+        });
+        setGroupedSubcategories(grouped);
+      }
     } catch (error) {
       console.error('Error fetching subcategories:', error);
     }
@@ -38,6 +51,24 @@ export default function FilterSidebar({ onFilterChange, currentCategory }: Filte
       });
     }
   };
+
+  const toggleSubcategory = (name: string) => {
+    setSelectedSubcategories(prev =>
+      prev.includes(name) ? prev.filter(s => s !== name) : [...prev, name]
+    );
+  };
+
+  const renderSubcategoryCheckbox = (subcategory: any) => (
+    <label key={subcategory._id} className="flex items-center">
+      <input
+        type="checkbox"
+        className="mr-2 w-4 h-4 text-accent border-gray-300 rounded focus:ring-accent"
+        checked={selectedSubcategories.includes(subcategory.name)}
+        onChange={() => toggleSubcategory(subcategory.name)}
+      />
+      <span className="text-sm capitalize">{subcategory.name}</span>
+    </label>
+  );
 
   return (
     <div className="bg-white p-6 rounded-lg border border-border">
@@ -63,26 +94,19 @@ export default function FilterSidebar({ onFilterChange, currentCategory }: Filte
 
       <div className="mb-8">
         <h4 className="font-semibold mb-4">Subcategories</h4>
-        <div className="space-y-2 max-h-48 overflow-y-auto">
+        <div className="space-y-2 max-h-64 overflow-y-auto">
           {subcategories.length === 0 ? (
             <p className="text-sm text-gray-500">No subcategories available</p>
+          ) : currentCategory ? (
+            // Single category view - flat list
+            subcategories.map(renderSubcategoryCheckbox)
           ) : (
-            subcategories.map((subcategory) => (
-              <label key={subcategory._id} className="flex items-center">
-                <input
-                  type="checkbox"
-                  className="mr-2 w-4 h-4 text-accent border-gray-300 rounded focus:ring-accent"
-                  checked={selectedSubcategories.includes(subcategory.name)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setSelectedSubcategories([...selectedSubcategories, subcategory.name]);
-                    } else {
-                      setSelectedSubcategories(selectedSubcategories.filter((s) => s !== subcategory.name));
-                    }
-                  }}
-                />
-                <span className="text-sm capitalize">{subcategory.name}</span>
-              </label>
+            // All categories view - grouped by category
+            Object.entries(groupedSubcategories).map(([category, subs]) => (
+              <div key={category} className="mb-3">
+                <p className="text-xs font-semibold text-gray-500 uppercase mb-1 capitalize">{category.replace(/-/g, ' ')}</p>
+                {subs.map(renderSubcategoryCheckbox)}
+              </div>
             ))
           )}
         </div>

@@ -1,84 +1,126 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import CategoryNav from '@/components/CategoryNav';
 import FeaturedCollections from '@/components/FeaturedCollections';
-import ProductShowcase from '@/components/ProductShowcase';
+import BestSellers from '@/components/BestSellers';
 import NewArrivals from '@/components/NewArrivals';
+import CategoryProducts from '@/components/CategoryProducts';
 import BrandStory from '@/components/BrandStory';
 import Benefits from '@/components/Benefits';
 import ClientCarousel from '@/components/ClientCarousel';
 import { TestimonialsSection } from '@/components/TestimonialsSection';
 import Footer from '@/components/Footer';
-
-const testimonials = [
-  {
-    author: {
-      name: "Priya Sharma",
-      handle: "@priyahome",
-      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face"
-    },
-    text: "The quality of furniture from Uflix is exceptional. Our living room transformation exceeded all expectations. Highly recommend!"
-  },
-  {
-    author: {
-      name: "Rahul Mehta",
-      handle: "@rahulinteriors",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"
-    },
-    text: "Fast delivery and excellent customer service. The dining set we ordered arrived perfectly packaged and assembly was a breeze."
-  },
-  {
-    author: {
-      name: "Anjali Patel",
-      handle: "@anjalidesign",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face"
-    },
-    text: "Best furniture shopping experience online. The product photos match exactly what we received. Very satisfied with our bedroom set!"
-  },
-  {
-    author: {
-      name: "Vikram Singh",
-      handle: "@vikramhomes",
-      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face"
-    },
-    text: "Uflix has transformed our office space. The ergonomic chairs and desks have improved our team's productivity significantly."
-  },
-  {
-    author: {
-      name: "Neha Kapoor",
-      handle: "@nehalifestyle",
-      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face"
-    },
-    text: "The attention to detail in every piece is remarkable. Our guests always compliment the beautiful furniture from Uflix."
-  },
-  {
-    author: {
-      name: "Arjun Reddy",
-      handle: "@arjunspaces",
-      avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face"
-    },
-    text: "Great value for money! The discounts are genuine and the quality is top-notch. Will definitely shop here again."
-  }
-];
+import { getHomeSettings } from '@/services/homeSettingsService';
 
 export default function Home() {
+  const [settings, setSettings] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await getHomeSettings();
+        setSettings(res.data);
+      } catch (error) {
+        console.error('Error fetching home settings:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSettings();
+  }, []);
+
+  const sections = settings?.sections
+    ? [...settings.sections].sort((a: any, b: any) => a.order - b.order)
+    : [
+        { type: 'hero', enabled: true, order: 0 },
+        { type: 'clients', enabled: true, order: 1 },
+        { type: 'categories', enabled: true, order: 2 },
+        { type: 'collections', enabled: true, order: 3 },
+        { type: 'products', enabled: true, order: 4 },
+        { type: 'testimonials', enabled: true, order: 5 },
+        { type: 'brandStory', enabled: true, order: 6 },
+        { type: 'benefits', enabled: true, order: 7 },
+      ];
+
+  const renderSection = (section: any) => {
+    if (!section.enabled) return null;
+
+    switch (section.type) {
+      case 'hero':
+        return <Hero key="hero" slides={settings?.hero?.slides} />;
+      case 'clients':
+        return <ClientCarousel key="clients" title={settings?.clients?.title} logos={settings?.clients?.logos} />;
+      case 'categories':
+        return <CategoryNav key="categories" />;
+      case 'collections':
+        return <FeaturedCollections key="collections" title={settings?.collections?.title} subtitle={settings?.collections?.subtitle} items={settings?.collections?.items} />;
+      case 'products':
+        return (
+          <div key="products">
+            {(settings?.productSections?.bestSellers?.enabled !== false) && (
+              <BestSellers
+                title={settings?.productSections?.bestSellers?.title}
+                subtitle={settings?.productSections?.bestSellers?.subtitle}
+                limit={settings?.productSections?.bestSellers?.limit}
+              />
+            )}
+            {(settings?.productSections?.newArrivals?.enabled !== false) && (
+              <NewArrivals
+                title={settings?.productSections?.newArrivals?.title}
+                subtitle={settings?.productSections?.newArrivals?.subtitle}
+                limit={settings?.productSections?.newArrivals?.limit}
+              />
+            )}
+            {(settings?.productSections?.categoryProducts || [])
+              .filter((cp: any) => cp.enabled && cp.category)
+              .map((cp: any, i: number) => (
+                <CategoryProducts
+                  key={`cat-${cp.category}-${i}`}
+                  category={cp.category}
+                  title={cp.title || cp.categoryName}
+                  subtitle={cp.subtitle}
+                  limit={cp.limit}
+                />
+              ))}
+          </div>
+        );
+      case 'testimonials':
+        const testimonialItems = (settings?.testimonials?.items || []).map((t: any) => ({
+          author: { name: t.name, handle: t.handle, avatar: t.avatar },
+          text: t.text
+        }));
+        return testimonialItems.length > 0 ? (
+          <TestimonialsSection
+            key="testimonials"
+            title={settings?.testimonials?.title || 'Loved by Thousands of Happy Customers'}
+            description={settings?.testimonials?.description || ''}
+            testimonials={testimonialItems}
+          />
+        ) : null;
+      case 'brandStory':
+        return <BrandStory key="brandStory" data={settings?.brandStory} />;
+      case 'benefits':
+        return <Benefits key="benefits" data={settings?.benefits} />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main className="homepage-main">
-        <Hero />
-        <ClientCarousel />
-        <CategoryNav />
-        <FeaturedCollections />
-        <ProductShowcase />
-        <NewArrivals />
-        <TestimonialsSection
-          title="Loved by Thousands of Happy Customers"
-          description="See what our customers have to say about their Uflix furniture experience"
-          testimonials={testimonials}
-        />
-        <BrandStory />
-        <Benefits />
+        {loading ? (
+          <div className="flex justify-center items-center py-24">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
+          </div>
+        ) : (
+          sections.map((section: any) => renderSection(section))
+        )}
       </main>
       <Footer />
     </div>
