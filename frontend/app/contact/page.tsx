@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -8,7 +8,7 @@ import { getPageContent } from '@/services/pageService';
 import { renderSection } from '@/components/DynamicPage';
 import type { Section } from '@/components/DynamicPage';
 
-export default function ContactPage() {
+function ContactPageContent() {
   const searchParams = useSearchParams();
   const [sections, setSections] = useState<Section[]>([]);
   const [formData, setFormData] = useState({
@@ -183,5 +183,28 @@ export default function ContactPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function ContactPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-1/4 mb-8"></div>
+            <div className="h-64 bg-gray-200 rounded mb-8"></div>
+            <div className="grid md:grid-cols-2 gap-12">
+              <div className="h-96 bg-gray-200 rounded"></div>
+              <div className="h-96 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    }>
+      <ContactPageContent />
+    </Suspense>
   );
 }
