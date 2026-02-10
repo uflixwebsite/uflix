@@ -1,7 +1,9 @@
 {
-  "/admin/products/[id]/edit/page": "app/admin/products/[id]/edit/page.js",
-  "/category/[slug]/page": "app/category/[slug]/page.js",
-  "/admin/page": "app/admin/page.js",
+  "/shop/page": "app/shop/page.js",
   "/product/[id]/page": "app/product/[id]/page.js",
-  "/admin/products/page": "app/admin/products/page.js"
+  "/shop-fittings/page": "app/shop-fittings/page.js",
+  "/shop-fittings/products/page": "app/shop-fittings/products/page.js",
+  "/admin/page": "app/admin/page.js",
+  "/admin/products/page": "app/admin/products/page.js",
+  "/admin/products/[id]/edit/page": "app/admin/products/[id]/edit/page.js"
 }

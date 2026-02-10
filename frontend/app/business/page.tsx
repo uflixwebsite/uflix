@@ -22,13 +22,17 @@ export default function BusinessPage() {
 
   const fetchProducts = async () => {
     try {
-      const response = await getProducts({ 
-        category: 'for-businesses',
-        limit: 6 
-      });
-      setProducts(response.data || []);
+      // Fetch both for-businesses and shop-fitting products
+      const [businessProducts, shopFittingProducts] = await Promise.all([
+        getProducts({ category: 'for-businesses', limit: 6 }),
+        getProducts({ category: 'shop-fitting', limit: 6 })
+      ]);
+      
+      // Combine both product arrays
+      const allProducts = [...(businessProducts.data || []), ...(shopFittingProducts.data || [])];
+      setProducts(allProducts);
     } catch (error) {
-      console.error('Error fetching business products:', error);
+      console.error('Error fetching products:', error);
     } finally {
       setLoading(false);
     }

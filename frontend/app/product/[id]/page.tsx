@@ -70,12 +70,22 @@ export default function ProductDetailPage() {
     }
   }, [product]);
 
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const { addToCart } = useCart();
   const { addToWishlist, isInWishlist, removeFromWishlist } = useWishlist();
   
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<'description' | 'specifications' | 'reviews'>('description');
   const [isQuotationDialogOpen, setIsQuotationDialogOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -174,15 +184,52 @@ export default function ProductDetailPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
           {/* Left: All images with zoom feature */}
-          <div className="space-y-4">
-            {product.images.map((image: any, index: number) => (
-              <ImageZoom
-                key={index}
-                src={image.url}
-                alt={`${product.name} ${index + 1}`}
-              />
-            ))}
-          </div>
+          {isMobile ? (
+            /* Mobile: Carousel with all images */
+            <div className="space-y-4">
+              {/* All images in carousel */}
+              <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory">
+                {product.images.map((image: any, index: number) => (
+                  <div 
+                    key={index} 
+                    className="flex-shrink-0 w-80 aspect-square cursor-pointer relative"
+                    onClick={() => {
+                      setSelectedImageIndex(index);
+                      setIsImageModalOpen(true);
+                    }}
+                  >
+                    <Image
+                      src={image.url}
+                      alt={`${product.name} ${index + 1}`}
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
+                ))}
+              </div>
+              
+              {/* Thumbnail indicators */}
+              <div className="flex justify-center gap-2">
+                {product.images.map((_: any, index: number) => (
+                  <div
+                    key={index}
+                    className="w-2 h-2 rounded-full bg-gray-300"
+                  />
+                ))}
+              </div>
+            </div>
+          ) : (
+            /* Desktop: All images */
+            <div className="space-y-4">
+              {product.images.map((image: any, index: number) => (
+                <ImageZoom
+                  key={index}
+                  src={image.url}
+                  alt={`${product.name} ${index + 1}`}
+                />
+              ))}
+            </div>
+          )}
 
           {/* Right: Product details (sticky) */}
           <div className="lg:sticky lg:top-8 lg:self-start">
@@ -232,7 +279,7 @@ export default function ProductDetailPage() {
                     <svg className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    <span className="text-sm">{spec.key}: {spec.value}</span>
+                    <span className="text-sm">{spec.key === spec.value ? spec.value : `${spec.key}: ${spec.value}`}</span>
                   </li>
                 ))}
               </ul>
@@ -339,9 +386,15 @@ export default function ProductDetailPage() {
           {activeTab === 'specifications' && (
             <div className="grid md:grid-cols-2 gap-4">
               {product.specifications?.map((spec: any, index: number) => (
-                <div key={index} className="flex justify-between p-4 bg-neutral-light rounded-lg">
-                  <span className="font-medium">{spec.key}</span>
-                  <span className="text-neutral-dark">{spec.value}</span>
+                <div key={index} className={spec.key === spec.value ? "p-4 bg-neutral-light rounded-lg text-center" : "flex justify-between p-4 bg-neutral-light rounded-lg"}>
+                  {spec.key === spec.value ? (
+                    <span className="font-medium">{spec.value}</span>
+                  ) : (
+                    <>
+                      <span className="font-medium">{spec.key}</span>
+                      <span className="text-neutral-dark">{spec.value}</span>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
@@ -382,6 +435,42 @@ export default function ProductDetailPage() {
         onClose={() => setIsQuotationDialogOpen(false)}
         preSelectedProduct={product ? { id: product._id, name: product.name } : null}
       />
+
+      {/* Mobile Image Modal */}
+      {isMobile && isImageModalOpen && (
+        <div 
+          className="fixed inset-0 bg-black/10 z-50 flex items-center justify-center"
+          onClick={() => setIsImageModalOpen(false)}
+        >
+          {/* Close button */}
+          <button
+            onClick={() => setIsImageModalOpen(false)}
+            className="absolute top-4 right-4 text-gray-700 p-2 bg-white rounded-full shadow-lg z-10"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          
+          {/* Large scrollable carousel */}
+          <div 
+            className="w-full overflow-x-auto snap-x snap-mandatory flex gap-4 px-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {product.images.map((image: any, index: number) => (
+              <div key={index} className="flex-shrink-0 w-[90vw] aspect-square relative bg-white rounded-2xl shadow-2xl overflow-hidden snap-center">
+                <Image
+                  src={image.url}
+                  alt={`${product.name} ${index + 1}`}
+                  fill
+                  className="object-contain"
+                  priority
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

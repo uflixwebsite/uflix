@@ -73,7 +73,7 @@ export default function ProductCard({ _id, name, price, discountPrice, images, c
             src={image}
             alt={name}
             fill
-            className="object-cover group-hover:scale-105 transition-all duration-500"
+            className="object-contain group-hover:scale-105 transition-all duration-500"
             loading="lazy"
           />
           

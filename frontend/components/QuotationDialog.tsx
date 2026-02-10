@@ -241,7 +241,7 @@ export default function QuotationDialog({ isOpen, onClose, preSelectedProduct }:
                               <img
                                 src={product.images[0].url}
                                 alt={product.name}
-                                className="w-12 h-12 object-cover rounded cursor-pointer"
+                                className="w-12 h-12 object-contain rounded cursor-pointer"
                                 onClick={() => window.open(`/product/${product._id}`, '_blank')}
                               />
                             )}

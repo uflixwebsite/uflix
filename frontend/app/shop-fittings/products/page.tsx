@@ -17,7 +17,7 @@ export default function ShopFittingsProductsPage() {
   const fetchProducts = async () => {
     try {
       const response = await getProducts({ 
-        category: 'shop-fittings',
+        category: 'shop-fitting',
         limit: 100 
       });
       setProducts(response.data || []);

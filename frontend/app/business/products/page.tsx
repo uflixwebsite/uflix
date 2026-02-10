@@ -27,18 +27,31 @@ function BusinessProductsContent() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const params: any = {
-        category: 'for-businesses',
-        page,
-        limit: 15,
-      };
-      if (subcategory) {
-        params.subcategory = subcategory;
-      }
-      const response = await getProducts(params);
-      setProducts(response.data || []);
-      setTotalPages(response.pagination?.pages || 1);
-      setTotalProducts(response.pagination?.total || 0);
+      
+      // Fetch both categories
+      const [businessResponse, shopFittingResponse] = await Promise.all([
+        getProducts({ 
+          category: 'for-businesses',
+          page,
+          limit: subcategory ? 15 : 8, // Limit each category to get variety
+          ...(subcategory && { subcategory })
+        }),
+        getProducts({ 
+          category: 'shop-fitting',
+          page,
+          limit: subcategory ? 15 : 7, // Limit each category to get variety
+          ...(subcategory && { subcategory })
+        })
+      ]);
+      
+      // Combine products from both categories
+      const allProducts = [...(businessResponse.data || []), ...(shopFittingResponse.data || [])];
+      setProducts(allProducts);
+      
+      // Calculate pagination based on combined results
+      const totalCombined = (businessResponse.pagination?.total || 0) + (shopFittingResponse.pagination?.total || 0);
+      setTotalProducts(totalCombined);
+      setTotalPages(Math.ceil(totalCombined / 15));
     } catch (error) {
       console.error('Error fetching business products:', error);
     } finally {

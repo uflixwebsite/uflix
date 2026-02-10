@@ -282,6 +282,14 @@ export default function Header() {
                 </span>
               )}
             </Link>
+
+            <Link 
+              href="/contact?subject=become-dealer" 
+              className={`px-4 py-2 bg-accent text-white rounded-md hover:bg-secondary transition-colors font-semibold text-sm`}
+              aria-label="Become a Dealer"
+            >
+              Become a Dealer
+            </Link>
           </div>
 
           <button

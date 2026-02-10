@@ -35,6 +35,16 @@ const categoryData: Record<string, { name: string; description: string; banner: 
     description: 'Organize your space with our versatile shelving units, cabinets, and storage solutions',
     banner: 'https://images.unsplash.com/photo-1594620302200-9a762244a156?w=1920&q=80',
   },
+  'shop-fitting': {
+    name: 'Shop Fitting',
+    description: 'Professional shop fitting solutions for retail stores, showrooms, and commercial spaces',
+    banner: 'https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=1920&q=80',
+  },
+  'for-businesses': {
+    name: 'For Business',
+    description: 'Premium furniture and solutions tailored for offices, hotels, and business environments',
+    banner: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&q=80',
+  },
 };
 
 export default function CategoryPage() {

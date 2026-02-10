@@ -23,7 +23,7 @@ export default function ShopFittingsPage() {
   const fetchProducts = async () => {
     try {
       const response = await getProducts({ 
-        category: 'shop-fittings',
+        category: 'shop-fitting',
         limit: 6 
       });
       setProducts(response.data || []);

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { getPageContent } from '@/services/pageService';
@@ -8,6 +9,7 @@ import { renderSection } from '@/components/DynamicPage';
 import type { Section } from '@/components/DynamicPage';
 
 export default function ContactPage() {
+  const searchParams = useSearchParams();
   const [sections, setSections] = useState<Section[]>([]);
   const [formData, setFormData] = useState({
     name: '',
@@ -19,7 +21,13 @@ export default function ContactPage() {
 
   useEffect(() => {
     fetchPageContent();
-  }, []);
+    
+    // Pre-select subject from URL parameter
+    const subject = searchParams.get('subject');
+    if (subject) {
+      setFormData(prev => ({ ...prev, subject }));
+    }
+  }, [searchParams]);
 
   const fetchPageContent = async () => {
     try {
@@ -154,6 +162,7 @@ export default function ContactPage() {
                       <option value="customize-existing">Customize Existing Product</option>
                       <option value="shop-fittings">Shop Fittings</option>
                       <option value="business-order">For Business - Custom Order</option>
+                      <option value="become-dealer">Become a Dealer/Assembler</option>
                       <option value="general">General Inquiry</option>
                       <option value="other">Other</option>
                     </select>

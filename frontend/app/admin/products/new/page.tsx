@@ -280,7 +280,7 @@ export default function AddProductPage() {
           unit: formData.dimensions.unit
         },
         colors: formData.colors ? formData.colors.split(',').map(c => c.trim()).filter(c => c) : [],
-        specifications: formData.features ? formData.features.filter((f: any) => f.key && f.value) : [],
+        specifications: formData.features ? formData.features.filter((f: string) => f.trim() !== '').map(f => ({ key: f, value: f })) : [],
         images: images,
         video: videoUrl,
         availableOnQuotation: formData.availableOnQuotation,

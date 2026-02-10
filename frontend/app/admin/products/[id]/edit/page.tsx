@@ -148,7 +148,7 @@ export default function EditProductPage() {
         },
         weight: product.weight?.value?.toString() || '',
         colors: product.colors?.join(', ') || '',
-        features: product.specifications && product.specifications.length > 0 ? product.specifications : [''],
+        features: product.specifications && product.specifications.length > 0 ? product.specifications.map((spec: any) => spec.key || spec.value || '') : [''],
         warranty: product.warranty || '',
         availableOnQuotation: product.availableOnQuotation || false,
         isActive: product.isActive !== undefined ? product.isActive : true,
@@ -372,7 +372,7 @@ export default function EditProductPage() {
           unit: formData.dimensions.unit
         },
         color: formData.colors ? formData.colors.split(',').map(c => c.trim()) : [],
-        specifications: formData.features ? formData.features.filter((f: any) => f.key && f.value) : [],
+        specifications: formData.features ? formData.features.filter((f: string) => f.trim() !== '').map(f => ({ key: f, value: f })) : [],
         images: allImages,
         video: finalVideoUrl,
         availableOnQuotation: formData.availableOnQuotation,
