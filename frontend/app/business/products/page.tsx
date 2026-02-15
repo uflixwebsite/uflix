@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import BusinessHeader from '@/components/BusinessHeader';
+import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
 import { getProducts } from '@/services/productService';
@@ -61,7 +61,7 @@ function BusinessProductsContent() {
 
   return (
     <div className="min-h-screen bg-background">
-      <BusinessHeader />
+      <Header />
       
       <main className="homepage-main max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-8">
@@ -157,7 +157,7 @@ export default function ForBusinessesProductsPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-background">
-        <BusinessHeader />
+        <Header />
         <main className="homepage-main max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex justify-center items-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>

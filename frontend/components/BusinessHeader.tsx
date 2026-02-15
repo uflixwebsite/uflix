@@ -184,6 +184,12 @@ export default function BusinessHeader() {
             >
               For Businesses
             </Link>
+            <Link
+              href="/shop-fittings"
+              className="px-6 py-2 rounded-lg font-semibold transition-all text-sm bg-white/90 text-foreground hover:bg-gray-100 shadow-md border border-gray-200"
+            >
+              Shop Fittings
+            </Link>
           </div>
 
           {/* Logo - Center */}
@@ -491,6 +497,12 @@ export default function BusinessHeader() {
                   className="flex-1 text-center px-4 py-2 rounded-lg font-semibold text-sm bg-accent text-white"
                 >
                   For Businesses
+                </Link>
+                <Link
+                  href="/shop-fittings"
+                  className="flex-1 text-center px-4 py-2 rounded-lg font-semibold text-sm bg-gray-100 text-foreground hover:bg-gray-200 transition-colors"
+                >
+                  Shop Fittings
                 </Link>
               </div>
 

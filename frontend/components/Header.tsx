@@ -8,6 +8,7 @@ import { useWishlist } from '@/contexts/WishlistContext';
 import { useUser, SignOutButton } from '@clerk/nextjs';
 import { useAuthState } from '@/hooks/useAuthState';
 import { getProducts } from '@/services/productService';
+import { getNavbarConfig } from '@/services/navbarService';
 
 export default function Header() {
   const pathname = usePathname();
@@ -21,6 +22,13 @@ export default function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [navLinks, setNavLinks] = useState<Array<{ label: string; url: string }>>([
+    { label: 'All Products', url: '/shop' },
+    { label: 'Categories', url: '/categories' },
+    { label: 'Projects', url: '/projects' },
+    { label: 'For Business', url: '/business' },
+    { label: 'Contact', url: '/contact' },
+  ]);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const companyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const userMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -68,6 +76,28 @@ export default function Header() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    const fetchNavbar = async () => {
+      try {
+        const res = await getNavbarConfig(pathname);
+        const links = res?.data?.links;
+        if (Array.isArray(links) && links.length) {
+          setNavLinks(
+            links
+              .filter((l: any) => l && l.enabled)
+              .slice()
+              .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+              .map((l: any) => ({ label: l.label, url: l.url }))
+          );
+        }
+      } catch {
+        // keep defaults
+      }
+    };
+
+    fetchNavbar();
+  }, [pathname]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -177,6 +207,16 @@ export default function Header() {
               }`}
             >
               For Businesses
+            </Link>
+            <Link
+              href="/shop-fittings"
+              className={`px-6 py-2 rounded-lg font-semibold transition-all text-sm ${
+                pathname === '/shop-fittings'
+                  ? 'bg-accent text-white shadow-lg'
+                  : 'bg-white/90 text-foreground hover:bg-white shadow-md'
+              }`}
+            >
+              Shop Fittings
             </Link>
           </div>
 
@@ -399,47 +439,29 @@ export default function Header() {
 
 
         <nav className={`hidden lg:flex items-center justify-center space-x-8 py-4 border-t ${isHomePage ? 'border-white/20' : 'border-gray-200'}`}>
-          <Link href="/shop" className={`text-sm font-medium ${textColor} ${hoverColor} transition-colors`}>
-            All Products
-          </Link>
-          <Link href="/categories" className={`text-sm font-medium ${textColor} ${hoverColor} transition-colors`}>
-            Categories
-          </Link>
-          <Link href="/shop-fittings" className={`text-sm font-medium ${textColor} ${hoverColor} transition-colors`}>
-            Shop Fittings
-          </Link>
-          <Link href="/projects" className={`text-sm font-medium ${textColor} ${hoverColor} transition-colors`}>
-            Projects
-          </Link>
-          <Link href="/business" className={`text-sm font-medium ${textColor} ${hoverColor} transition-colors`}>
-            For Business
-          </Link>
-          <Link href="/contact" className={`text-sm font-medium ${textColor} ${hoverColor} transition-colors`}>
-            Contact
-          </Link>
+          {navLinks.map((link) => (
+            <Link
+              key={`${link.label}-${link.url}`}
+              href={link.url}
+              className={`text-sm font-medium ${textColor} ${hoverColor} transition-colors`}
+            >
+              {link.label}
+            </Link>
+          ))}
         </nav>
 
         {isMenuOpen && (
           <div className="lg:hidden py-4 px-4 border-t border-white/20 bg-white/10 backdrop-blur-md">
             <nav className="flex flex-col space-y-4">
-              <Link href="/shop" className="text-sm font-medium text-white hover:text-accent transition-colors">
-                All Products
-              </Link>
-              <Link href="/categories" className="text-sm font-medium text-white hover:text-accent transition-colors">
-                Categories
-              </Link>
-              <Link href="/shop-fittings" className="text-sm font-medium text-white hover:text-accent transition-colors">
-                Shop Fittings
-              </Link>
-              <Link href="/projects" className="text-sm font-medium text-white hover:text-accent transition-colors">
-                Projects
-              </Link>
-              <Link href="/business" className="text-sm font-medium text-white hover:text-accent transition-colors">
-                For Business
-              </Link>
-              <Link href="/contact" className="text-sm font-medium text-white hover:text-accent transition-colors">
-                Contact
-              </Link>
+              {navLinks.map((link) => (
+                <Link
+                  key={`m-${link.label}-${link.url}`}
+                  href={link.url}
+                  className="text-sm font-medium text-white hover:text-accent transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ))}
 
               {isSignedIn && (
                 <div className="border-t border-white/20 pt-4 mt-4">

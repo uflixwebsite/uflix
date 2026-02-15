@@ -85,6 +85,8 @@ app.use('/api/quotations', require('./routes/quotations'));
 app.use('/api/pages', require('./routes/pages'));
 app.use('/api/footer', require('./routes/footer'));
 app.use('/api/home', require('./routes/home'));
+app.use('/api/pincode', require('./routes/pincode'));
+app.use('/api/navbar', require('./routes/navbar'));
 
 /* ======================================================
    ERROR HANDLING

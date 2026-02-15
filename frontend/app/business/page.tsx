@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import BusinessHeader from '@/components/BusinessHeader';
+import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
 import Link from 'next/link';
@@ -53,7 +53,7 @@ export default function BusinessPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <BusinessHeader />
+      <Header />
       <main className="homepage-main">
         {/* Render dynamic sections before products */}
         {sections.filter(s => s.sectionId !== 'products' && s.sectionId !== 'bulk-cta').map(section => (

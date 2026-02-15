@@ -12,6 +12,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { getProduct, getProducts } from '@/services/productService';
 import QuotationDialog from '@/components/QuotationDialog';
+import PincodeChecker from '@/components/PincodeChecker';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -283,6 +284,11 @@ export default function ProductDetailPage() {
                   </li>
                 ))}
               </ul>
+            </div>
+
+            {/* Pincode Checker */}
+            <div className="mb-6">
+              <PincodeChecker />
             </div>
 
             {!product.availableOnQuotation && (

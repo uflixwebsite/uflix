@@ -64,6 +64,5 @@ const pageContentSchema = new mongoose.Schema({
   timestamps: true
 });
 
-pageContentSchema.index({ slug: 1 });
 
 module.exports = mongoose.model('PageContent', pageContentSchema);

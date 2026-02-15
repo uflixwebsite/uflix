@@ -1,0 +1,452 @@
+{
+  "201": {
+    "state": "Uttar Pradesh",
+    "city": "Noida",
+    "transitDays": "1–3 Days",
+    "assemblyDays": "1-2 Days"
+  },
+  "11": {
+    "state": "Delhi",
+    "city": "Delhi",
+    "transitDays": "1–3 Days",
+    "assemblyDays": "1-2 Days"
+  },
+  "12": {
+    "state": "Haryana",
+    "city": "Gurugram",
+    "transitDays": "1–3 Days",
+    "assemblyDays": "1-2 Days"
+  },
+  "20": {
+    "state": "Uttar Pradesh",
+    "city": "Other Cities",
+    "transitDays": "3–5 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "21": {
+    "state": "Uttar Pradesh",
+    "city": "Other Cities",
+    "transitDays": "3–5 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "22": {
+    "state": "Uttar Pradesh",
+    "city": "Other Cities",
+    "transitDays": "3–5 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "23": {
+    "state": "Uttar Pradesh",
+    "city": "Other Cities",
+    "transitDays": "3–5 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "24": {
+    "state": "Uttar Pradesh",
+    "city": "Other Cities",
+    "transitDays": "3–5 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "25": {
+    "state": "Uttar Pradesh",
+    "city": "Other Cities",
+    "transitDays": "3–5 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "26": {
+    "state": "Uttar Pradesh",
+    "city": "Other Cities",
+    "transitDays": "3–5 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "27": {
+    "state": "Uttar Pradesh",
+    "city": "Other Cities",
+    "transitDays": "3–5 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "28": {
+    "state": "Uttar Pradesh",
+    "city": "Other Cities",
+    "transitDays": "3–5 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "13": {
+    "state": "Haryana",
+    "city": "Other Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "14": {
+    "state": "Punjab",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "15": {
+    "state": "Punjab",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "16": {
+    "state": "Punjab",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "17": {
+    "state": "Himachal Pradesh",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "18": {
+    "state": "Jammu & Kashmir",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "19": {
+    "state": "Jammu & Kashmir",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "30": {
+    "state": "Rajasthan",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "31": {
+    "state": "Rajasthan",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "32": {
+    "state": "Rajasthan",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "33": {
+    "state": "Rajasthan",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "34": {
+    "state": "Rajasthan",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "242": {
+    "state": "Uttarakhand",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "243": {
+    "state": "Uttarakhand",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "244": {
+    "state": "Uttarakhand",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "245": {
+    "state": "Uttarakhand",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "246": {
+    "state": "Uttarakhand",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "36": {
+    "state": "Gujarat",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "37": {
+    "state": "Gujarat",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "38": {
+    "state": "Gujarat",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "39": {
+    "state": "Gujarat / Daman & Diu / Dadra & Nagar Haveli",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "40": {
+    "state": "Maharashtra",
+    "city": "Various Cities",
+    "transitDays": "2–3 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "41": {
+    "state": "Maharashtra",
+    "city": "Various Cities",
+    "transitDays": "2–3 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "42": {
+    "state": "Maharashtra",
+    "city": "Various Cities",
+    "transitDays": "2–3 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "43": {
+    "state": "Maharashtra",
+    "city": "Various Cities",
+    "transitDays": "2–3 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "44": {
+    "state": "Maharashtra / Goa",
+    "city": "Various Cities",
+    "transitDays": "2–3 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "45": {
+    "state": "Madhya Pradesh",
+    "city": "Various Cities",
+    "transitDays": "2–3 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "46": {
+    "state": "Madhya Pradesh",
+    "city": "Various Cities",
+    "transitDays": "2–3 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "47": {
+    "state": "Madhya Pradesh",
+    "city": "Various Cities",
+    "transitDays": "2–3 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "48": {
+    "state": "Madhya Pradesh",
+    "city": "Various Cities",
+    "transitDays": "2–3 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "49": {
+    "state": "Chhattisgarh",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "51": {
+    "state": "Andhra Pradesh",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "52": {
+    "state": "Andhra Pradesh",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "53": {
+    "state": "Andhra Pradesh",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "56": {
+    "state": "Karnataka",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "57": {
+    "state": "Karnataka",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "58": {
+    "state": "Karnataka",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "59": {
+    "state": "Karnataka",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "60": {
+    "state": "Tamil Nadu / Puducherry",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "61": {
+    "state": "Tamil Nadu / Puducherry",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "62": {
+    "state": "Tamil Nadu / Puducherry",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "63": {
+    "state": "Tamil Nadu / Puducherry",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "64": {
+    "state": "Tamil Nadu / Puducherry",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "67": {
+    "state": "Kerala",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "68": {
+    "state": "Kerala",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "69": {
+    "state": "Kerala",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "70": {
+    "state": "West Bengal",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "71": {
+    "state": "West Bengal",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "72": {
+    "state": "West Bengal",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "73": {
+    "state": "West Bengal",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "74": {
+    "state": "West Bengal",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "75": {
+    "state": "Odisha",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "76": {
+    "state": "Odisha",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "77": {
+    "state": "Odisha",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "80": {
+    "state": "Bihar / Jharkhand",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "81": {
+    "state": "Bihar / Jharkhand",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "82": {
+    "state": "Bihar / Jharkhand",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "83": {
+    "state": "Bihar / Jharkhand",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "84": {
+    "state": "Bihar / Jharkhand",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "85": {
+    "state": "Bihar / Jharkhand",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "78": {
+    "state": "North East States",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "79": {
+    "state": "North East States",
+    "city": "Various Cities",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  },
+  "744": {
+    "state": "Andaman & Nicobar Islands",
+    "city": "Port Blair",
+    "transitDays": "4–6 Days",
+    "assemblyDays": "2-3 Days"
+  }
+}
