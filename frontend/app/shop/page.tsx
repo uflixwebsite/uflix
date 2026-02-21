@@ -83,13 +83,20 @@ function ShopContent() {
       );
     }
 
-    // Subcategories filter
+    // Subcategories filter (support new single `p.subcategory` or legacy `p.subcategories`)
     if (filters.subcategories && filters.subcategories.length > 0) {
-      filtered = filtered.filter(p => 
-        p.subcategories?.some((sub: string) => 
-          filters.subcategories.includes(sub)
-        )
-      );
+      const sel = filters.subcategories;
+      filtered = filtered.filter(p => {
+        if (p.subcategory) {
+          const name = (p.subcategory.name || '').toString().toLowerCase();
+          const id = p.subcategory._id ? String(p.subcategory._id) : null;
+          return sel.some((s: string) => s === id || s.toLowerCase() === name || s === p.subcategory.slug);
+        }
+        if (p.subcategories) {
+          return p.subcategories.some((sub: any) => sel.includes(sub.name || sub) || sel.includes(sub._id || sub));
+        }
+        return false;
+      });
     }
 
     // Materials filter

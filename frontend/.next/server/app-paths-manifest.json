@@ -1,8 +1,7 @@
 {
-  "/page": "app/page.js",
-  "/shop/page": "app/shop/page.js",
-  "/admin/page": "app/admin/page.js",
-  "/projects/page": "app/projects/page.js",
-  "/admin/navbar/page": "app/admin/navbar/page.js",
-  "/refund/page": "app/refund/page.js"
+  "/category/[slug]/page": "app/category/[slug]/page.js",
+  "/admin/products/[id]/edit/page": "app/admin/products/[id]/edit/page.js",
+  "/admin/products/page": "app/admin/products/page.js",
+  "/product/[id]/page": "app/product/[id]/page.js",
+  "/category/[...slugs]/page": "app/category/[...slugs]/page.js"
 }

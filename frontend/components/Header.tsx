@@ -9,12 +9,20 @@ import { useUser, SignOutButton } from '@clerk/nextjs';
 import { useAuthState } from '@/hooks/useAuthState';
 import { getProducts } from '@/services/productService';
 import { getNavbarConfig } from '@/services/navbarService';
+import { getMegaMenu } from '@/services/megaMenuV2Service';
 
 export default function Header() {
   const pathname = usePathname();
   const isHomePage = pathname === '/';
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [megaMenuOpen, setMegaMenuOpen] = useState(false);
+  const [hoveredLink, setHoveredLink] = useState<string | null>(null);
+  const [megaMenuData, setMegaMenuData] = useState<any>(null);
+  const [loadingMegaMenu, setLoadingMegaMenu] = useState(false);
+  const [activeMegaCategory, setActiveMegaCategory] = useState<string | null>(null);
+  const megaMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const megaMenuContainerRef = useRef<HTMLElement | null>(null);
   const [isCompanyOpen, setIsCompanyOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -22,13 +30,7 @@ export default function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [navLinks, setNavLinks] = useState<Array<{ label: string; url: string }>>([
-    { label: 'All Products', url: '/shop' },
-    { label: 'Categories', url: '/categories' },
-    { label: 'Projects', url: '/projects' },
-    { label: 'For Business', url: '/business' },
-    { label: 'Contact', url: '/contact' },
-  ]);
+  const [navLinks, setNavLinks] = useState<Array<{ label: string; url: string }>>([]);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const companyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const userMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -37,17 +39,41 @@ export default function Header() {
   const { isSignedIn, user } = useUser();
   const { status, userRole, isAdmin } = useAuthState();
 
-  const handleCompanyMouseEnter = () => {
-    if (companyTimeoutRef.current) {
-      clearTimeout(companyTimeoutRef.current);
+  // Fetch mega menu data for hovered link
+  const fetchMegaMenuForLink = async (linkUrl: string) => {
+    try {
+      setLoadingMegaMenu(true);
+      setMegaMenuData(null);
+      setActiveMegaCategory(null);
+      const currentPath = pathname || '/';
+      // Backend handles wildcard fallback automatically
+      const response = await getMegaMenu(currentPath, linkUrl);
+      const data = response?.data ?? null;
+      setMegaMenuData(data);
+      // Auto-select first enabled category
+      if (data?.categories?.length) {
+        const firstCat = data.categories
+          .filter((c: any) => c.enabled)
+          .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))[0];
+        if (firstCat) setActiveMegaCategory(firstCat.id);
+      }
+    } catch (error) {
+      console.error('Error fetching mega menu:', error);
+      setMegaMenuData(null);
+    } finally {
+      setLoadingMegaMenu(false);
     }
-    setIsCompanyOpen(true);
   };
 
-  const handleCompanyMouseLeave = () => {
-    companyTimeoutRef.current = setTimeout(() => {
-      setIsCompanyOpen(false);
-    }, 2500); // 2.5 seconds delay
+  const handleNavLinkMouseEnter = (linkUrl: string) => {
+    setHoveredLink(linkUrl);
+    fetchMegaMenuForLink(linkUrl);
+  };
+
+  const closeMegaMenu = () => {
+    setHoveredLink(null);
+    setMegaMenuData(null);
+    setActiveMegaCategory(null);
   };
 
   const handleUserMenuMouseEnter = () => {
@@ -74,29 +100,51 @@ export default function Header() {
       if (searchTimeoutRef.current) {
         clearTimeout(searchTimeoutRef.current);
       }
+      if (megaMenuTimeoutRef.current) {
+        clearTimeout(megaMenuTimeoutRef.current);
+      }
     };
   }, []);
 
+  // Close mega menu when clicking outside the nav/mega menu area
   useEffect(() => {
-    const fetchNavbar = async () => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        megaMenuContainerRef.current &&
+        !megaMenuContainerRef.current.contains(e.target as Node)
+      ) {
+        setHoveredLink(null);
+        setMegaMenuData(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Fetch navbar links for current page
+  useEffect(() => {
+    const fetchNavbarLinks = async () => {
       try {
-        const res = await getNavbarConfig(pathname);
-        const links = res?.data?.links;
-        if (Array.isArray(links) && links.length) {
-          setNavLinks(
-            links
-              .filter((l: any) => l && l.enabled)
-              .slice()
-              .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
-              .map((l: any) => ({ label: l.label, url: l.url }))
-          );
+        const pagePath = pathname || '*';
+        const data = await getNavbarConfig(pagePath);
+        const links = data?.data?.configs?.[0]?.links || data?.data?.links;
+        if (data?.success && links) {
+          setNavLinks(links);
         }
-      } catch {
-        // keep defaults
+      } catch (error) {
+        console.error('Error fetching navbar links:', error);
+        // Fallback links
+        setNavLinks([
+          { label: 'All Products', url: '/shop' },
+          { label: 'Categories', url: '/categories' },
+          { label: 'Projects', url: '/projects' },
+          { label: 'For Business', url: '/business' },
+          { label: 'Contact', url: '/contact' }
+        ]);
       }
     };
 
-    fetchNavbar();
+    fetchNavbarLinks();
   }, [pathname]);
 
   useEffect(() => {
@@ -183,7 +231,80 @@ export default function Header() {
   const hoverColor = 'hover:text-accent';
 
   return (
-    <header className="bg-transparent absolute top-0 left-0 right-0 z-40">
+    <header ref={megaMenuContainerRef} className="bg-transparent absolute top-0 left-0 right-0 z-40">
+
+      {/* Full-width Mega Menu — rendered outside the constrained div */}
+      {hoveredLink && (
+        <div
+          className="absolute left-0 right-0 w-full z-[200] shadow-2xl"
+          style={{ top: '100%' }}
+        >
+          {loadingMegaMenu ? (
+            <div className="bg-white border-t border-gray-200 flex items-center justify-center" style={{ height: '420px' }}>
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-gray-900"></div>
+            </div>
+          ) : megaMenuData && megaMenuData.categories && megaMenuData.categories.length > 0 ? (
+            <div className="bg-white border-t-2 border-gray-100 flex" style={{ minHeight: '480px' }}>
+              {/* Left: Category List */}
+              <div className="flex-shrink-0" style={{ width: '300px', backgroundColor: '#f5f0eb' }}>
+                {megaMenuData.categories
+                  .filter((cat: any) => cat.enabled)
+                  .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+                  .map((category: any) => (
+                    <button
+                      key={category.id}
+                      onMouseEnter={() => setActiveMegaCategory(category.id)}
+                      className={`w-full text-left px-10 py-5 text-[15px] border-b border-gray-200/60 transition-all ${
+                        activeMegaCategory === category.id
+                          ? 'text-[#c84b31] font-semibold bg-white border-l-4 border-l-[#c84b31]'
+                          : 'text-gray-700 font-normal hover:text-[#c84b31]'
+                      }`}
+                    >
+                      {category.name}
+                    </button>
+                  ))}
+              </div>
+
+              {/* Right: Items Grid */}
+              <div className="flex-1 px-12 py-8 bg-white overflow-y-auto">
+                <div className="grid grid-cols-3 gap-x-10 gap-y-8">
+                  {megaMenuData.items
+                    .filter((item: any) => item.enabled && item.categoryId === activeMegaCategory)
+                    .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+                    .map((item: any) => (
+                      <Link
+                        key={item.id}
+                        href={item.url}
+                        onClick={closeMegaMenu}
+                        className="group block"
+                      >
+                        {item.image ? (
+                          <div className="overflow-hidden rounded-sm bg-gray-100" style={{ height: '220px' }}>
+                            <img
+                              src={item.image}
+                              alt={item.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          </div>
+                        ) : (
+                          <div className="rounded-sm bg-gray-100 flex items-center justify-center" style={{ height: '220px' }}>
+                            <span className="text-gray-400 text-sm">No image</span>
+                          </div>
+                        )}
+                        <div className="flex items-center justify-between border-b border-gray-200 py-3 mt-1">
+                          <span className="text-[15px] text-gray-800 group-hover:text-[#c84b31] transition-colors">
+                            {item.title}
+                          </span>
+                          <span className="text-gray-500 group-hover:text-[#c84b31] transition-colors ml-2 text-lg">&rarr;</span>
+                        </div>
+                      </Link>
+                    ))}
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </div>
+      )}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Left: For Homes/For Businesses Tabs - Hidden on mobile */}
@@ -257,7 +378,7 @@ export default function Header() {
 
                 {isUserMenuOpen && (
                   <div 
-                    className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-border py-2"
+                    className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-border py-2 z-[200]"
                     onMouseEnter={handleUserMenuMouseEnter}
                     onMouseLeave={handleUserMenuMouseLeave}
                     data-user-menu-dropdown
@@ -440,13 +561,18 @@ export default function Header() {
 
         <nav className={`hidden lg:flex items-center justify-center space-x-8 py-4 border-t ${isHomePage ? 'border-white/20' : 'border-gray-200'}`}>
           {navLinks.map((link) => (
-            <Link
+            <div 
               key={`${link.label}-${link.url}`}
-              href={link.url}
-              className={`text-sm font-medium ${textColor} ${hoverColor} transition-colors`}
+              className="relative group"
+              onMouseEnter={() => handleNavLinkMouseEnter(link.url)}
             >
-              {link.label}
-            </Link>
+              <Link
+                href={link.url}
+                className={`text-sm font-medium ${textColor} ${hoverColor} transition-colors px-2 py-1`}
+              >
+                {link.label}
+              </Link>
+            </div>
           ))}
         </nav>
 
@@ -458,35 +584,11 @@ export default function Header() {
                   key={`m-${link.label}-${link.url}`}
                   href={link.url}
                   className="text-sm font-medium text-white hover:text-accent transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
                 >
                   {link.label}
                 </Link>
               ))}
-
-              {isSignedIn && (
-                <div className="border-t border-white/20 pt-4 mt-4">
-                  <p className="text-xs font-semibold text-white/70 mb-3 uppercase tracking-wide">Account</p>
-                  <div className="flex flex-col space-y-3 pl-2">
-                    <Link 
-                      href={userRole === 'admin' ? "/admin" : "/profile"} 
-                      className="text-sm font-medium text-white hover:text-accent transition-colors"
-                    >
-                      {userRole === 'admin' ? 'Admin Dashboard' : 'My Profile'}
-                    </Link>
-                    <Link 
-                      href="/orders" 
-                      className="text-sm font-medium text-white hover:text-accent transition-colors"
-                    >
-                      My Orders
-                    </Link>
-                    <SignOutButton>
-                      <button className="text-sm font-medium text-red-400 hover:text-red-300 transition-colors text-left">
-                        Logout
-                      </button>
-                    </SignOutButton>
-                  </div>
-                </div>
-              )}
             </nav>
           </div>
         )}

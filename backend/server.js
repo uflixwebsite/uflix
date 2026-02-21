@@ -86,7 +86,10 @@ app.use('/api/pages', require('./routes/pages'));
 app.use('/api/footer', require('./routes/footer'));
 app.use('/api/home', require('./routes/home'));
 app.use('/api/pincode', require('./routes/pincode'));
+app.use('/api/pincode-settings', require('./routes/pincodeSettings'));
 app.use('/api/navbar', require('./routes/navbar'));
+app.use('/api/mega-menu', require('./routes/megaMenu'));
+app.use('/api/mega-menu-v2', require('./routes/megaMenuV2'));
 
 /* ======================================================
    ERROR HANDLING

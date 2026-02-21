@@ -76,12 +76,10 @@ router.get('/', async (req, res) => {
     let settings = await NavbarSettings.findOne();
     if (!settings) {
       settings = getDefaultSettings();
-      const config = pickConfigForPath(settings, path);
-      return res.json({ success: true, data: config });
     }
 
     const config = pickConfigForPath(settings, path);
-    return res.json({ success: true, data: config });
+    return res.json({ success: true, data: { configs: [config] } });
   } catch (error) {
     console.error('Error fetching navbar settings:', error);
     res.status(500).json({ success: false, message: 'Server error' });

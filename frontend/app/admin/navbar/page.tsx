@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useAuthState } from '@/hooks/useAuthState';
@@ -221,10 +222,16 @@ export default function AdminNavbarPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold">Navbar Settings</h1>
-            <p className="text-neutral-dark mt-2">Edit bottom navigation links per page</p>
+            <p className="text-neutral-dark mt-2">Manage basic navigation links. For mega menus, use "Manage Mega Menus" button.</p>
           </div>
 
           <div className="flex gap-3">
+            <Link
+              href="/admin/mega-menu"
+              className="px-4 py-2 border border-blue-600 text-blue-600 rounded-md hover:bg-blue-600 hover:text-white transition-colors"
+            >
+              Manage Mega Menus
+            </Link>
             <button
               onClick={addConfig}
               className="px-4 py-2 border border-accent text-accent rounded-md hover:bg-accent hover:text-white transition-colors"
@@ -503,6 +510,11 @@ export default function AdminNavbarPage() {
                 <div className="text-sm text-gray-500">No links added yet.</div>
               ) : (
                 <div className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-center text-xs font-medium text-gray-700 border-b border-gray-200 pb-2 mb-2">
+                    <div className="md:col-span-2">Label</div>
+                    <div className="md:col-span-2">URL</div>
+                    <div className="md:col-span-1 text-right">Actions</div>
+                  </div>
                   {selectedConfig.links
                     .slice()
                     .sort((a, b) => (a.order || 0) - (b.order || 0))
@@ -511,9 +523,9 @@ export default function AdminNavbarPage() {
                       return (
                         <div
                           key={`${selectedIndex}-${realIndex}`}
-                          className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center"
+                          className="grid grid-cols-1 md:grid-cols-5 gap-3 items-center"
                         >
-                          <div className="md:col-span-3">
+                          <div className="md:col-span-2">
                             <input
                               value={link.label}
                               onChange={(e) => updateLink(selectedIndex, realIndex, 'label', e.target.value)}
@@ -521,7 +533,7 @@ export default function AdminNavbarPage() {
                               placeholder="Label"
                             />
                           </div>
-                          <div className="md:col-span-5">
+                          <div className="md:col-span-2">
                             <input
                               value={link.url}
                               onChange={(e) => updateLink(selectedIndex, realIndex, 'url', e.target.value)}
@@ -529,24 +541,16 @@ export default function AdminNavbarPage() {
                               placeholder="/contact"
                             />
                           </div>
-                          <div className="md:col-span-2">
-                            <input
-                              type="number"
-                              value={link.order}
-                              onChange={(e) => updateLink(selectedIndex, realIndex, 'order', Number(e.target.value))}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
-                              placeholder="Order"
-                            />
-                          </div>
-                          <div className="md:col-span-1 flex items-center">
-                            <input
-                              type="checkbox"
-                              checked={link.enabled}
-                              onChange={(e) => updateLink(selectedIndex, realIndex, 'enabled', e.target.checked)}
-                              className="h-4 w-4"
-                            />
-                          </div>
-                          <div className="md:col-span-1 flex justify-end">
+                          <div className="md:col-span-1 flex items-center justify-end gap-2">
+                            <label className="inline-flex items-center gap-2 text-xs">
+                              <input
+                                type="checkbox"
+                                checked={link.enabled}
+                                onChange={(e) => updateLink(selectedIndex, realIndex, 'enabled', e.target.checked)}
+                                className="h-4 w-4"
+                              />
+                              Enabled
+                            </label>
                             <button
                               onClick={() => removeLink(selectedIndex, realIndex)}
                               className="px-3 py-2 border border-red-300 text-red-600 rounded-md hover:bg-red-50 transition-colors"

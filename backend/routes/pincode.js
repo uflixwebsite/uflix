@@ -1,6 +1,5 @@
 const express = require('express');
-const fs = require('fs').promises;
-const path = require('path');
+const PincodeSettings = require('../models/PincodeSettings');
 
 const router = express.Router();
 
@@ -17,10 +16,12 @@ router.get('/:pincode', async (req, res) => {
       });
     }
 
-    // Read pincode data
-    const pincodeDataPath = path.join(__dirname, '../data/pincodeData.json');
-    const rawData = await fs.readFile(pincodeDataPath, 'utf8');
-    const pincodeData = JSON.parse(rawData);
+    // Get pincode settings from database
+    let settings = await PincodeSettings.findOne();
+    if (!settings) {
+      // Create default settings if none exist
+      settings = await PincodeSettings.create(PincodeSettings.getDefaultSettings());
+    }
 
     // Function to get pincode data by checking first 2-3 digits
     function getPincodeData(code) {
@@ -28,18 +29,22 @@ router.get('/:pincode', async (req, res) => {
         return null;
       }
 
+      const enabledPincodes = settings.pincodes.filter(p => p.enabled);
+
       // Try exact 3-digit match first
       if (code.length >= 3) {
         const threeDigitPrefix = code.substring(0, 3);
-        if (pincodeData[threeDigitPrefix]) {
-          return pincodeData[threeDigitPrefix];
+        const match = enabledPincodes.find(p => p.pincode === threeDigitPrefix);
+        if (match) {
+          return match;
         }
       }
 
       // Fall back to 2-digit match
       const twoDigitPrefix = code.substring(0, 2);
-      if (pincodeData[twoDigitPrefix]) {
-        return pincodeData[twoDigitPrefix];
+      const match = enabledPincodes.find(p => p.pincode === twoDigitPrefix);
+      if (match) {
+        return match;
       }
 
       return null;
@@ -50,7 +55,12 @@ router.get('/:pincode', async (req, res) => {
     if (result) {
       res.json({
         success: true,
-        data: result
+        data: {
+          state: result.state,
+          city: result.city,
+          transitDays: result.transitDays,
+          assemblyDays: result.assemblyDays
+        }
       });
     } else {
       res.json({

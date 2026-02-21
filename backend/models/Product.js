@@ -31,10 +31,30 @@ const productSchema = new mongoose.Schema({
     type: String,
     trim: true
   }],
-  subcategories: [{
-    type: String,
-    trim: true
+  // New: primary category reference (any depth in tree)
+  categoryRef: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Category',
+    default: null
+  },
+  // Multi-category references — a product can belong to multiple nodes at any depth
+  categoryRefs: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Category',
   }],
+  // Single subcategory (no path/level/hierarchy)
+  subcategory: {
+    _id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Subcategory',
+      default: null
+    },
+    name: {
+      type: String,
+      trim: true,
+      default: ''
+    }
+  },
   images: [{
     url: {
       type: String,

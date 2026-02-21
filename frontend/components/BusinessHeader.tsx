@@ -391,23 +391,26 @@ export default function BusinessHeader() {
             >
               All Products
             </Link>
-            {subcategories.map((sub) => (
-              <div
-                key={sub._id}
-                className="relative"
-                onMouseEnter={() => handleSubcategoryMouseEnter(sub.name)}
-                onMouseLeave={handleSubcategoryMouseLeave}
-              >
-                <Link
-                  href={`/business/products?subcategory=${encodeURIComponent(sub.name)}`}
-                  className={`text-sm font-medium capitalize transition-colors ${
-                    hoveredSubcategory === sub.name ? 'text-accent' : 'text-gray-700 hover:text-accent'
-                  }`}
+            {subcategories.map((sub) => {
+              const cleanName = String(sub.name || '').replace(/[()]/g, '').trim();
+              return (
+                <div
+                  key={sub._id}
+                  className="relative"
+                  onMouseEnter={() => handleSubcategoryMouseEnter(sub.name)}
+                  onMouseLeave={handleSubcategoryMouseLeave}
                 >
-                  {sub.name}
-                </Link>
-              </div>
-            ))}
+                  <Link
+                    href={`/business/products?subcategory=${encodeURIComponent(sub.name)}`}
+                    className={`text-sm font-medium capitalize transition-colors ${
+                      hoveredSubcategory === sub.name ? 'text-accent' : 'text-gray-700 hover:text-accent'
+                    }`}
+                  >
+                    {cleanName}
+                  </Link>
+                </div>
+              );
+            })}
           </div>
 
           {/* Hover Dropdown: Products from hovered subcategory */}
@@ -419,7 +422,9 @@ export default function BusinessHeader() {
             >
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold capitalize">{hoveredSubcategory}</h3>
+                  <h3 className="text-lg font-semibold capitalize">
+                    {String(hoveredSubcategory || '').replace(/[()]/g, '').trim()}
+                  </h3>
                   <Link
                     href={`/business/products?subcategory=${encodeURIComponent(hoveredSubcategory)}`}
                     className="text-sm text-accent hover:text-secondary font-medium"
@@ -514,15 +519,18 @@ export default function BusinessHeader() {
                 <div className="border-t border-gray-200 pt-4">
                   <p className="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wide">Categories</p>
                   <div className="flex flex-col space-y-3 pl-2">
-                    {subcategories.map((sub) => (
-                      <Link
-                        key={sub._id}
-                        href={`/business/products?subcategory=${encodeURIComponent(sub.name)}`}
-                        className="text-sm font-medium text-gray-900 hover:text-accent transition-colors capitalize"
-                      >
-                        {sub.name}
-                      </Link>
-                    ))}
+                    {subcategories.map((sub) => {
+                      const cleanName = String(sub.name || '').replace(/[()]/g, '').trim();
+                      return (
+                        <Link
+                          key={sub._id}
+                          href={`/business/products?subcategory=${encodeURIComponent(sub.name)}`}
+                          className="text-sm font-medium text-gray-900 hover:text-accent transition-colors capitalize"
+                        >
+                          {cleanName}
+                        </Link>
+                      );
+                    })}
                   </div>
                 </div>
               )}

@@ -7,8 +7,8 @@ export const getSubcategories = async (params = {}) => {
 };
 
 // Create new subcategory
-export const createSubcategory = async (name, category) => {
-  const response = await api.post('/subcategories', { name, category });
+export const createSubcategory = async (subcategoryData) => {
+  const response = await api.post('/subcategories', subcategoryData);
   return response.data;
 };
 
@@ -17,3 +17,4 @@ export const deleteSubcategory = async (id) => {
   const response = await api.delete(`/subcategories/${id}`);
   return response.data;
 };
+

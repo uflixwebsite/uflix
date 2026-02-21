@@ -8,29 +8,20 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { getCurrentUser } from '@/services/authService';
 import api from '@/services/api';
-import { getSubcategories, createSubcategory } from '@/services/subcategoryService';
-import { getCategories } from '@/services/categoryService';
+import { getCategoryTree } from '@/services/categoryService';
 import { useAuthState } from '@/hooks/useAuthState';
+import CategoryTreePicker, { flattenTree } from '@/components/CategoryTreePicker';
 
 export default function AddProductPage() {
   const router = useRouter();
   const { status, isAdmin } = useAuthState();
   const [dataLoading, setDataLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [categories] = useState<any[]>([
-    { _id: 'living', name: 'Living' },
-    { _id: 'bedroom', name: 'Bedroom' },
-    { _id: 'home-office', name: 'Home Office' },
-    { _id: 'modular-kitchen', name: 'Modular Kitchen' },
-    { _id: 'storage', name: 'Storage' },
-    { _id: 'shop-fitting', name: 'Shop Fitting' },
-    { _id: 'for-businesses', name: 'For Business' },
-  ]);
-  const [subcategories, setSubcategories] = useState<any[]>([]);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
-  const [newSubcategory, setNewSubcategory] = useState('');
+  const [categoryTree, setCategoryTree] = useState<any[]>([]);
+  const [categoryLoading, setCategoryLoading] = useState(false);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [selectedVideo, setSelectedVideo] = useState<File | null>(null);
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string>('');
@@ -58,44 +49,26 @@ export default function AddProductPage() {
     bestSeller: false
   });
 
-  useEffect(() => {
-    // Wait for auth to finish loading
-    if (status === 'loading') {
-      return;
-    }
-
-    // Only redirect when we know the auth state
-    if (status === 'unauthenticated') {
-      router.push('/sign-in');
-      return;
-    }
-
-    if (status === 'authenticated' && !isAdmin) {
-      router.push('/');
-      return;
-    }
-
-  }, [status, isAdmin, router]);
-
-  const fetchSubcategories = async () => {
-    // Fetch subcategories from backend
+  const fetchCategoryTree = async () => {
+    setCategoryLoading(true);
     try {
-      let params: any = {};
-      if (selectedCategories.length > 0) {
-        params.category = selectedCategories[0];
-      }
-      const response = await getSubcategories(params);
-      setSubcategories(response.data || []);
+      const res = await getCategoryTree();
+      setCategoryTree(res.data || []);
     } catch (error) {
-      console.error('Error fetching subcategories:', error);
+      console.error('Error fetching category tree:', error);
     }
+    setCategoryLoading(false);
   };
 
   useEffect(() => {
-    if (status === 'authenticated' && isAdmin) {
-      fetchSubcategories();
-    }
-  }, [selectedCategories, status, isAdmin]);
+    if (status === 'loading') return;
+    if (status === 'unauthenticated') { router.push('/sign-in'); return; }
+    if (status === 'authenticated' && !isAdmin) { router.push('/'); return; }
+  }, [status, isAdmin, router]);
+
+  useEffect(() => {
+    if (status === 'authenticated' && isAdmin) fetchCategoryTree();
+  }, [status, isAdmin]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newFiles = Array.from(e.target.files || []);
@@ -150,43 +123,6 @@ export default function AddProductPage() {
     }
   };
 
-  const toggleCategory = (categoryId: string) => {
-    setSelectedCategories(prev => 
-      prev.includes(categoryId) 
-        ? prev.filter(id => id !== categoryId)
-        : [...prev, categoryId]
-    );
-  };
-
-  const toggleSubcategory = (subcategoryName: string) => {
-    setSelectedSubcategories(prev => 
-      prev.includes(subcategoryName) 
-        ? prev.filter(name => name !== subcategoryName)
-        : [...prev, subcategoryName]
-    );
-  };
-
-  const handleAddSubcategory = async () => {
-    if (!newSubcategory.trim()) {
-      alert('Please enter a subcategory name');
-      return;
-    }
-
-    if (selectedCategories.length === 0) {
-      alert('Please select a category first');
-      return;
-    }
-
-    try {
-      const response = await createSubcategory(newSubcategory.trim(), selectedCategories[0]);
-      setSubcategories([...subcategories, response.data]);
-      setSelectedSubcategories([...selectedSubcategories, response.data.name]);
-      setNewSubcategory('');
-      alert('Subcategory added successfully!');
-    } catch (error: any) {
-      alert(error.response?.data?.message || 'Failed to add subcategory');
-    }
-  };
 
   const addFeature = () => {
     if (formData.features.length < 5) {
@@ -234,7 +170,9 @@ export default function AddProductPage() {
     try {
       // Step 1: Upload images to Cloudinary
       setUploading(true);
-      const categoryFolder = selectedCategories[0] || 'uncategorized';
+      const flat = flattenTree(categoryTree);
+      const selectedNodes = selectedCategoryIds.map(id => flat.find((n: any) => n._id === id)).filter(Boolean);
+      const categoryFolder = (selectedNodes[0] as any)?.slug || 'uncategorized';
       const uploadFormData = new FormData();
       selectedFiles.forEach((file) => {
         uploadFormData.append('images', file);
@@ -263,14 +201,21 @@ export default function AddProductPage() {
       }
 
       // Step 3: Create product with uploaded image and video URLs
+      const primaryNode = selectedNodes[selectedNodes.length - 1] as any;
+      const subcategoryForSubmit = primaryNode
+        ? { _id: primaryNode._id, name: primaryNode.name }
+        : null;
+
       const productData = {
         name: formData.name,
         description: formData.description,
         price: formData.price ? parseFloat(formData.price) : 0,
         discountPrice: formData.discountPrice ? parseFloat(formData.discountPrice) : undefined,
         sku: formData.sku || null,
-        categories: selectedCategories,
-        subcategories: selectedSubcategories,
+        categories: selectedNodes.map((n: any) => n.slug).filter(Boolean),
+        categoryRef: selectedCategoryIds[selectedCategoryIds.length - 1] || null,
+        categoryRefs: selectedCategoryIds,
+        subcategory: subcategoryForSubmit,
         material: formData.material || undefined,
         weight: formData.weight ? { value: parseFloat(formData.weight), unit: 'kg' } : undefined,
         dimensions: {
@@ -475,84 +420,21 @@ export default function AddProductPage() {
                 />
               </div>
 
+              {/* Category tree picker — multi-select, any depth */}
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium mb-2">Categories (Select Multiple)</label>
-                <div className="flex flex-wrap gap-2 p-3 border border-gray-300 rounded-md min-h-[100px]">
-                  {categories.map((cat) => (
-                    <button
-                      key={cat._id}
-                      type="button"
-                      onClick={() => toggleCategory(cat._id)}
-                      className={`px-4 py-2 text-sm rounded-md transition-colors ${
-                        selectedCategories.includes(cat._id)
-                          ? 'bg-accent text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      {cat.name}
-                    </button>
-                  ))}
-                </div>
-                {selectedCategories.length > 0 && (
-                  <p className="text-xs text-gray-600 mt-1">
-                    Selected: {selectedCategories.map(id => categories.find(c => c._id === id)?.name).join(', ')}
-                  </p>
-                )}
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium mb-2">Subcategories</label>
-                {selectedCategories.length === 0 ? (
-                  <p className="text-sm text-gray-500 p-3 border border-gray-300 rounded-md">Select a category first to manage subcategories.</p>
-                ) : (
-                  <div>
-                    {/* Add New Subcategory */}
-                    <div className="flex gap-2 mb-3">
-                      <input
-                        type="text"
-                        value={newSubcategory}
-                        onChange={(e) => setNewSubcategory(e.target.value)}
-                        placeholder="Add new subcategory..."
-                        className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
-                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddSubcategory())}
-                      />
-                      <button
-                        type="button"
-                        onClick={handleAddSubcategory}
-                        className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-                      >
-                        Add
-                      </button>
-                    </div>
-
-                    {/* Existing Subcategories */}
-                    <div className="flex flex-wrap gap-2 p-3 border border-gray-300 rounded-md min-h-[100px]">
-                      {subcategories.length === 0 ? (
-                        <p className="text-sm text-gray-500">No subcategories yet for this category. Add one above!</p>
-                      ) : (
-                        subcategories.map((sub) => (
-                          <button
-                            key={sub._id}
-                            type="button"
-                            onClick={() => toggleSubcategory(sub.name)}
-                            className={`px-4 py-2 text-sm rounded-md transition-colors capitalize ${
-                              selectedSubcategories.includes(sub.name)
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                          >
-                            {sub.name}
-                          </button>
-                        ))
-                      )}
-                    </div>
-                    {selectedSubcategories.length > 0 && (
-                      <p className="text-xs text-gray-600 mt-1">
-                        Selected: {selectedSubcategories.join(', ')}
-                      </p>
-                    )}
-                  </div>
-                )}
+                <label className="block text-sm font-medium mb-2">
+                  Category
+                  <span className="text-xs text-gray-400 ml-2 font-normal">
+                    (select one or more at any depth —{' '}
+                    <a href="/admin/subcategories" className="text-accent underline">manage subcategories →</a>)
+                  </span>
+                </label>
+                <CategoryTreePicker
+                  tree={categoryTree}
+                  selectedIds={selectedCategoryIds}
+                  onChange={setSelectedCategoryIds}
+                  loading={categoryLoading}
+                />
               </div>
 
               <div>

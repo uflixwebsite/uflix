@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Montserrat } from "next/font/google";
 import "./globals.css";
+import Script from 'next/script';
 import { CartProvider } from "@/contexts/CartContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
 import { ClerkProvider } from '@clerk/nextjs';
@@ -41,6 +42,10 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body className={`${playfair.variable} ${montserrat.variable} antialiased`}>
+          <Script src="https://www.googletagmanager.com/gtag/js?id=G-LJLKLX3BY7" strategy="afterInteractive" />
+          <Script id="gtag-init" strategy="afterInteractive">
+            {`window.dataLayer = window.dataLayer || [];\nfunction gtag(){dataLayer.push(arguments);}\ngtag('js', new Date());\ngtag('config', 'G-LJLKLX3BY7');`}
+          </Script>
           <LoadingBar />
           <PageLoadingIndicator />
           <UserSync />

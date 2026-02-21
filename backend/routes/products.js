@@ -3,7 +3,43 @@ const router = express.Router();
 const Product = require('../models/Product');
 const Category = require('../models/Category');
 const Review = require('../models/Review');
+const mongoose = require('mongoose');
 const { protect, admin, optionalAuth } = require('../middleware/auth');
+
+// Helper: get all descendant category IDs including self
+const getAllDescendantIds = async (categoryId) => {
+  const all = await Category.find({}, '_id parent');
+  const collect = (pid) => {
+    const children = all.filter(c => c.parent && c.parent.toString() === pid.toString());
+    return children.reduce((acc, c) => [...acc, c._id, ...collect(c._id)], []);
+  };
+  return [categoryId, ...collect(categoryId)];
+};
+
+// Normalize incoming data to a single `subcategory` object
+const normalizeSubcategory = (body) => {
+  // Accepts either `subcategory` (object/string) or legacy `subcategories` array
+  let sub = null;
+  if (!body) return null;
+  if (body.subcategory) sub = body.subcategory;
+  else if (Array.isArray(body.subcategories) && body.subcategories.length) sub = body.subcategories[0];
+
+  if (!sub) return null;
+
+  // If sub is a string that looks like an ObjectId, keep as _id
+  if (typeof sub === 'string') {
+    if (/^[0-9a-fA-F]{24}$/.test(sub)) return { _id: new mongoose.Types.ObjectId(sub) };
+    return { name: String(sub).trim().toLowerCase() };
+  }
+
+  if (typeof sub === 'object') {
+    const id = sub._id || sub.id || null;
+    const name = (sub.name || '').toString().trim().toLowerCase();
+    return id ? { _id: new mongoose.Types.ObjectId(String(id)), name } : { name };
+  }
+
+  return null;
+};
 
 // @route   GET /api/products
 // @desc    Get all products with filtering, sorting, pagination
@@ -22,9 +58,40 @@ router.get('/', async (req, res) => {
       query.categories = { $in: [req.query.category] };
     }
 
-    // Subcategory filter
+    // New: filter by categoryRef (with descendants)
+    // Also falls back to legacy subcategory.name/subcategory._id so products
+    // stored via the old subcategory system are still returned.
+    if (req.query.categoryId) {
+      const descendantIds = await getAllDescendantIds(req.query.categoryId);
+      const descendantCats = await Category.find(
+        { _id: { $in: descendantIds } },
+        'name slug'
+      ).lean();
+      const legacyNames = [
+        ...descendantCats.map(c => (c.name || '').trim().toLowerCase()),
+        ...descendantCats.map(c => (c.slug || '').trim().toLowerCase()),
+      ].filter(Boolean);
+      const uniqueNames = [...new Set(legacyNames)];
+
+      query.$or = [
+        { categoryRef: { $in: descendantIds } },
+        { categoryRefs: { $in: descendantIds } },
+        { 'subcategory._id': { $in: descendantIds } },
+        ...(uniqueNames.length ? [{ 'subcategory.name': { $in: uniqueNames } }] : []),
+      ];
+    }
+
+    // Subcategory filter - match single subcategory by id or name
     if (req.query.subcategory) {
-      query.subcategories = { $in: req.query.subcategory.split(',') };
+      const vals = req.query.subcategory.split(',').map(v => v.trim()).filter(Boolean);
+      if (vals.length) {
+        const objectIds = vals.filter(v => /^[0-9a-fA-F]{24}$/.test(v)).map(v => new mongoose.Types.ObjectId(v));
+        if (objectIds.length === vals.length) {
+          query['subcategory._id'] = { $in: objectIds };
+        } else {
+          query['subcategory.name'] = { $in: vals.map(v => v.toLowerCase()) };
+        }
+      }
     }
 
     // Material filter
@@ -77,6 +144,9 @@ router.get('/', async (req, res) => {
         case 'newest':
           sort.createdAt = -1;
           break;
+        case 'oldest':
+          sort.createdAt = 1;
+          break;
         case 'popular':
           sort.sold = -1;
           break;
@@ -120,7 +190,11 @@ router.get('/', async (req, res) => {
 // @access  Public
 router.get('/:id', async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      { $inc: { views: 1 } },
+      { new: true, runValidators: false }
+    );
 
     if (!product) {
       return res.status(404).json({
@@ -128,10 +202,6 @@ router.get('/:id', async (req, res) => {
         message: 'Product not found'
       });
     }
-
-    // Increment views
-    product.views += 1;
-    await product.save();
 
     res.json({
       success: true,
@@ -150,6 +220,14 @@ router.get('/:id', async (req, res) => {
 // @access  Private/Admin
 router.post('/', protect, admin, async (req, res) => {
   try {
+    // Normalize single subcategory from either `subcategory` or legacy `subcategories`
+    if (req.body) {
+      const norm = normalizeSubcategory(req.body);
+      if (norm) req.body.subcategory = norm;
+      // remove legacy key if present
+      if (Object.prototype.hasOwnProperty.call(req.body, 'subcategories')) delete req.body.subcategories;
+    }
+
     // Validate required fields
     if (!req.body.name || req.body.name.trim() === '') {
       return res.status(400).json({
@@ -194,6 +272,12 @@ router.post('/', protect, admin, async (req, res) => {
 // @access  Private/Admin
 router.put('/:id', protect, admin, async (req, res) => {
   try {
+    if (req.body) {
+      const norm = normalizeSubcategory(req.body);
+      if (norm) req.body.subcategory = norm;
+      if (Object.prototype.hasOwnProperty.call(req.body, 'subcategories')) delete req.body.subcategories;
+    }
+
     const product = await Product.findByIdAndUpdate(
       req.params.id,
       req.body,

@@ -9,13 +9,14 @@ const { protect, admin } = require('../middleware/auth');
 router.get('/', async (req, res) => {
   try {
     let query = {};
-    
+
     // Filter by category if provided
     if (req.query.category) {
       query.category = req.query.category.toLowerCase();
     }
-    
+
     const subcategories = await Subcategory.find(query).sort({ category: 1, name: 1 });
+
     res.json({
       success: true,
       data: subcategories
@@ -34,7 +35,7 @@ router.get('/', async (req, res) => {
 router.get('/grouped', async (req, res) => {
   try {
     const subcategories = await Subcategory.find().sort({ category: 1, name: 1 });
-    
+
     const grouped = {};
     subcategories.forEach(sub => {
       if (!grouped[sub.category]) {
@@ -56,48 +57,36 @@ router.get('/grouped', async (req, res) => {
 });
 
 // @route   POST /api/subcategories
-// @desc    Create new subcategory
+// @desc    Create new subcategory (single-level)
 // @access  Private/Admin
 router.post('/', protect, admin, async (req, res) => {
   try {
     const { name, category } = req.body;
 
-    if (!name || !name.trim()) {
+    if (!name || typeof name !== 'string' || !name.trim()) {
       return res.status(400).json({
         success: false,
-        message: 'Name is required'
+        message: 'Name is required and must be a string'
       });
     }
 
-    if (!category || !category.trim()) {
+    if (!category || typeof category !== 'string' || !category.trim()) {
       return res.status(400).json({
         success: false,
-        message: 'Category is required'
+        message: 'Category is required and must be a string'
       });
     }
 
-    // Check for existing (compound index will also catch this, but better error message)
-    const existing = await Subcategory.findOne({ 
+    const subcategory = await Subcategory.create({
       name: name.trim().toLowerCase(),
       category: category.trim().toLowerCase()
     });
-    if (existing) {
-      return res.status(400).json({
-        success: false,
-        message: `Subcategory "${name}" already exists in category "${category}"`
-      });
-    }
 
-    const subcategory = await Subcategory.create({ 
-      name: name.trim().toLowerCase(), 
-      category: category.trim().toLowerCase()
-    });
     res.status(201).json({
       success: true,
       data: subcategory
     });
   } catch (error) {
-    // Handle duplicate key error from compound index
     if (error.code === 11000) {
       return res.status(400).json({
         success: false,

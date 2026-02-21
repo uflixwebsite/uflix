@@ -23,13 +23,10 @@ export default function UserSync() {
         
         // Get token using Clerk's useAuth hook
         const token = await getToken();
-        console.log('Token retrieved:', token ? 'Yes' : 'No');
         
         await api.post('/auth/sync');
-        console.log('User synced to MongoDB');
       } catch (error: any) {
         console.error('Failed to sync user:', error);
-        console.error('Error details:', error.response?.data);
         syncedRef.current = false;
       }
     };

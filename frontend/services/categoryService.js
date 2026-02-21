@@ -1,8 +1,14 @@
 import api from './api';
 
-// Get all categories
+// Get all categories (flat list, optionally filtered by parentId)
 export const getCategories = async (params = {}) => {
   const response = await api.get('/categories', { params });
+  return response.data;
+};
+
+// Get full nested category tree
+export const getCategoryTree = async () => {
+  const response = await api.get('/categories/tree');
   return response.data;
 };
 
@@ -27,5 +33,18 @@ export const updateCategory = async (id, categoryData) => {
 // Delete category (admin)
 export const deleteCategory = async (id) => {
   const response = await api.delete(`/categories/${id}`);
+  return response.data;
+};
+
+// Resolve category chain from slug path (['living', 'beds', 'king-size-beds'])
+export const getCategoryByPath = async (slugs) => {
+  const path = Array.isArray(slugs) ? slugs.join('/') : slugs;
+  const response = await api.get('/categories/by-path', { params: { path } });
+  return response.data;
+};
+
+// Get all descendant IDs of a category (including self)
+export const getCategoryDescendants = async (id) => {
+  const response = await api.get(`/categories/${id}/descendants`);
   return response.data;
 };

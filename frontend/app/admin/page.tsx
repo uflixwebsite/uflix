@@ -187,6 +187,22 @@ export default function AdminDashboardPage() {
           </Link>
 
           <Link
+            href="/admin/pincode-settings"
+            className="group bg-white rounded-lg border border-border p-6 hover:shadow-lg transition-all duration-200 hover:border-accent"
+          >
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-orange-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-orange-200 transition-colors">
+                <svg className="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+              <h3 className="font-semibold text-lg mb-2">Pincode Settings</h3>
+              <p className="text-sm text-neutral-dark">Manage delivery areas</p>
+            </div>
+          </Link>
+
+          <Link
             href="/admin/home"
             className="group bg-white rounded-lg border border-border p-6 hover:shadow-lg transition-all duration-200 hover:border-accent"
           >
@@ -200,6 +216,23 @@ export default function AdminDashboardPage() {
               <p className="text-sm text-neutral-dark">Customize homepage</p>
             </div>
           </Link>
+
+          <Link
+            href="/admin/subcategories"
+            className="group bg-white rounded-lg border border-border p-6 hover:shadow-lg transition-all duration-200 hover:border-accent"
+          >
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-yellow-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-yellow-200 transition-colors">
+                <svg className="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h10M4 18h6" />
+                </svg>
+              </div>
+              <h3 className="font-semibold text-lg mb-2">Subcategories</h3>
+              <p className="text-sm text-neutral-dark">Manage subcategories</p>
+            </div>
+          </Link>
+
+          {/* Fix Paths utility removed: subcategory path fixing is deprecated. */}
         </div>
       </main>
 

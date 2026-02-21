@@ -76,17 +76,22 @@ export default function FilterSidebar({ onFilterChange, currentCategory }: Filte
     );
   };
 
-  const renderSubcategoryCheckbox = (subcategory: any) => (
-    <label key={subcategory._id} className="flex items-center">
-      <input
-        type="checkbox"
-        className="mr-2 w-4 h-4 text-accent border-gray-300 rounded focus:ring-accent"
-        checked={selectedSubcategories.includes(subcategory.name)}
-        onChange={() => toggleSubcategory(subcategory.name)}
-      />
-      <span className="text-sm capitalize">{subcategory.name}</span>
-    </label>
-  );
+  const renderSubcategoryCheckbox = (subcategory: any) => {
+    // Clean the subcategory name - remove () characters
+    const cleanName = String(subcategory.name || '').replace(/[()]/g, '').trim();
+    
+    return (
+      <label key={subcategory._id} className="flex items-center">
+        <input
+          type="checkbox"
+          className="mr-2 w-4 h-4 text-accent border-gray-300 rounded focus:ring-accent"
+          checked={selectedSubcategories.includes(subcategory.name)}
+          onChange={() => toggleSubcategory(subcategory.name)}
+        />
+        <span className="text-sm capitalize">{cleanName}</span>
+      </label>
+    );
+  };
 
   const renderMaterialCheckbox = (material: any) => (
     <label key={material._id} className="flex items-center">
