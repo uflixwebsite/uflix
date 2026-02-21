@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -11,6 +11,7 @@ import { useAuthState } from '@/hooks/useAuthState';
 
 export default function EditNavbarItemPage() {
   const router = useRouter();
+  const params = useParams();
   const { status, isAdmin } = useAuthState();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -36,7 +37,7 @@ export default function EditNavbarItemPage() {
   const fetchNavbarItem = async () => {
     try {
       setLoading(true);
-      const itemId = router.query.id as string;
+      const itemId = params?.id as string;
       
       if (!itemId) {
         router.push('/admin/mega-menu');
@@ -75,7 +76,7 @@ export default function EditNavbarItemPage() {
 
     try {
       setSaving(true);
-      const itemId = router.query.id as string;
+      const itemId = params?.id as string;
       const response = await updateNavbarItem(itemId, formData);
       
       if (response?.success) {

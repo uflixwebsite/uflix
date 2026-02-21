@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/Header';
@@ -22,7 +22,7 @@ function flattenTree(nodes: CategoryNode[], depth = 0): { _id: string; name: str
   ]);
 }
 
-export default function NewCategoryPage() {
+function NewCategoryPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { status, isAdmin } = useAuthState();
@@ -196,5 +196,13 @@ export default function NewCategoryPage() {
       </main>
       <Footer />
     </div>
+  );
+}
+
+export default function NewCategoryPage() {
+  return (
+    <Suspense>
+      <NewCategoryPageInner />
+    </Suspense>
   );
 }

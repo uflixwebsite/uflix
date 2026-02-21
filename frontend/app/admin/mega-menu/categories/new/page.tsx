@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/Header';
@@ -33,7 +33,7 @@ interface MegaMenuBlock {
   };
 }
 
-export default function NewMegaMenuCategoryPage() {
+function NewMegaMenuCategoryPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { status, isAdmin } = useAuthState();
@@ -607,5 +607,13 @@ export default function NewMegaMenuCategoryPage() {
       </main>
       <Footer />
     </div>
+  );
+}
+
+export default function NewMegaMenuCategoryPage() {
+  return (
+    <Suspense>
+      <NewMegaMenuCategoryPageInner />
+    </Suspense>
   );
 }
