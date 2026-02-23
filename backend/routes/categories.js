@@ -93,13 +93,18 @@ router.get('/by-path', async (req, res) => {
       const escaped = slug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
       // 1. Try Category collection: exact slug, case-insensitive slug, name match (hyphens = spaces)
-      const category = await Category.findOne({
+      // When resolving a child segment, scope the lookup to direct children of the previous node
+      const slugQuery = {
         $or: [
           { slug: slug },
           { slug: { $regex: new RegExp(`^${escaped}$`, 'i') } },
           { name: { $regex: new RegExp(`^${escaped.replace(/-/g, '[\\s-]')}$`, 'i') } },
         ]
-      }).populate('parent', 'name slug');
+      };
+      if (chain.length > 0) {
+        slugQuery.parent = chain[chain.length - 1]._id;
+      }
+      const category = await Category.findOne(slugQuery).populate('parent', 'name slug');
 
       if (category) {
         chain.push(category);

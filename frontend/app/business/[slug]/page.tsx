@@ -48,7 +48,7 @@ export default function BusinessSubcategoryPage() {
       let categoryId: string | null = null;
 
       try {
-        const pathRes = await getCategoryByPath(['for-businesses', slug]);
+        const pathRes = await getCategoryByPath(['for-business', slug]);
         if (pathRes?.data) {
           resolvedCategory = pathRes.data;
           categoryId = pathRes.data._id;

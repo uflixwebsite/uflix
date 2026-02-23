@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { getProducts } from '@/services/productService';
 import { getPageContent } from '@/services/pageService';
 import { getCategoryByPath } from '@/services/categoryService';
+import api from '@/services/api';
 import { renderSection } from '@/components/DynamicPage';
 import type { Section } from '@/components/DynamicPage';
 
@@ -47,6 +48,9 @@ export default function BusinessPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [sections, setSections] = useState<Section[]>([]);
+  const [sectionsLoaded, setSectionsLoaded] = useState(false);
+  const [subCategories, setSubCategories] = useState<any[]>([]);
+  const [businessRootSlug, setBusinessRootSlug] = useState('for-business');
 
   useEffect(() => {
     fetchProducts();
@@ -57,26 +61,24 @@ export default function BusinessPage() {
     try {
       // Resolve category ObjectIds so products assigned via CategoryTreePicker are included
       let businessCatId: string | null = null;
-      let shopFittingCatId: string | null = null;
       try {
-        const [bizRes, sfRes] = await Promise.all([
-          getCategoryByPath(['for-businesses']),
-          getCategoryByPath(['shop-fitting']),
-        ]);
-        businessCatId = bizRes?.data?._id || null;
-        shopFittingCatId = sfRes?.data?._id || null;
+        const bizRes = await getCategoryByPath(['for-business']);
+        const bizChain = bizRes?.data;
+        const bizNode = Array.isArray(bizChain) ? bizChain[bizChain.length - 1] : bizChain;
+        businessCatId = bizNode?._id || null;
+        if (bizNode?.slug) setBusinessRootSlug(bizNode.slug);
+        // Fetch children for dynamic category cards
+        if (businessCatId) {
+          api.get('/categories', { params: { parentId: businessCatId } })
+            .then((r: any) => setSubCategories(r.data?.data || []))
+            .catch(() => {});
+        }
       } catch {}
 
-      const [businessProducts, shopFittingProducts] = await Promise.all([
-        getProducts(businessCatId
-          ? { categoryId: businessCatId, limit: 6 }
-          : { category: 'for-businesses', limit: 6 }),
-        getProducts(shopFittingCatId
-          ? { categoryId: shopFittingCatId, limit: 3 }
-          : { category: 'shop-fitting', limit: 3 }),
-      ]);
-      const allProducts = [...(businessProducts.data || []), ...(shopFittingProducts.data || [])];
-      setProducts(allProducts.slice(0, 6));
+      const businessProducts = await getProducts(businessCatId
+        ? { categoryId: businessCatId, limit: 6 }
+        : { category: 'for-business', limit: 6 });
+      setProducts((businessProducts.data || []).slice(0, 6));
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
@@ -90,6 +92,8 @@ export default function BusinessPage() {
       setSections(data.data?.sections || []);
     } catch (error) {
       console.error('Error fetching page content:', error);
+    } finally {
+      setSectionsLoaded(true);
     }
   };
 
@@ -106,7 +110,7 @@ export default function BusinessPage() {
         ))}
 
         {/* ── Fallback hero if no DB sections ───────────────────── */}
-        {sections.length === 0 && (
+        {sectionsLoaded && sections.length === 0 && (
           <section
             className="relative min-h-[80vh] flex items-center justify-center overflow-hidden"
             style={{ background: 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #0f3460 100%)' }}
@@ -187,15 +191,17 @@ export default function BusinessPage() {
               </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {CATEGORIES.map((cat) => (
+              {(subCategories.length > 0 ? subCategories : CATEGORIES).map((cat: any) => (
                 <Link
-                  key={cat.slug}
-                  href={`/business/${cat.slug}`}
+                  key={cat.slug || cat._id}
+                  href={subCategories.length > 0
+                    ? `/category/${businessRootSlug}/${cat.slug}`
+                    : `/business/${cat.slug}`}
                   className="group bg-white rounded-2xl p-8 border border-gray-100 hover:border-accent/40 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center"
                 >
-                  <div className="text-5xl mb-4">{cat.icon}</div>
-                  <h3 className="font-bold text-lg mb-2 group-hover:text-accent transition-colors">{cat.title}</h3>
-                  <p className="text-gray-500 text-sm">{cat.desc}</p>
+                  <div className="text-5xl mb-4">{cat.icon || '📦'}</div>
+                  <h3 className="font-bold text-lg mb-2 group-hover:text-accent transition-colors">{cat.title || cat.name}</h3>
+                  <p className="text-gray-500 text-sm">{cat.desc || cat.description || ''}</p>
                   <span className="inline-block mt-4 text-accent text-sm font-semibold group-hover:underline">
                     Explore →
                   </span>

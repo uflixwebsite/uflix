@@ -8,6 +8,7 @@ import Breadcrumb from '@/components/Breadcrumb';
 import ProductCard from '@/components/ProductCard';
 import FilterSidebar from '@/components/FilterSidebar';
 import { getProducts } from '@/services/productService';
+import { getCategoryByPath } from '@/services/categoryService';
 
 const categoryData: Record<string, { name: string; description: string; banner: string }> = {
   'living': {
@@ -40,7 +41,7 @@ const categoryData: Record<string, { name: string; description: string; banner: 
     description: 'Professional shop fitting solutions for retail stores, showrooms, and commercial spaces',
     banner: 'https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=1920&q=80',
   },
-  'for-businesses': {
+  'for-business': {
     name: 'For Business',
     description: 'Premium furniture and solutions tailored for offices, hotels, and business environments',
     banner: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&q=80',
@@ -59,12 +60,21 @@ export default function CategoryPage() {
   const [page, setPage] = useState(1);
   const [totalProducts, setTotalProducts] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-  
-  const category = categoryData[slug] || { name: 'Category', description: '', banner: '' };
+  const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [dbCategory, setDbCategory] = useState<any>(null);
+
+  const staticCat = categoryData[slug];
+  const category = staticCat || {
+    name: dbCategory?.name || slug.replace(/-/g, ' '),
+    description: dbCategory?.description || '',
+    banner: dbCategory?.image || '',
+  };
 
   useEffect(() => {
     setPage(1);
-    fetchProducts();
+    setCategoryId(null);
+    setDbCategory(null);
+    fetchProducts(null); // null = force re-resolve for new slug
   }, [slug]);
 
   useEffect(() => {
@@ -75,10 +85,28 @@ export default function CategoryPage() {
     applyFilters();
   }, [products, filters]);
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (overrideCategoryId?: string | null) => {
     try {
       setLoading(true);
-      const data = await getProducts({ category: slug, page, limit: 15 });
+      // Use explicit override (e.g. null on slug change) or fall back to cached state
+      let resolvedId: string | null = overrideCategoryId !== undefined ? overrideCategoryId : categoryId;
+      if (!resolvedId) {
+        try {
+          const catRes = await getCategoryByPath([slug]);
+          const last = Array.isArray(catRes?.data)
+            ? catRes.data[catRes.data.length - 1]
+            : catRes?.data;
+          if (last?._id) {
+            resolvedId = last._id;
+            setCategoryId(last._id);
+            setDbCategory(last);
+          }
+        } catch {}
+      }
+      const params: any = resolvedId
+        ? { categoryId: resolvedId, page, limit: 15 }
+        : { category: slug, page, limit: 15 };
+      const data = await getProducts(params);
       setProducts(data.data);
       setTotalProducts(data.pagination.total);
       setTotalPages(data.pagination.pages);

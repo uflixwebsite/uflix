@@ -10,7 +10,7 @@ import { getCurrentUser } from '@/services/authService';
 import api from '@/services/api';
 import { getCategoryTree } from '@/services/categoryService';
 import { useAuthState } from '@/hooks/useAuthState';
-import CategoryTreePicker, { flattenTree } from '@/components/CategoryTreePicker';
+import CategoryTreePicker, { flattenTree, findPath } from '@/components/CategoryTreePicker';
 
 export default function AddProductPage() {
   const router = useRouter();
@@ -206,15 +206,21 @@ export default function AddProductPage() {
         ? { _id: primaryNode._id, name: primaryNode.name }
         : null;
 
+      // Expand categoryRefs to include all ancestors so parent-category queries find this product
+      const allCategoryIds = [...new Set(
+        selectedCategoryIds.flatMap(id => findPath(categoryTree, id).map((n: any) => n._id))
+      )];
+      const allCategoryNodes = allCategoryIds.map(id => flat.find((n: any) => n._id === id)).filter(Boolean);
+
       const productData = {
         name: formData.name,
         description: formData.description,
         price: formData.price ? parseFloat(formData.price) : 0,
         discountPrice: formData.discountPrice ? parseFloat(formData.discountPrice) : undefined,
         sku: formData.sku || null,
-        categories: selectedNodes.map((n: any) => n.slug).filter(Boolean),
+        categories: [...new Set((allCategoryNodes as any[]).map((n: any) => n.slug).filter(Boolean))],
         categoryRef: selectedCategoryIds[selectedCategoryIds.length - 1] || null,
-        categoryRefs: selectedCategoryIds,
+        categoryRefs: allCategoryIds,
         subcategory: subcategoryForSubmit,
         material: formData.material || undefined,
         weight: formData.weight ? { value: parseFloat(formData.weight), unit: 'kg' } : undefined,

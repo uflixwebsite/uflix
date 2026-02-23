@@ -31,38 +31,26 @@ function BusinessProductsContent() {
 
       // Resolve category ObjectIds so products assigned via CategoryTreePicker are included
       let businessCatId: string | null = null;
-      let shopFittingCatId: string | null = null;
       try {
-        const [bizRes, sfRes] = await Promise.all([
-          getCategoryByPath(['for-businesses']),
-          getCategoryByPath(['shop-fitting']),
-        ]);
-        businessCatId = bizRes?.data?._id || null;
-        shopFittingCatId = sfRes?.data?._id || null;
+        const bizRes = await getCategoryByPath(['business']);
+        const bizChain = bizRes?.data;
+        businessCatId = (Array.isArray(bizChain) ? bizChain[bizChain.length - 1]?._id : bizChain?._id) || null;
       } catch {}
 
-      const limit = subcategory ? 15 : 8;
-      const [businessResponse, shopFittingResponse] = await Promise.all([
-        getProducts({
-          ...(businessCatId ? { categoryId: businessCatId } : { category: 'for-businesses' }),
-          page,
-          limit,
-          ...(subcategory && { subcategory }),
-        }),
-        getProducts({
-          ...(shopFittingCatId ? { categoryId: shopFittingCatId } : { category: 'shop-fitting' }),
-          page,
-          limit: subcategory ? 15 : 7,
-          ...(subcategory && { subcategory }),
-        }),
-      ]);
+      const limit = subcategory ? 15 : 16;
+      const businessResponse = await getProducts({
+        ...(businessCatId ? { categoryId: businessCatId } : { category: 'business' }),
+        page,
+        limit,
+        ...(subcategory && { subcategory }),
+      });
 
-      const allProducts = [...(businessResponse.data || []), ...(shopFittingResponse.data || [])];
+      const allProducts = businessResponse.data || [];
       setProducts(allProducts);
 
-      const totalCombined = (businessResponse.pagination?.total || 0) + (shopFittingResponse.pagination?.total || 0);
+      const totalCombined = businessResponse.pagination?.total || 0;
       setTotalProducts(totalCombined);
-      setTotalPages(Math.ceil(totalCombined / 15));
+      setTotalPages(Math.ceil(totalCombined / limit));
     } catch (error) {
       console.error('Error fetching business products:', error);
     } finally {
@@ -74,7 +62,7 @@ function BusinessProductsContent() {
     <div className="min-h-screen bg-background">
       <Header />
       
-      <main className="homepage-main max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-4 capitalize">
             {subcategory ? subcategory : 'For Businesses'}
@@ -169,7 +157,7 @@ export default function ForBusinessesProductsPage() {
     <Suspense fallback={
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="homepage-main max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex justify-center items-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
           </div>
