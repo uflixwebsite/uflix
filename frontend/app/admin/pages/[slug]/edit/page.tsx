@@ -25,7 +25,62 @@ const SECTION_TYPES = [
 const BG_OPTIONS = [
   { value: 'white', label: 'White' },
   { value: 'light', label: 'Light Gray' },
-  { value: 'gradient', label: 'Gradient (Accent)' },
+  { value: 'dark', label: 'Dark (Cinematic)' },
+  { value: 'gradient', label: 'Gradient (Accent / Orange)' },
+];
+
+// Pre-built section templates for the Business page.
+// When the admin opens /admin/pages/business/edit, any missing sections are
+// automatically inserted so they can be edited right away.
+const BUSINESS_REQUIRED_SECTIONS: any[] = [
+  {
+    sectionId: 'hero', type: 'hero', bgColor: 'dark', order: 0, isVisible: true,
+    title: 'Furniture That Means Business',
+    subtitle: 'Edit the main headline, description and button labels below.',
+    description: 'From corporate offices to government institutions — premium, ISO-certified furniture solutions designed for productivity, durability, and your brand.',
+    link: '#products', linkText: 'Browse Collection',
+    secondaryLink: '/contact', secondaryLinkText: 'Request a Quote',
+    image: '', items: [],
+  },
+  {
+    sectionId: 'slider', type: 'custom', bgColor: 'white', order: 1, isVisible: true,
+    title: 'Product Slider',
+    description: '', image: '', items: [],
+  },
+  {
+    sectionId: 'stats-bar', type: 'custom', bgColor: 'white', order: 4, isVisible: true,
+    title: 'Stats Bar',
+    description: '', image: '', items: [],
+  },
+  {
+    sectionId: 'image-grid', type: 'custom', bgColor: 'white', order: 5, isVisible: true,
+    title: 'Image Grid',
+    description: '', image: '', items: [],
+  },
+  {
+    sectionId: 'split-1', type: 'custom', bgColor: 'white', order: 6, isVisible: true,
+    title: 'Split Section 1',
+    description: '', image: '', link: '', linkText: 'Learn More', items: [],
+  },
+  {
+    sectionId: 'split-2', type: 'custom', bgColor: 'light', order: 7, isVisible: true,
+    title: 'Split Section 2',
+    description: '', image: '', link: '', linkText: 'Learn More', items: [],
+  },
+  {
+    sectionId: 'projects', type: 'custom', bgColor: 'white', order: 8, isVisible: true,
+    title: 'Flagship Projects',
+    description: '', image: '', items: [],
+  },
+  {
+    sectionId: 'cta', type: 'cta', bgColor: 'dark', order: 9, isVisible: true,
+    title: 'Need Bulk Orders or Custom Solutions?',
+    subtitle: 'Bottom call-to-action section.',
+    description: 'We specialise in large-scale corporate and institutional projects. Talk to our business solutions team for a personalised quote.',
+    link: '/contact', linkText: 'Get Bulk Quote',
+    secondaryLink: 'https://wa.me/917303836300', secondaryLinkText: 'WhatsApp Us',
+    image: '', items: [],
+  },
 ];
 
 function extractCloudinaryPublicId(url: string): string | null {
@@ -86,18 +141,18 @@ function ImageUploader({ value, onChange, label }: { value: string; onChange: (u
   return (
     <div>
       <label className="block text-sm font-medium mb-1">{label}</label>
-      <div className="flex gap-2 items-start">
-        <input
-          type="text"
-          value={value || ''}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="Image URL or upload"
-          className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-        />
-        <label className={`px-3 py-2 text-sm rounded-md cursor-pointer transition-colors ${uploading ? 'bg-gray-300 text-gray-500' : 'bg-accent text-white hover:bg-secondary'}`}>
-          {uploading ? 'Uploading...' : 'Upload'}
+      <div className="flex gap-2 items-center">
+        <label
+          className={`px-4 py-2 text-sm rounded-md cursor-pointer transition-colors ${
+            uploading ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-accent text-white hover:bg-secondary'
+          }`}
+        >
+          {uploading ? 'Uploading…' : value ? 'Replace Image' : 'Upload Image'}
           <input type="file" accept="image/*" onChange={handleUpload} className="hidden" disabled={uploading} />
         </label>
+        {value && (
+          <span className="text-xs text-gray-500 truncate max-w-40">Image uploaded ✓</span>
+        )}
       </div>
       {value && (
         <div className="mt-2 relative w-32 h-20 rounded overflow-hidden border border-gray-200">
@@ -105,8 +160,9 @@ function ImageUploader({ value, onChange, label }: { value: string; onChange: (u
           <button
             onClick={handleRemove}
             className="absolute top-0.5 right-0.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center"
+            type="button"
           >
-            x
+            ×
           </button>
         </div>
       )}
@@ -114,117 +170,389 @@ function ImageUploader({ value, onChange, label }: { value: string; onChange: (u
   );
 }
 
-function SectionItemEditor({ item, index, onChange, onRemove }: any) {
-  const update = (field: string, value: any) => {
-    onChange({ ...item, [field]: value });
+// ─── Schema definitions: what fields each business section needs ─────────────
+type SectionSchema = {
+  label: string;
+  hint?: string;
+  showTitle?: boolean;
+  titleLabel?: string;
+  showDescription?: boolean;
+  showImage?: boolean;
+  showLink?: boolean;
+  showSecondaryLink?: boolean;
+  itemLabel?: string;
+  itemFields: Array<'title'|'image'|'link'|'description'|'stats'|'statsLabel'>;
+  noItems?: boolean;
+  isSlider?: boolean; // description field = tab grouping label
+};
+
+const SECTION_SCHEMAS: Record<string, SectionSchema> = {
+  hero: {
+    label: 'Hero Banner',
+    hint: 'Full-width dark banner at the top of the page.',
+    showTitle: true, titleLabel: 'Headline',
+    showDescription: true, showImage: true, showLink: true, showSecondaryLink: true,
+    itemFields: [], noItems: true,
+  },
+  'stats-bar': {
+    label: 'Stats Bar',
+    hint: 'Coral strip of numbers. Each stat is one card.',
+    itemLabel: 'Stat',
+    itemFields: ['stats', 'statsLabel'],
+  },
+  'image-grid': {
+    label: 'Image Grid',
+    hint: '2-column image tiles. Each tile has a title, description, image and link.',
+    itemLabel: 'Tile',
+    itemFields: ['title', 'description', 'image', 'link'],
+  },
+  'split-1': {
+    label: 'Split Section 1 — Image Left',
+    hint: 'Side-by-side block: image on the left, text on the right.',
+    showTitle: true, showDescription: true, showImage: true, showLink: true,
+    itemFields: [], noItems: true,
+  },
+  'split-2': {
+    label: 'Split Section 2 — Image Right',
+    hint: 'Side-by-side block: text on the left, image on the right.',
+    showTitle: true, showDescription: true, showImage: true, showLink: true,
+    itemFields: [], noItems: true,
+  },
+  projects: {
+    label: 'Flagship Projects',
+    hint: 'Project showcase. Each project has a name, short description, image and link.',
+    itemLabel: 'Project',
+    itemFields: ['title', 'description', 'image', 'link'],
+  },
+  cta: {
+    label: 'Call to Action',
+    hint: 'Dark bottom banner with two buttons.',
+    showTitle: true, showDescription: true, showLink: true, showSecondaryLink: true,
+    itemFields: [], noItems: true,
+  },
+  slider: {
+    label: 'Product Slider',
+    hint: 'One section for all slider tabs. Each card has a Tab Name (Description field) that groups it under a header tab.',
+    itemLabel: 'Product Card',
+    itemFields: ['description', 'title', 'image', 'link'],
+    isSlider: true,
+  },
+};
+
+function getSchema(sectionId: string): SectionSchema {
+  return SECTION_SCHEMAS[sectionId] || {
+    label: 'Section',
+    showTitle: true, showDescription: true, showImage: true, showLink: true, showSecondaryLink: true,
+    itemLabel: 'Item',
+    itemFields: ['title', 'description', 'image', 'link', 'stats', 'statsLabel'],
   };
+}
+
+// ─── Schema-aware item editor ─────────────────────────────────────────────────
+function SectionItemEditor({ item, index, onChange, onRemove, fields, itemLabel, isSlider }: any) {
+  const update = (field: string, value: any) => onChange({ ...item, [field]: value });
+  const show = (f: string) => (fields as string[]).includes(f);
+
 
   return (
     <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
       <div className="flex justify-between items-center mb-3">
-        <span className="text-sm font-semibold text-gray-600">Item {index + 1}</span>
-        <button onClick={onRemove} className="text-red-500 hover:text-red-700 text-sm">Remove</button>
+        <span className="text-sm font-semibold text-gray-700">{itemLabel || 'Item'} {index + 1}</span>
+        <button onClick={onRemove} className="text-xs text-red-500 hover:text-red-700 font-medium">Remove</button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div>
-          <label className="block text-xs font-medium mb-1">Title</label>
-          <input
-            type="text"
-            value={item.title || ''}
-            onChange={(e) => update('title', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-medium mb-1">Stats Value</label>
-          <input
-            type="text"
-            value={item.stats || ''}
-            onChange={(e) => update('stats', e.target.value)}
-            placeholder="e.g. 85%"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-          />
-        </div>
-        <div className="md:col-span-2">
-          <label className="block text-xs font-medium mb-1">Description</label>
-          <textarea
-            value={item.description || ''}
-            onChange={(e) => update('description', e.target.value)}
-            rows={2}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-medium mb-1">Stats Label</label>
-          <input
-            type="text"
-            value={item.statsLabel || ''}
-            onChange={(e) => update('statsLabel', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-medium mb-1">Link</label>
-          <input
-            type="text"
-            value={item.link || ''}
-            onChange={(e) => update('link', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-          />
-        </div>
-        <div className="md:col-span-2">
-          <ImageUploader value={item.image || ''} onChange={(url) => update('image', url)} label="Item Image" />
-        </div>
+        {/* Slider only: description = Tab Name */}
+        {isSlider && show('description') && (
+          <div>
+            <label className="block text-xs font-medium mb-1 text-gray-600">
+              Tab Name <span className="font-normal text-gray-400">(e.g. Seating)</span>
+            </label>
+            <input type="text" value={item.description || ''} onChange={(e) => update('description', e.target.value)}
+              placeholder="Seating"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
+          </div>
+        )}
+        {show('stats') && (
+          <div>
+            <label className="block text-xs font-medium mb-1 text-gray-600">Number (e.g. 75+)</label>
+            <input type="text" value={item.stats || ''} onChange={(e) => update('stats', e.target.value)}
+              placeholder="85%"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
+          </div>
+        )}
+        {show('statsLabel') && (
+          <div>
+            <label className="block text-xs font-medium mb-1 text-gray-600">Label (e.g. National Awards)</label>
+            <input type="text" value={item.statsLabel || ''} onChange={(e) => update('statsLabel', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
+          </div>
+        )}
+        {show('title') && (
+          <div>
+            <label className="block text-xs font-medium mb-1 text-gray-600">
+              {isSlider ? 'Product Name' : 'Title'}
+            </label>
+            <input type="text" value={item.title || ''} onChange={(e) => update('title', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
+          </div>
+        )}
+        {/* Non-slider: description = regular description textarea */}
+        {!isSlider && show('description') && (
+          <div className="md:col-span-2">
+            <label className="block text-xs font-medium mb-1 text-gray-600">Description</label>
+            <textarea value={item.description || ''} onChange={(e) => update('description', e.target.value)}
+              rows={2}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
+          </div>
+        )}
+        {show('link') && (
+          <div className={show('image') ? '' : 'md:col-span-2'}>
+            <label className="block text-xs font-medium mb-1 text-gray-600">Link URL</label>
+            <input type="text" value={item.link || ''} onChange={(e) => update('link', e.target.value)}
+              placeholder="/category/seating"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
+          </div>
+        )}
+        {show('image') && (
+          <div className="md:col-span-2">
+            <ImageUploader value={item.image || ''} onChange={(url) => update('image', url)} label="Image" />
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
+// ─── Slider: nested Tabs → Cards editor ─────────────────────────────────────
+function TabGroup({ tab, onRename, onRemove, onAddCard, onUpdateCard, onRemoveCard }: any) {
+  const [open, setOpen] = useState(true);
+  return (
+    <div className="border border-gray-200 rounded-lg overflow-hidden">
+      {/* Tab header */}
+      <div className="flex items-center gap-2 px-3 py-2 bg-gray-100">
+        <button onClick={() => setOpen(!open)} className="text-gray-400 hover:text-gray-700 text-base w-4">
+          {open ? '▾' : '▸'}
+        </button>
+        <input
+          type="text"
+          value={tab.name}
+          onChange={(e) => onRename(e.target.value)}
+          className="flex-1 px-2 py-1 text-sm font-semibold bg-transparent border border-transparent hover:border-gray-300 focus:border-accent rounded focus:outline-none"
+          placeholder="Tab name (e.g. Workspace)"
+        />
+        <span className="text-xs text-gray-400 shrink-0">
+          {tab.cards.length} card{tab.cards.length !== 1 ? 's' : ''}
+        </span>
+        <button
+          onClick={onRemove}
+          className="text-xs text-red-400 hover:text-red-600 px-2 py-1 rounded hover:bg-red-50"
+        >
+          Remove Tab
+        </button>
+      </div>
+
+      {/* Cards */}
+      {open && (
+        <div className="p-3 space-y-2 bg-white">
+          {tab.cards.length === 0 && (
+            <p className="text-xs text-gray-400 text-center py-3 border border-dashed border-gray-200 rounded">
+              No cards yet — add one below.
+            </p>
+          )}
+          {tab.cards.map((card: any, ci: number) => (
+            <div key={ci} className="border border-gray-200 rounded-lg p-3 bg-gray-50">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-xs font-semibold text-gray-600">Card {ci + 1}</span>
+                <button
+                  onClick={() => onRemoveCard(ci)}
+                  className="text-xs text-red-400 hover:text-red-600"
+                >
+                  Remove
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-medium mb-1 text-gray-500">Product Name</label>
+                  <input
+                    type="text"
+                    value={card.title || ''}
+                    onChange={(e) => onUpdateCard(ci, { ...card, title: e.target.value })}
+                    className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1 text-gray-500">Link URL</label>
+                  <input
+                    type="text"
+                    value={card.link || ''}
+                    onChange={(e) => onUpdateCard(ci, { ...card, link: e.target.value })}
+                    placeholder="/product/chair-001"
+                    className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <ImageUploader
+                    value={card.image || ''}
+                    onChange={(url) => onUpdateCard(ci, { ...card, image: url })}
+                    label="Card Image"
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+          <button
+            onClick={onAddCard}
+            className="w-full py-1.5 border border-dashed border-gray-300 rounded text-xs text-gray-500 hover:border-accent hover:text-accent transition-colors"
+          >
+            + Add Card
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SliderTabsEditor({ items, onChange }: { items: any[]; onChange: (items: any[]) => void }) {
+  // Build tab list from flat items once (initialiser only — local state owns tabs after that)
+  const buildTabs = (flatItems: any[]): { name: string; cards: any[] }[] => {
+    const map = new Map<string, any[]>();
+    (flatItems || []).forEach((item) => {
+      const tab = item.description?.trim() || 'Untitled Tab';
+      if (!map.has(tab)) map.set(tab, []);
+      map.get(tab)!.push(item);
+    });
+    return Array.from(map.entries()).map(([name, cards]) => ({ name, cards }));
+  };
+
+  // LOCAL STATE — empty tabs survive here even though they produce 0 flat items
+  const [tabs, setTabs] = useState<{ name: string; cards: any[] }[]>(() => buildTabs(items));
+
+  // Flatten tabs → items and bubble up to parent
+  const commit = (newTabs: { name: string; cards: any[] }[]) => {
+    setTabs(newTabs);
+    // Only non-empty tabs contribute flat items (empty tabs are editor-only state)
+    const flat = newTabs.flatMap((t) =>
+      t.cards.map((c) => ({ ...c, description: t.name }))
+    );
+    onChange(flat);
+  };
+
+  const addTab = () => {
+    const nameBase = 'New Tab';
+    const existing = tabs.map((t) => t.name);
+    let name = nameBase;
+    let n = 1;
+    while (existing.includes(name)) { name = `${nameBase} ${++n}`; }
+    commit([...tabs, { name, cards: [] }]);
+  };
+
+  const removeTab = (ti: number) => commit(tabs.filter((_, i) => i !== ti));
+
+  const renameTab = (ti: number, name: string) =>
+    commit(tabs.map((t, i) => (i === ti ? { ...t, name } : t)));
+
+  const addCard = (ti: number) =>
+    commit(
+      tabs.map((t, i) =>
+        i === ti
+          ? { ...t, cards: [...t.cards, { title: '', image: '', link: '' }] }
+          : t
+      )
+    );
+
+  const updateCard = (ti: number, ci: number, card: any) =>
+    commit(
+      tabs.map((t, i) => {
+        if (i !== ti) return t;
+        const cards = [...t.cards];
+        cards[ci] = card;
+        return { ...t, cards };
+      })
+    );
+
+  const removeCard = (ti: number, ci: number) =>
+    commit(
+      tabs.map((t, i) =>
+        i === ti ? { ...t, cards: t.cards.filter((_, k) => k !== ci) } : t
+      )
+    );
+
+  return (
+    <div className="space-y-3">
+      {tabs.length === 0 && (
+        <p className="text-sm text-gray-400 text-center py-6 border border-dashed border-gray-200 rounded-lg">
+          No tabs yet — click "+ Add Tab" to create the first one.
+        </p>
+      )}
+      {tabs.map((tab, ti) => (
+        <TabGroup
+          key={ti}
+          tab={tab}
+          onRename={(name: string) => renameTab(ti, name)}
+          onRemove={() => removeTab(ti)}
+          onAddCard={() => addCard(ti)}
+          onUpdateCard={(ci: number, card: any) => updateCard(ti, ci, card)}
+          onRemoveCard={(ci: number) => removeCard(ti, ci)}
+        />
+      ))}
+      <button
+        onClick={addTab}
+        className="w-full py-2.5 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-500 hover:border-accent hover:text-accent transition-colors font-medium"
+      >
+        + Add Tab
+      </button>
+    </div>
+  );
+}
+
+// ─── Schema-aware section editor ──────────────────────────────────────────────
 function SectionEditor({ section, index, onChange, onDelete, onMoveUp, onMoveDown, isFirst, isLast }: any) {
   const [expanded, setExpanded] = useState(false);
+  const schema = getSchema(section.sectionId);
 
-  const update = (field: string, value: any) => {
-    onChange({ ...section, [field]: value });
-  };
+  const update = (field: string, value: any) => onChange({ ...section, [field]: value });
 
   const addItem = () => {
-    const items = [...(section.items || []), { title: '', description: '', image: '', stats: '', statsLabel: '' }];
-    update('items', items);
+    update('items', [...(section.items || []), { title: '', description: '', image: '', link: '', stats: '', statsLabel: '' }]);
   };
-
   const updateItem = (idx: number, item: any) => {
-    const items = [...(section.items || [])];
-    items[idx] = item;
-    update('items', items);
+    const items = [...(section.items || [])]; items[idx] = item; update('items', items);
+  };
+  const removeItem = (idx: number) => {
+    update('items', (section.items || []).filter((_: any, i: number) => i !== idx));
   };
 
-  const removeItem = (idx: number) => {
-    const items = (section.items || []).filter((_: any, i: number) => i !== idx);
-    update('items', items);
-  };
 
   return (
     <div className={`border rounded-lg overflow-hidden ${section.isVisible ? 'border-gray-200' : 'border-yellow-300 bg-yellow-50/30'}`}>
+      {/* Header row */}
       <div
         className="flex items-center justify-between px-4 py-3 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
         onClick={() => setExpanded(!expanded)}
       >
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-bold text-gray-400 w-6">{index + 1}</span>
-          <div>
-            <span className="font-semibold text-gray-900">{section.title || section.sectionId || 'Untitled Section'}</span>
-            <span className="ml-2 text-xs px-2 py-0.5 bg-accent/10 text-accent rounded-full">{section.type}</span>
-            {!section.isVisible && <span className="ml-2 text-xs px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-full">Hidden</span>}
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="text-sm font-bold text-gray-400 w-6 shrink-0">{index + 1}</span>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-semibold text-gray-900">{schema.label}</span>
+              {section.title && (
+                <span className="text-sm text-gray-500 truncate max-w-xs">{section.title}</span>
+              )}
+              {!section.isVisible && <span className="text-xs px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-full shrink-0">Hidden</span>}
+            </div>
+            {schema.hint && (
+              <p className="text-xs text-gray-400 mt-0.5">{schema.hint}</p>
+            )}
           </div>
         </div>
-        <div className="flex items-center gap-1">
-          <button onClick={(e) => { e.stopPropagation(); onMoveUp(); }} disabled={isFirst} className="p-1 hover:bg-gray-200 rounded disabled:opacity-30" title="Move Up">
+        <div className="flex items-center gap-1 shrink-0">
+          <button onClick={(e) => { e.stopPropagation(); onMoveUp(); }} disabled={isFirst} className="p-1 hover:bg-gray-200 rounded disabled:opacity-30">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
           </button>
-          <button onClick={(e) => { e.stopPropagation(); onMoveDown(); }} disabled={isLast} className="p-1 hover:bg-gray-200 rounded disabled:opacity-30" title="Move Down">
+          <button onClick={(e) => { e.stopPropagation(); onMoveDown(); }} disabled={isLast} className="p-1 hover:bg-gray-200 rounded disabled:opacity-30">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </button>
-          <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="p-1 hover:bg-red-100 rounded text-red-500" title="Delete Section">
+          <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="p-1 hover:bg-red-100 rounded text-red-500">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
           </button>
           <svg className={`w-5 h-5 text-gray-400 transition-transform ${expanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -233,165 +561,120 @@ function SectionEditor({ section, index, onChange, onDelete, onMoveUp, onMoveDow
         </div>
       </div>
 
+      {/* Expanded body */}
       {expanded && (
-        <div className="p-4 space-y-4 border-t border-gray-200">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Section ID</label>
-              <input
-                type="text"
-                value={section.sectionId || ''}
-                onChange={(e) => update('sectionId', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Type</label>
-              <select
-                value={section.type || 'content'}
-                onChange={(e) => update('type', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-              >
-                {SECTION_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Background</label>
-              <select
-                value={section.bgColor || 'white'}
-                onChange={(e) => update('bgColor', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-              >
-                {BG_OPTIONS.map(b => <option key={b.value} value={b.value}>{b.label}</option>)}
-              </select>
-            </div>
-          </div>
+        <div className="p-5 space-y-5 border-t border-gray-200">
 
-          <div>
-            <label className="block text-sm font-medium mb-1">Title</label>
-            <input
-              type="text"
-              value={section.title || ''}
-              onChange={(e) => update('title', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Subtitle</label>
-            <input
-              type="text"
-              value={section.subtitle || ''}
-              onChange={(e) => update('subtitle', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Description</label>
-            <textarea
-              value={section.description || ''}
-              onChange={(e) => update('description', e.target.value)}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Additional Content</label>
-            <textarea
-              value={section.content || ''}
-              onChange={(e) => update('content', e.target.value)}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-            />
-          </div>
-
-          <ImageUploader value={section.image || ''} onChange={(url) => update('image', url)} label="Section Image" />
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Image Alt Text</label>
-            <input
-              type="text"
-              value={section.imageAlt || ''}
-              onChange={(e) => update('imageAlt', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Primary Link URL</label>
-              <input
-                type="text"
-                value={section.link || ''}
-                onChange={(e) => update('link', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Primary Link Text</label>
-              <input
-                type="text"
-                value={section.linkText || ''}
-                onChange={(e) => update('linkText', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Secondary Link URL</label>
-              <input
-                type="text"
-                value={section.secondaryLink || ''}
-                onChange={(e) => update('secondaryLink', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Secondary Link Text</label>
-              <input
-                type="text"
-                value={section.secondaryLinkText || ''}
-                onChange={(e) => update('secondaryLinkText', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-              />
-            </div>
-          </div>
-
+          {/* Visibility toggle — always shown */}
           <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id={`visible-${index}`}
-              checked={section.isVisible !== false}
-              onChange={(e) => update('isVisible', e.target.checked)}
-              className="rounded border-gray-300"
-            />
-            <label htmlFor={`visible-${index}`} className="text-sm font-medium">Visible on page</label>
+            <input type="checkbox" id={`vis-${index}`} checked={section.isVisible !== false}
+              onChange={(e) => update('isVisible', e.target.checked)} className="rounded border-gray-300" />
+            <label htmlFor={`vis-${index}`} className="text-sm font-medium">Visible on page</label>
           </div>
 
-          {/* Items */}
-          <div className="border-t border-gray-200 pt-4">
-            <div className="flex justify-between items-center mb-3">
-              <h4 className="font-semibold text-sm">Items ({(section.items || []).length})</h4>
-              <button
-                onClick={addItem}
-                className="px-3 py-1.5 text-sm bg-accent text-white rounded-md hover:bg-secondary transition-colors"
-              >
-                + Add Item
-              </button>
+          {/* Section-level title */}
+          {schema.showTitle && (
+            <div>
+              <label className="block text-sm font-medium mb-1">{schema.titleLabel || 'Title'}</label>
+              <input type="text" value={section.title || ''} onChange={(e) => update('title', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
             </div>
-            <div className="space-y-3">
-              {(section.items || []).map((item: any, idx: number) => (
-                <SectionItemEditor
-                  key={idx}
-                  item={item}
-                  index={idx}
-                  onChange={(updated: any) => updateItem(idx, updated)}
-                  onRemove={() => removeItem(idx)}
-                />
-              ))}
+          )}
+
+          {/* Description */}
+          {schema.showDescription && (
+            <div>
+              <label className="block text-sm font-medium mb-1">Description</label>
+              <textarea value={section.description || ''} onChange={(e) => update('description', e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
             </div>
-          </div>
+          )}
+
+          {/* Image */}
+          {schema.showImage && (
+            <ImageUploader value={section.image || ''} onChange={(url) => update('image', url)} label="Image" />
+          )}
+
+          {/* Primary link */}
+          {schema.showLink && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Button URL</label>
+                <input type="text" value={section.link || ''} onChange={(e) => update('link', e.target.value)}
+                  placeholder="/contact"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Button Label</label>
+                <input type="text" value={section.linkText || ''} onChange={(e) => update('linkText', e.target.value)}
+                  placeholder="Learn More"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
+              </div>
+            </div>
+          )}
+
+          {/* Secondary link */}
+          {schema.showSecondaryLink && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Second Button URL</label>
+                <input type="text" value={section.secondaryLink || ''} onChange={(e) => update('secondaryLink', e.target.value)}
+                  placeholder="/about"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Second Button Label</label>
+                <input type="text" value={section.secondaryLinkText || ''} onChange={(e) => update('secondaryLinkText', e.target.value)}
+                  placeholder="Request a Quote"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
+              </div>
+            </div>
+          )}
+
+          {/* Items — Slider gets nested Tabs→Cards UI, everything else gets flat list */}
+          {!schema.noItems && schema.isSlider && (
+            <div className="border-t border-gray-100 pt-4">
+              <h4 className="font-semibold text-sm text-gray-700 mb-3">
+                Tabs &amp; Cards ({(section.items || []).length} card{(section.items || []).length !== 1 ? 's' : ''} total)
+              </h4>
+              <SliderTabsEditor
+                items={section.items || []}
+                onChange={(items) => update('items', items)}
+              />
+            </div>
+          )}
+          {!schema.noItems && !schema.isSlider && (
+            <div className="border-t border-gray-100 pt-4">
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="font-semibold text-sm text-gray-700">
+                  {schema.itemLabel || 'Item'}s ({(section.items || []).length})
+                </h4>
+                <button onClick={addItem}
+                  className="px-3 py-1.5 text-sm bg-accent text-white rounded-md hover:bg-secondary transition-colors">
+                  + Add {schema.itemLabel || 'Item'}
+                </button>
+              </div>
+              {(section.items || []).length === 0 && (
+                <p className="text-sm text-gray-400 py-4 text-center border border-dashed border-gray-200 rounded-lg">
+                  No {(schema.itemLabel || 'item').toLowerCase()}s yet — click the button above to add one.
+                </p>
+              )}
+              <div className="space-y-3">
+                {(section.items || []).map((item: any, idx: number) => (
+                  <SectionItemEditor
+                    key={idx}
+                    item={item}
+                    index={idx}
+                    fields={schema.itemFields}
+                    itemLabel={schema.itemLabel}
+                    onChange={(updated: any) => updateItem(idx, updated)}
+                    onRemove={() => removeItem(idx)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -418,7 +701,21 @@ export default function AdminPageEditorPage() {
   const fetchPage = async () => {
     try {
       const data = await getPageContentAdmin(slug);
-      setPage(data.data);
+      const pageData = data.data;
+      // For the business page, auto-populate any missing sections so the admin
+      // always sees all editable sections without manual setup.
+      if (slug === 'business' && pageData) {
+        const existing: any[] = pageData.sections || [];
+        const existingIds = new Set(existing.map((s: any) => s.sectionId));
+        const missing = BUSINESS_REQUIRED_SECTIONS.filter((s) => !existingIds.has(s.sectionId));
+        if (missing.length > 0) {
+          pageData.sections = [
+            ...existing,
+            ...missing.map((s, i) => ({ ...s, order: existing.length + i })),
+          ];
+        }
+      }
+      setPage(pageData);
     } catch (error) {
       console.error('Error fetching page:', error);
     } finally {
@@ -613,14 +910,16 @@ export default function AdminPageEditorPage() {
         </div>
 
         {/* Sections */}
-        <div className="mb-4 flex justify-between items-center">
+        <div className="mb-4 flex flex-wrap justify-between items-center gap-3">
           <h2 className="text-lg font-bold">Sections ({page.sections?.length || 0})</h2>
-          <button
-            onClick={addNewSection}
-            className="px-4 py-2 bg-accent text-white rounded-md hover:bg-secondary text-sm font-semibold transition-colors"
-          >
-            + Add Section
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={addNewSection}
+              className="px-4 py-2 bg-accent text-white rounded-md hover:bg-secondary text-sm font-semibold transition-colors"
+            >
+              + Add Section
+            </button>
+          </div>
         </div>
 
         <div className="space-y-3">

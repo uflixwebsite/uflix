@@ -50,7 +50,8 @@ interface PageData {
 function getBgClass(bgColor?: string) {
   switch (bgColor) {
     case 'light': return 'bg-neutral-light';
-    case 'gradient': return 'bg-gradient-to-br from-accent to-secondary';
+    case 'gradient': return 'bg-linear-to-br from-accent to-secondary';
+    case 'dark': return 'bg-gray-900';
     case 'white':
     default: return 'bg-white';
   }
@@ -58,8 +59,52 @@ function getBgClass(bgColor?: string) {
 
 function HeroSection({ section }: { section: Section }) {
   const hasImage = !!section.image;
+  const isDark = section.bgColor === 'dark' || section.bgColor === 'gradient';
+
+  if (isDark) {
+    return (
+      <section
+        className={`relative ${hasImage ? 'h-125 lg:h-150' : 'h-64'} overflow-hidden`}
+        style={{ background: 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #0f3460 100%)' }}
+      >
+        {hasImage && (
+          <Image
+            src={section.image!}
+            alt={section.imageAlt || section.title || ''}
+            fill
+            className="object-cover"
+            priority
+          />
+        )}
+        <div className="absolute inset-0 bg-black/50" />
+        <div className="absolute inset-0 flex items-center justify-center text-white z-10">
+          <div className="max-w-5xl mx-auto px-4 text-center">
+            <h1 className="text-5xl md:text-6xl font-bold mb-6">{section.title}</h1>
+            {section.description && (
+              <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto text-white/80">{section.description}</p>
+            )}
+            {(section.link || section.secondaryLink) && (
+              <div className="flex flex-wrap justify-center gap-4">
+                {section.link && section.linkText && (
+                  <Link href={section.link} className="inline-block bg-accent hover:bg-secondary text-white px-10 py-4 rounded-full font-bold transition-colors shadow-xl text-lg">
+                    {section.linkText}
+                  </Link>
+                )}
+                {section.secondaryLink && section.secondaryLinkText && (
+                  <Link href={section.secondaryLink} className="inline-block bg-transparent border-2 border-white text-white hover:bg-white hover:text-accent px-10 py-4 rounded-full font-bold transition-colors text-lg">
+                    {section.secondaryLinkText}
+                  </Link>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <section className={`relative ${hasImage ? 'h-[500px] lg:h-[600px]' : 'h-64'} ${getBgClass(section.bgColor)} overflow-hidden`}>
+    <section className={`relative ${hasImage ? 'h-125 lg:h-150' : 'h-64'} ${getBgClass(section.bgColor)} overflow-hidden`}>
       {hasImage && (
         <Image
           src={section.image!}
@@ -69,7 +114,7 @@ function HeroSection({ section }: { section: Section }) {
           priority
         />
       )}
-      <div className={`absolute inset-0 flex items-center justify-center text-white`}>
+      <div className={`absolute inset-0 flex items-center justify-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
         <div className="max-w-5xl mx-auto px-4 text-center">
           <h1 className="text-5xl md:text-6xl font-bold mb-6">{section.title}</h1>
           {section.description && (
@@ -137,7 +182,7 @@ function FeaturesSection({ section }: { section: Section }) {
                   <img src={item.image} alt={item.title || ''} className="w-full h-full object-cover" />
                 </div>
               ) : (
-                <div className="w-20 h-20 bg-gradient-to-br from-accent to-secondary rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <div className="w-20 h-20 bg-linear-to-br from-accent to-secondary rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
                   <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
@@ -277,7 +322,7 @@ function TextImageSection({ section }: { section: Section }) {
               <div className="space-y-4 mt-6">
                 {items.map((item, idx) => (
                   <div key={idx} className="flex items-start gap-3">
-                    <svg className="w-6 h-6 text-accent flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-6 h-6 text-accent shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                     <div>
@@ -290,7 +335,7 @@ function TextImageSection({ section }: { section: Section }) {
             )}
           </div>
           {section.image && (
-            <div className="relative h-[400px] rounded-2xl overflow-hidden shadow-2xl">
+            <div className="relative h-100 rounded-2xl overflow-hidden shadow-2xl">
               <Image
                 src={section.image}
                 alt={section.imageAlt || section.title || ''}
@@ -320,7 +365,7 @@ function ListSection({ section }: { section: Section }) {
           {items.map((item, idx) => (
             <div key={idx} className={`grid md:grid-cols-2 gap-12 items-center`}>
               {item.image && (
-                <div className={`relative h-[400px] rounded-2xl overflow-hidden shadow-2xl ${idx % 2 === 1 ? 'md:order-2' : ''}`}>
+                <div className={`relative h-100 rounded-2xl overflow-hidden shadow-2xl ${idx % 2 === 1 ? 'md:order-2' : ''}`}>
                   <Image src={item.image} alt={item.title || ''} fill className="object-cover" />
                 </div>
               )}
@@ -352,7 +397,7 @@ function ContactInfoSection({ section }: { section: Section }) {
           <div className="space-y-6">
             {items.map((item, idx) => (
               <div key={idx} className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-accent-light rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 bg-accent-light rounded-full flex items-center justify-center shrink-0">
                   <svg className="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
@@ -418,7 +463,7 @@ export default function DynamicPage({ slug, fallback, children }: DynamicPagePro
       <div className="min-h-screen bg-background">
         <Header />
         <main>
-          <div className="h-[500px] bg-gray-200 animate-pulse" />
+          <div className="h-125 bg-gray-200 animate-pulse" />
           <div className="max-w-7xl mx-auto px-4 py-16 space-y-8">
             <div className="h-8 bg-gray-200 rounded w-1/3 mx-auto animate-pulse" />
             <div className="h-4 bg-gray-200 rounded w-2/3 mx-auto animate-pulse" />

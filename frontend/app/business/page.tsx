@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import ProductCard from '@/components/ProductCard';
 import Link from 'next/link';
+import Image from 'next/image';
 import { getProducts } from '@/services/productService';
 import { getPageContent } from '@/services/pageService';
 import { getCategoryByPath } from '@/services/categoryService';
@@ -12,322 +12,658 @@ import api from '@/services/api';
 import { renderSection } from '@/components/DynamicPage';
 import type { Section } from '@/components/DynamicPage';
 
-const STATS = [
-  { value: '300+', label: 'Corporate Clients' },
-  { value: '15+', label: 'Industries Served' },
-  { value: 'ISO 9001:2015', label: 'Certified Quality' },
-  { value: '20+', label: 'Years of Excellence' },
+// ─── Placeholder data (shows until admin configures each section) ────────────
+const PH_STATS = [
+  { stats: '75+', statsLabel: 'National & International Awards' },
+  { stats: '900+', statsLabel: 'Design Registrations' },
+  { stats: '3500+', statsLabel: 'Exclusive Product Designs' },
+  { stats: '400+', statsLabel: 'Skilled Artisans' },
+  { stats: '20+', statsLabel: 'Years of Excellence' },
+  { stats: '300+', statsLabel: 'Corporate Clients' },
 ];
 
-const INDUSTRIES = [
-  { icon: '🏦', title: 'Banking & Finance', desc: 'Executive workstations, meeting rooms, and reception furniture for financial institutions.' },
-  { icon: '🏥', title: 'Healthcare', desc: 'Ergonomic clinical furniture and sterile storage solutions for hospitals and clinics.' },
-  { icon: '🏫', title: 'Education', desc: 'Durable classroom furniture, library systems, and administrative workstations.' },
-  { icon: '🏛️', title: 'Government', desc: 'Compliant, GST-ready office furniture for government bodies and PSUs.' },
-  { icon: '🏨', title: 'Hospitality', desc: 'Bespoke lobby, guest room, and F&B furniture for hotels and resorts.' },
-  { icon: '💼', title: 'Corporate Offices', desc: 'Open-plan workstations, cabins, and collaborative spaces for modern enterprises.' },
+const PH_IMAGE_GRID = [
+  {
+    title: 'Designs for a Better Workspace',
+    description: 'Ergonomic, modular office systems built around people.',
+    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80',
+    link: '/category/for-business',
+    linkText: 'Explore Office',
+  },
+  {
+    title: 'Collaborative Spaces',
+    description: 'Meeting rooms and open-plan furniture that inspire teamwork.',
+    image: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=800&q=80',
+    link: '/categories',
+    linkText: 'View Collection',
+  },
 ];
 
-const CATEGORIES = [
-  { slug: 'workstation', icon: '🖥️', title: 'Workstations', desc: 'Ergonomic, modular workstations for open-plan and private offices.' },
-  { slug: 'seating', icon: '🪑', title: 'Seating', desc: 'Executive, task, and lounge chairs designed for all-day comfort.' },
-  { slug: 'storage', icon: '📦', title: 'Storage Solutions', desc: 'Filing cabinets, pedestals, and overhead storage units.' },
-  { slug: 'conference', icon: '📋', title: 'Conference', desc: 'Conference tables, boardroom furniture, and presentation stands.' },
+const PH_SPLIT_1 = {
+  title: 'Audio-Visual for Your Space',
+  description:
+    'Integrated AV furniture and cable-managed media walls — designed to complement your workspace aesthetic while keeping technology tidy and accessible.',
+  image: 'https://images.unsplash.com/photo-1560185007-c5ca9d2c014d?w=800&q=80',
+  link: '/contact',
+  linkText: 'Get a Quote',
+};
+
+const PH_SPLIT_2 = {
+  title: 'Shop for Home — Modern Indian Living',
+  description:
+    'Bring the same quality and craftsmanship home. Explore our residential collection designed for modern Indian families — functional, beautiful, and built to last.',
+  image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&q=80',
+  link: '/shop',
+  linkText: 'Shop Collection',
+};
+
+const PH_PROJECTS = [
+  {
+    title: 'HDFC Bank – Mumbai HQ',
+    description: 'Executive workstations and boardroom fitout across 12 floors.',
+    image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&q=80',
+    link: '/projects',
+    linkText: 'View project',
+  },
+  {
+    title: 'Infosys – Pune Campus',
+    description: 'Open-plan collaborative campus furniture for 2000+ seats.',
+    image: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=800&q=80',
+    link: '/projects',
+    linkText: 'View project',
+  },
+  {
+    title: 'Apollo Hospitals – Delhi',
+    description: 'Clinical and patient-comfort furniture for a 400-bed facility.',
+    image: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&q=80',
+    link: '/projects',
+    linkText: 'View project',
+  },
+  {
+    title: 'Marriott – Bengaluru',
+    description: 'Lobby, guest-room and F&B furniture for a 5-star property.',
+    image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&q=80',
+    link: '/projects',
+    linkText: 'View project',
+  },
+  {
+    title: 'IIT Delhi – Learning Spaces',
+    description: 'Flexible classroom and library furniture for modern education.',
+    image: 'https://images.unsplash.com/photo-1562774053-701939374585?w=800&q=80',
+    link: '/projects',
+    linkText: 'View project',
+  },
 ];
 
-const FEATURES = [
-  'ISO 9001:2015 certified manufacturing',
-  'Custom branding & colour matching',
-  'GST-compliant billing for corporates',
-  'Project management & installation',
-  'Pan-India delivery network',
-  'AMC and after-sale service',
-];
+// ─── Category Tabs + Horizontal Scroll Slider ─────────────────────────────────
+const PH_SLIDER_IMAGES: Record<string, string[]> = {
+  seating: [
+    'https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?w=500&q=80',
+    'https://images.unsplash.com/photo-1517705008128-361805f42e86?w=500&q=80',
+    'https://images.unsplash.com/photo-1580480055273-228ff5388ef8?w=500&q=80',
+    'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=500&q=80',
+    'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500&q=80',
+  ],
+  desking: [
+    'https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=500&q=80',
+    'https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=500&q=80',
+    'https://images.unsplash.com/photo-1497366216548-37526070297c?w=500&q=80',
+    'https://images.unsplash.com/photo-1603791440384-56cd371ee9a7?w=500&q=80',
+    'https://images.unsplash.com/photo-1593642634524-b40b5baae6bb?w=500&q=80',
+  ],
+};
 
-export default function BusinessPage() {
+const PH_SLIDER_NAMES: Record<string, string[]> = {
+  seating: ['Workstation Chairs', 'Executive Chairs', 'Lounge Seating', 'Training Room Chairs', 'Conference Chairs'],
+  desking: ['Height-Adjust Desk', 'Manager Desk', 'L-Shape Desk', 'Cable-Managed Desk', 'Standing Desk'],
+};
+
+function SliderCard({ image, name, link }: { image: string; name: string; link: string }) {
+  return (
+    <Link
+      href={link}
+      className="group flex-none w-64 md:w-72 cursor-pointer"
+    >
+      <div className="relative h-52 rounded-lg overflow-hidden bg-gray-100">
+        <Image
+          src={image}
+          alt={name}
+          fill
+          className="object-cover group-hover:scale-105 transition-transform duration-400"
+        />
+      </div>
+      <div className="mt-3 pb-3 border-b border-gray-200">
+        <p className="font-semibold text-gray-800 text-sm group-hover:text-accent transition-colors">
+          {name}
+        </p>
+        <span className="inline-block mt-1 text-accent text-base leading-none">→</span>
+      </div>
+    </Link>
+  );
+}
+
+function CategoryProductTabs({
+  subCategories,
+  businessRootSlug,
+  adminSliderItems,
+}: {
+  subCategories: any[];
+  businessRootSlug: string;
+  // items from the single 'slider' section; each item has description=tabName, title, image, link
+  adminSliderItems?: any[];
+}) {
+  const [activeIdx, setActiveIdx] = useState(0);
   const [products, setProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [scrollPct, setScrollPct] = useState(0);
+
+  // Build tabs from admin items grouped by description, or fall back to real subcategories / placeholders.
+  const adminTabs: { name: string; cards: any[] }[] = [];
+  if (adminSliderItems && adminSliderItems.length > 0) {
+    const map = new Map<string, any[]>();
+    adminSliderItems.forEach((item: any) => {
+      const tab = item.description?.trim() || 'Other';
+      if (!map.has(tab)) map.set(tab, []);
+      map.get(tab)!.push(item);
+    });
+    map.forEach((cards, name) => adminTabs.push({ name, cards }));
+  }
+  const hasAdminTabs = adminTabs.length > 0;
+
+  const tabs = hasAdminTabs
+    ? adminTabs
+    : subCategories.length
+    ? subCategories.map((c: any) => ({ name: c.name, slug: c.slug, _id: c._id, cards: [] }))
+    : [
+        { name: 'Seating',       slug: 'seating',       cards: [] },
+        { name: 'Desking',       slug: 'desking',       cards: [] },
+        { name: 'Workstations',  slug: 'workstations',  cards: [] },
+        { name: 'Office Storage',slug: 'office-storage',cards: [] },
+        { name: 'Laboratory',    slug: 'laboratory',    cards: [] },
+        { name: 'Healthcare',    slug: 'healthcare',    cards: [] },
+      ] as any[];
+
+  useEffect(() => {
+    if (hasAdminTabs) return;
+    const cat = (subCategories as any[])[activeIdx];
+    if (!cat) return;
+    fetchTabProducts(cat);
+  }, [subCategories, activeIdx, hasAdminTabs]);
+
+  const fetchTabProducts = async (cat: any) => {
+    setLoading(true);
+    try {
+      const res = await getProducts({ categoryId: cat._id, limit: 10 });
+      setProducts((res.data || []).slice(0, 10));
+    } catch {
+      setProducts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    const pct = el.scrollLeft / (el.scrollWidth - el.clientWidth);
+    setScrollPct(isNaN(pct) ? 0 : pct);
+  };
+
+  const activeSlug = (tabs[activeIdx] as any)?.slug || 'seating';
+  const phImages = PH_SLIDER_IMAGES[activeSlug] || PH_SLIDER_IMAGES.seating;
+  const phNames  = PH_SLIDER_NAMES[activeSlug]  || PH_SLIDER_NAMES.seating;
+
+  return (
+    <section className="py-16 bg-[#F5F0EB]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8">
+          Designed for better working, every day
+        </h2>
+
+        {/* Rectangular segmented tabs */}
+        <div className="flex border border-gray-300 rounded-none overflow-hidden w-fit mb-8">
+          {tabs.map((cat, i) => (
+            <button
+              key={cat._id}
+              onClick={() => setActiveIdx(i)}
+              className={`px-6 py-3 text-sm font-medium border-r border-gray-300 last:border-r-0 transition-colors relative ${
+                activeIdx === i
+                  ? 'bg-white text-gray-900'
+                  : 'bg-transparent text-gray-600 hover:bg-white/60'
+              }`}
+            >
+              {cat.name}
+              {activeIdx === i && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent" />
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Horizontal scroll slider */}
+        <div
+          className="overflow-x-auto scrollbar-hide"
+          onScroll={onScroll}
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          <div className="flex gap-4 pb-4" style={{ width: 'max-content' }}>
+            {loading ? (
+              [...Array(6)].map((_, i) => (
+                <div key={i} className="flex-none w-64 animate-pulse">
+                  <div className="bg-gray-300 h-52 rounded-lg mb-3" />
+                  <div className="h-4 bg-gray-300 rounded w-3/4 mb-1" />
+                </div>
+              ))
+            ) : hasAdminTabs ? (
+              (() => {
+                const cards = (tabs[activeIdx] as any)?.cards || [];
+                if (cards.length === 0) return (
+                  <p className="text-gray-400 py-12">No cards added to this tab yet.</p>
+                );
+                return cards.map((item: any, i: number) => (
+                  <SliderCard key={i} image={item.image || ''} name={item.title || ''} link={item.link || `/${businessRootSlug}`} />
+                ));
+              })()
+            ) : !subCategories.length ? (
+              phImages.map((src, i) => (
+                <SliderCard key={i} image={src} name={phNames[i] || 'Office Chair'} link={`/category/for-business/${activeSlug}`} />
+              ))
+            ) : products.length === 0 ? (
+              <p className="text-gray-400 py-12">No products in this category yet.</p>
+            ) : (
+              products.map((p: any) => (
+                <SliderCard key={p._id} image={p.images?.[0] || p.image || ''} name={p.name} link={`/product/${p._id}`} />
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Scroll progress bar */}
+        <div className="mt-4 h-0.5 bg-gray-300 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-accent rounded-full transition-all duration-200"
+            style={{ width: `${Math.max(10, scrollPct * 100)}%` }}
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Stats Bar (coral) ───────────────────────────────────────────────────────────
+function StatsBar({ items }: { items: { stats: string; statsLabel: string }[] }) {
+  const cols = Math.min(items.length, 6);
+  return (
+    <section style={{ backgroundColor: '#E87059' }} className="py-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div
+          className="grid gap-8"
+          style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+        >
+          {items.map((item, i) => (
+            <div key={i} className="text-center text-white">
+              <p className="text-4xl md:text-5xl font-bold">{item.stats}</p>
+              <p className="text-white/80 mt-2 text-sm leading-snug">{item.statsLabel}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Image Grid (2-col with overlay) ────────────────────────────────────────────
+type GridItem = { title: string; description: string; image: string; link: string; linkText: string };
+
+function ImageGrid({ items }: { items: GridItem[] }) {
+  return (
+    <section className="py-12 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 className="text-3xl md:text-4xl font-bold mb-6">Designs for a Better Workspace</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {items.map((item, i) => (
+            <div key={i} className="relative h-80 rounded-2xl overflow-hidden group">
+              {item.image ? (
+                <Image
+                  src={item.image}
+                  alt={item.title}
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+              ) : (
+                <div className="absolute inset-0 bg-gray-300" />
+              )}
+              <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/10 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                <h3 className="text-xl font-bold">{item.title}</h3>
+                {item.description && (
+                  <p className="text-white/80 text-sm mt-1">{item.description}</p>
+                )}
+                {item.link && (
+                  <Link
+                    href={item.link}
+                    className="inline-block mt-3 text-sm font-semibold text-white border-b border-white/50 hover:border-white transition-colors"
+                  >
+                    {item.linkText} →
+                  </Link>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Split Content ───────────────────────────────────────────────────────────────
+type SplitProps = {
+  title: string;
+  description: string;
+  image: string;
+  link: string;
+  linkText: string;
+  imageRight?: boolean;
+  bgLight?: boolean;
+};
+
+function SplitContent({ title, description, image, link, linkText, imageRight = false, bgLight = false }: SplitProps) {
+  return (
+    <section className={`py-20 ${bgLight ? 'bg-neutral-50' : 'bg-white'}`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className={`grid md:grid-cols-2 gap-16 items-center`}>
+          {/* Image — swap order via CSS order property */}
+          <div className={`relative h-105 rounded-2xl overflow-hidden shadow-2xl ${imageRight ? 'md:order-2' : ''}`}>
+            {image ? (
+              <Image src={image} alt={title} fill className="object-cover" />
+            ) : (
+              <div className="absolute inset-0 bg-gray-200" />
+            )}
+          </div>
+          {/* Text */}
+          <div className={imageRight ? 'md:order-1' : ''}>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">{title}</h2>
+            <p className="text-gray-500 text-lg mb-8 leading-relaxed">{description}</p>
+            <Link
+              href={link}
+              className="inline-block bg-accent hover:bg-secondary text-white px-8 py-3.5 rounded-full font-semibold transition-colors shadow-md"
+            >
+              {linkText}
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Flagship Projects ───────────────────────────────────────────────────────────
+type ProjectItem = { title: string; description: string; image: string; link: string; linkText: string };
+
+function ProjectsSection({ items }: { items: ProjectItem[] }) {
+  const [activeIdx, setActiveIdx] = useState(0);
+  const active = items[activeIdx];
+
+  return (
+    <section className="py-20 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-10">
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900">Our flagship projects</h2>
+          <p className="text-gray-500 mt-3 text-base max-w-xl leading-relaxed">
+            We create diverse spaces by blending strategy, design, engineering, and construction
+            into a seamless, collaborative process, delivering innovative solutions tailored to
+            your needs.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-[340px_1fr] gap-0 rounded-2xl overflow-hidden shadow-xl border border-gray-100">
+          {/* Left: project list */}
+          <div className="bg-white py-6 px-4">
+            <ul className="space-y-0">
+              {items.map((item, i) => (
+                <li key={i}>
+                  <button
+                    onClick={() => setActiveIdx(i)}
+                    className={`w-full text-left py-4 px-5 rounded-lg text-sm font-semibold transition-all ${
+                      activeIdx === i
+                        ? 'bg-accent text-white'
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    {item.title}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Right: active image */}
+          <div className="relative min-h-120">
+            {active.image ? (
+              <Image
+                key={activeIdx}
+                src={active.image}
+                alt={active.title}
+                fill
+                className="object-cover"
+              />
+            ) : (
+              <div className="absolute inset-0 bg-gray-200" />
+            )}
+            {/* Dark gradient at bottom */}
+            <div className="absolute inset-0 bg-linear-to-t from-black/65 via-black/10 to-transparent" />
+            {/* Bottom bar: title left + View project right */}
+            <div className="absolute bottom-0 left-0 right-0 px-8 py-6 flex items-end justify-between">
+              <div>
+                <h3 className="text-xl font-bold text-white">{active.title}</h3>
+                {active.description && (
+                  <p className="text-white/75 text-sm mt-1 max-w-xs leading-snug">
+                    {active.description}
+                  </p>
+                )}
+              </div>
+              {active.link && (
+                <Link
+                  href={active.link}
+                  className="text-white text-sm font-semibold underline underline-offset-4 decoration-white/60 hover:decoration-white whitespace-nowrap ml-6 pb-1"
+                >
+                  {active.linkText || 'View project'}
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Business Hero (always dark, reads DB section if available) ──────────────
+function BusinessHero({ section }: { section?: Section }) {
+  const title     = section?.title       || '';
+  const desc      = section?.description || section?.subtitle || '';
+  const mainLink  = section?.link        || '#products';
+  const mainText  = section?.linkText    || 'Browse Collection';
+  const secLink   = section?.secondaryLink     || '/contact';
+  const secText   = section?.secondaryLinkText || 'Request a Quote';
+  const bgImage   = section?.image || '';
+
+  return (
+    <section
+      className="relative min-h-[80vh] flex items-center justify-center overflow-hidden"
+      style={{ background: 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #0f3460 100%)' }}
+    >
+      {bgImage && (
+        <Image src={bgImage} alt={section?.imageAlt || title} fill className="object-cover" priority />
+      )}
+      <div className="absolute inset-0 bg-black/55" />
+      <div className="relative z-10 text-center px-4 py-24 max-w-5xl mx-auto">
+        <span className="inline-block bg-white/10 text-white border border-white/20 text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
+          Business Furniture Solutions
+        </span>
+        {title ? (
+          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">{title}</h1>
+        ) : (
+          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
+            Furniture That <br />
+            <span className="text-accent">Means Business</span>
+          </h1>
+        )}
+        <p className="text-xl text-white/70 max-w-3xl mx-auto mb-10">
+          {desc || 'From corporate offices to government institutions — premium, ISO-certified furniture solutions designed for productivity, durability, and your brand.'}
+        </p>
+        <div className="flex flex-wrap gap-4 justify-center">
+          <Link href={mainLink} className="bg-accent hover:bg-accent/90 text-white px-8 py-3.5 rounded-full font-semibold shadow-lg transition-all">
+            {mainText}
+          </Link>
+          <Link href={secLink} className="border border-white/30 hover:border-white text-white px-8 py-3.5 rounded-full font-semibold transition-all hover:bg-white/10">
+            {secText}
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Helpers: map DB section → typed items ────────────────────────────────────
+function dbToStats(s: Section) {
+  return (s.items || []).map((it) => ({
+    stats: it.stats || it.title || '',
+    statsLabel: it.statsLabel || it.description || '',
+  }));
+}
+function dbToGridItems(s: Section): GridItem[] {
+  return (s.items || []).map((it) => ({
+    title: it.title || '',
+    description: it.description || '',
+    image: it.image || '',
+    link: it.link || '',
+    linkText: it.linkText || 'Learn more',
+  }));
+}
+function dbToProjects(s: Section): ProjectItem[] {
+  return (s.items || []).map((it) => ({
+    title: it.title || '',
+    description: it.description || '',
+    image: it.image || '',
+    link: it.link || '',
+    linkText: it.linkText || 'View project',
+  }));
+}
+function dbToSplit(s: Section, fallback: SplitProps): SplitProps {
+  return {
+    title: s.title || fallback.title,
+    description: s.description || s.subtitle || fallback.description,
+    image: s.image || fallback.image,
+    link: s.link || fallback.link,
+    linkText: s.linkText || fallback.linkText,
+  };
+}
+
+// ─── Page ────────────────────────────────────────────────────────────────────────
+export default function BusinessPage() {
   const [sections, setSections] = useState<Section[]>([]);
-  const [sectionsLoaded, setSectionsLoaded] = useState(false);
   const [subCategories, setSubCategories] = useState<any[]>([]);
   const [businessRootSlug, setBusinessRootSlug] = useState('for-business');
 
   useEffect(() => {
-    fetchProducts();
     fetchPageContent();
+    fetchCategories();
   }, []);
 
-  const fetchProducts = async () => {
+  const fetchCategories = async () => {
     try {
-      // Resolve category ObjectIds so products assigned via CategoryTreePicker are included
-      let businessCatId: string | null = null;
-      try {
-        const bizRes = await getCategoryByPath(['for-business']);
-        const bizChain = bizRes?.data;
-        const bizNode = Array.isArray(bizChain) ? bizChain[bizChain.length - 1] : bizChain;
-        businessCatId = bizNode?._id || null;
-        if (bizNode?.slug) setBusinessRootSlug(bizNode.slug);
-        // Fetch children for dynamic category cards
-        if (businessCatId) {
-          api.get('/categories', { params: { parentId: businessCatId } })
-            .then((r: any) => setSubCategories(r.data?.data || []))
-            .catch(() => {});
-        }
-      } catch {}
-
-      const businessProducts = await getProducts(businessCatId
-        ? { categoryId: businessCatId, limit: 6 }
-        : { category: 'for-business', limit: 6 });
-      setProducts((businessProducts.data || []).slice(0, 6));
-    } catch (error) {
-      console.error('Error fetching products:', error);
-    } finally {
-      setLoading(false);
-    }
+      const res = await getCategoryByPath(['for-business']);
+      const chain = res?.data;
+      const node = Array.isArray(chain) ? chain[chain.length - 1] : chain;
+      if (node?.slug) setBusinessRootSlug(node.slug);
+      if (node?._id) {
+        const r = await api.get('/categories', { params: { parentId: node._id } });
+        setSubCategories(r.data?.data || []);
+      }
+    } catch {}
   };
 
   const fetchPageContent = async () => {
     try {
       const data = await getPageContent('business');
       setSections(data.data?.sections || []);
-    } catch (error) {
-      console.error('Error fetching page content:', error);
-    } finally {
-      setSectionsLoaded(true);
-    }
+    } catch {}
   };
 
-  const getSection = (id: string) => sections.find(s => s.sectionId === id);
+  const get = (id: string) => sections.find((s) => s.sectionId === id || s.type === id);
+
+  // DB overrides or placeholder fallbacks
+  const heroSection = sections.find((s) => s.type === 'hero');
+
+  const statsItems     = get('stats-bar')?.items?.length ? dbToStats(get('stats-bar')!)            : PH_STATS;
+  const gridItems      = get('image-grid')?.items?.length ? dbToGridItems(get('image-grid')!)      : PH_IMAGE_GRID;
+  const split1Data     = get('split-1')                   ? dbToSplit(get('split-1')!, PH_SPLIT_1)  : PH_SPLIT_1;
+  const split2Data     = get('split-2')                   ? dbToSplit(get('split-2')!, PH_SPLIT_2)  : PH_SPLIT_2;
+  const projectItems   = get('projects')?.items?.length   ? dbToProjects(get('projects')!)          : PH_PROJECTS;
+  const adminSliderItems = get('slider')?.items?.length   ? get('slider')!.items                   : undefined;
+  const ctaSection     = get('cta') || get('bulk-cta');
+
+  const HANDLED = new Set(['hero','slider','stats-bar','image-grid','split-1','split-2','text-image','projects','cta','bulk-cta']);
+  const extraSections = sections.filter((s) => !HANDLED.has(s.type) && !HANDLED.has(s.sectionId));
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="homepage-main">
+      <main>
 
-        {/* ── Hero (dynamic from DB) ─────────────────────────────── */}
-        {sections.filter(s => !['products', 'bulk-cta'].includes(s.sectionId)).map(section => (
-          <div key={section._id || section.sectionId}>{renderSection(section)}</div>
+        {/* 1. Hero — always dark cinematic, title/desc/links editable via admin */}
+        <BusinessHero section={heroSection} />
+
+        {/* 2. Category Tabs + Products */}
+        <CategoryProductTabs
+          subCategories={subCategories}
+          businessRootSlug={businessRootSlug}
+          adminSliderItems={adminSliderItems}
+        />
+
+        {/* 3. Stats Bar */}
+        <StatsBar items={statsItems} />
+
+        {/* 4. Image Grid */}
+        <ImageGrid items={gridItems} />
+
+        {/* 5. Split — Audio-Visual (image left) */}
+        <SplitContent {...split1Data} imageRight={false} bgLight={false} />
+
+        {/* 6. Split — Shop for Home (image right) */}
+        <SplitContent {...split2Data} imageRight={true} bgLight={true} />
+
+        {/* 7. Flagship Projects */}
+        <ProjectsSection items={projectItems} />
+
+        {/* 8. Any extra DB sections */}
+        {extraSections.map((s) => (
+          <div key={s._id || s.sectionId}>{renderSection(s)}</div>
         ))}
 
-        {/* ── Fallback hero if no DB sections ───────────────────── */}
-        {sectionsLoaded && sections.length === 0 && (
+        {/* 9. CTA */}
+        {ctaSection ? (
+          renderSection(ctaSection)
+        ) : (
           <section
-            className="relative min-h-[80vh] flex items-center justify-center overflow-hidden"
+            className="py-20"
             style={{ background: 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #0f3460 100%)' }}
           >
-            <div className="absolute inset-0"
-              style={{
-                backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(255,107,53,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(15,52,96,0.6) 0%, transparent 50%)',
-              }}
-            />
-            <div className="relative z-10 text-center px-4 py-24 max-w-5xl mx-auto">
-              <span className="inline-block bg-accent/20 text-accent border border-accent/30 text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
-                Business Furniture Solutions
-              </span>
-              <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
-                Furniture That <br /><span className="text-accent">Means Business</span>
-              </h1>
-              <p className="text-xl text-white/70 max-w-3xl mx-auto mb-10">
-                From corporate offices to government institutions — premium, ISO-certified furniture solutions designed for productivity, durability, and your brand.
+            <div className="max-w-5xl mx-auto px-4 text-center">
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                Need Bulk Orders or Custom Solutions?
+              </h2>
+              <p className="text-white/70 text-lg mb-8">
+                We specialise in large-scale corporate and institutional projects.
+                Talk to our business solutions team for a personalised quote.
               </p>
               <div className="flex flex-wrap gap-4 justify-center">
-                <Link href="#products" className="bg-accent hover:bg-accent/90 text-white px-8 py-3.5 rounded-full font-semibold shadow-lg transition-all hover:shadow-accent/30 hover:shadow-xl">
-                  Browse Collection
+                <Link href="/contact" className="bg-accent hover:bg-accent/90 text-white px-8 py-4 rounded-full font-bold transition-all">
+                  Get Bulk Quote
                 </Link>
-                <Link href="/contact" className="border border-white/30 hover:border-white text-white px-8 py-3.5 rounded-full font-semibold transition-all hover:bg-white/10">
-                  Request a Quote
+                <Link href="https://wa.me/917303836300" target="_blank" className="border border-white/30 hover:border-white text-white px-8 py-4 rounded-full font-bold transition-all hover:bg-white/10">
+                  WhatsApp Us
                 </Link>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* ── Stats bar ──────────────────────────────────────────── */}
-        <section className="bg-accent">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-white/20">
-              {STATS.map((stat) => (
-                <div key={stat.label} className="py-8 px-6 text-center text-white">
-                  <p className="text-3xl md:text-4xl font-bold">{stat.value}</p>
-                  <p className="text-sm text-white/80 mt-1">{stat.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── Industries ─────────────────────────────────────────── */}
-        <section className="py-24 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <span className="text-accent text-sm font-semibold uppercase tracking-widest">Sectors We Serve</span>
-              <h2 className="text-4xl md:text-5xl font-bold mt-3 mb-4">Solutions for Every Industry</h2>
-              <p className="text-gray-500 text-lg max-w-2xl mx-auto">
-                Decades of experience serving diverse sectors with tailored commercial furniture and fitout solutions.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {INDUSTRIES.map((ind) => (
-                <div key={ind.title} className="group flex gap-5 p-6 rounded-2xl border border-gray-100 hover:border-accent/30 hover:shadow-lg transition-all duration-300">
-                  <div className="text-4xl shrink-0">{ind.icon}</div>
-                  <div>
-                    <h3 className="font-bold text-lg mb-2 group-hover:text-accent transition-colors">{ind.title}</h3>
-                    <p className="text-gray-500 text-sm leading-relaxed">{ind.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── Category cards ─────────────────────────────────────── */}
-        <section className="py-24 bg-neutral-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <span className="text-accent text-sm font-semibold uppercase tracking-widest">Browse By Category</span>
-              <h2 className="text-4xl md:text-5xl font-bold mt-3 mb-4">Find Your Perfect Solution</h2>
-              <p className="text-gray-500 text-lg max-w-2xl mx-auto">
-                Explore our range of specialised business furniture categories.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {(subCategories.length > 0 ? subCategories : CATEGORIES).map((cat: any) => (
-                <Link
-                  key={cat.slug || cat._id}
-                  href={subCategories.length > 0
-                    ? `/category/${businessRootSlug}/${cat.slug}`
-                    : `/business/${cat.slug}`}
-                  className="group bg-white rounded-2xl p-8 border border-gray-100 hover:border-accent/40 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center"
-                >
-                  <div className="text-5xl mb-4">{cat.icon || '📦'}</div>
-                  <h3 className="font-bold text-lg mb-2 group-hover:text-accent transition-colors">{cat.title || cat.name}</h3>
-                  <p className="text-gray-500 text-sm">{cat.desc || cat.description || ''}</p>
-                  <span className="inline-block mt-4 text-accent text-sm font-semibold group-hover:underline">
-                    Explore →
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── Products ───────────────────────────────────────────── */}
-        <section id="products" className="py-24 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <span className="text-accent text-sm font-semibold uppercase tracking-widest">Featured Products</span>
-              <h2 className="text-4xl md:text-5xl font-bold mt-3 mb-4">
-                {getSection('products')?.title || 'Premium Business Furniture Collection'}
-              </h2>
-              <p className="text-lg text-gray-500 max-w-3xl mx-auto">
-                {getSection('products')?.subtitle || 'Handpicked furniture designed for productivity, comfort, and style'}
-              </p>
-            </div>
-            {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="animate-pulse">
-                    <div className="bg-gray-200 h-64 rounded-xl mb-4" />
-                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
-                    <div className="h-4 bg-gray-200 rounded w-1/2" />
-                  </div>
-                ))}
-              </div>
-            ) : products.length === 0 ? (
-              <div className="text-center py-16">
-                <div className="text-5xl mb-4">💼</div>
-                <h3 className="text-xl font-semibold text-gray-700 mb-2">No Business Products Available</h3>
-                <p className="text-gray-500">Business products will appear here once added.</p>
-              </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {products.map((product) => (
-                    <ProductCard key={product._id} {...product} />
-                  ))}
-                </div>
-                <div className="text-center mt-12">
-                  <Link href="/business/products" className="inline-block bg-accent hover:bg-secondary text-white px-10 py-4 rounded-full font-semibold transition-colors shadow-md">
-                    View All Products →
-                  </Link>
-                </div>
-              </>
-            )}
-          </div>
-        </section>
-
-        {/* ── Why Uflix ──────────────────────────────────────────── */}
-        <section className="py-24 bg-neutral-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-4">
-                  <div className="rounded-2xl bg-gray-800 h-40 flex items-center justify-center p-5">
-                    <p className="text-white font-bold text-center text-sm">300+ Corporate Clients Trust Uflix</p>
-                  </div>
-                  <div className="rounded-2xl bg-accent/10 h-52 flex items-center justify-center text-6xl">🏢</div>
-                </div>
-                <div className="space-y-4 mt-8">
-                  <div className="rounded-2xl bg-gray-100 h-52 flex items-center justify-center text-6xl">🖥️</div>
-                  <div className="rounded-2xl bg-accent h-40 flex items-center justify-center p-5">
-                    <p className="text-white font-bold text-center text-sm">ISO 9001:2015 Certified Manufacturing</p>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <span className="text-accent text-sm font-semibold uppercase tracking-widest">Why Choose Us</span>
-                <h2 className="text-4xl md:text-5xl font-bold mt-3 mb-6">The Uflix Business Advantage</h2>
-                <p className="text-gray-500 text-lg mb-10 leading-relaxed">
-                  We understand that business furniture is an investment. Our solutions are built to last, customised to your brand, and backed by dedicated post-sale support.
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
-                  {FEATURES.map((f) => (
-                    <div key={f} className="flex items-start gap-3">
-                      <span className="text-accent font-bold shrink-0">✓</span>
-                      <span className="text-gray-700 text-sm">{f}</span>
-                    </div>
-                  ))}
-                </div>
-                <Link href="/contact" className="inline-block bg-accent hover:bg-secondary text-white px-8 py-4 rounded-full font-semibold transition-colors shadow-md">
-                  Schedule a Consultation
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── CTA from DB or static fallback ─────────────────────── */}
-        {getSection('bulk-cta') ? renderSection(getSection('bulk-cta')!) : (
-          <section className="py-20" style={{ background: 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #0f3460 100%)' }}>
-            <div className="max-w-5xl mx-auto px-4">
-              <div className="grid md:grid-cols-2 gap-12 items-center">
-                <div>
-                  <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Need Bulk Orders or Custom Solutions?</h2>
-                  <p className="text-white/70 text-lg mb-8">
-                    We specialise in large-scale corporate and institutional projects. Talk to our business solutions team for a personalised quote.
-                  </p>
-                  <div className="flex flex-wrap gap-4">
-                    <Link href="/contact" className="bg-accent hover:bg-accent/90 text-white px-8 py-4 rounded-full font-bold shadow-lg transition-all">
-                      Get Bulk Quote
-                    </Link>
-                    <Link href="https://wa.me/917303836300" target="_blank" className="border border-white/30 hover:border-white text-white px-8 py-4 rounded-full font-bold transition-all hover:bg-white/10">
-                      WhatsApp Us
-                    </Link>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  {[
-                    { num: '₹', label: 'Transparent Pricing' },
-                    { num: '🚚', label: 'Pan-India Delivery' },
-                    { num: '📐', label: 'Custom Dimensions' },
-                    { num: '🤝', label: 'Dedicated Account Manager' },
-                  ].map((item) => (
-                    <div key={item.label} className="bg-white/10 rounded-2xl p-5 text-center backdrop-blur-sm border border-white/10">
-                      <div className="text-3xl mb-2">{item.num}</div>
-                      <p className="text-white text-sm font-medium">{item.label}</p>
-                    </div>
-                  ))}
-                </div>
               </div>
             </div>
           </section>
