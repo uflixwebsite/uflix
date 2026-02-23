@@ -209,9 +209,20 @@ router.post('/', protect, admin, async (req, res) => {
 // @access  Private/Admin
 router.put('/:id', protect, admin, async (req, res) => {
   try {
+    const updateBody = { ...req.body };
+
+    // Auto-regenerate slug when name is being changed (findByIdAndUpdate bypasses pre-save hook)
+    if (updateBody.name) {
+      updateBody.slug = updateBody.name
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+    }
+
     const category = await Category.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateBody,
       { new: true, runValidators: true }
     );
 

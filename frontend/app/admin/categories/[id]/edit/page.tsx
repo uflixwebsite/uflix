@@ -49,12 +49,6 @@ export default function EditCategoryPage() {
       ]);
       const cat = catRes.data;
       const parentId = cat.parent?._id || cat.parent || '';
-      if (!parentId) {
-        // Root category — not editable
-        alert('Top-level categories are fixed and cannot be edited.');
-        router.push('/admin/categories');
-        return;
-      }
       setForm({
         name: cat.name || '',
         description: cat.description || '',

@@ -58,7 +58,6 @@ function NewCategoryPageInner() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim()) { alert('Name is required'); return; }
-    if (!form.parentId) { alert('Please select a parent category. Top-level categories are fixed and cannot be created here.'); return; }
 
     setSaving(true);
     try {
@@ -90,14 +89,14 @@ function NewCategoryPageInner() {
             ← Back to Categories
           </Link>
           <h1 className="text-3xl font-bold mt-3">
-            {preParentName ? `Add Sub-category under "${preParentName}"` : 'New Sub-category'}
+            {preParentName ? `Add Sub-category under "${preParentName}"` : 'New Category'}
           </h1>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
           {/* Parent */}
           <div>
-            <label className="block text-sm font-medium mb-1">Parent Category <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-medium mb-1">Parent Category <span className="text-gray-400 font-normal text-xs">(leave blank to create a root category)</span></label>
             <select
               value={form.parentId}
               onChange={(e) => setForm({ ...form, parentId: e.target.value })}

@@ -6,6 +6,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
 import { getProducts } from '@/services/productService';
+import { getCategoryByPath } from '@/services/categoryService';
 
 function BusinessProductsContent() {
   const searchParams = useSearchParams();
@@ -27,28 +28,38 @@ function BusinessProductsContent() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      
-      // Fetch both categories
+
+      // Resolve category ObjectIds so products assigned via CategoryTreePicker are included
+      let businessCatId: string | null = null;
+      let shopFittingCatId: string | null = null;
+      try {
+        const [bizRes, sfRes] = await Promise.all([
+          getCategoryByPath(['for-businesses']),
+          getCategoryByPath(['shop-fitting']),
+        ]);
+        businessCatId = bizRes?.data?._id || null;
+        shopFittingCatId = sfRes?.data?._id || null;
+      } catch {}
+
+      const limit = subcategory ? 15 : 8;
       const [businessResponse, shopFittingResponse] = await Promise.all([
-        getProducts({ 
-          category: 'for-businesses',
+        getProducts({
+          ...(businessCatId ? { categoryId: businessCatId } : { category: 'for-businesses' }),
           page,
-          limit: subcategory ? 15 : 8, // Limit each category to get variety
-          ...(subcategory && { subcategory })
+          limit,
+          ...(subcategory && { subcategory }),
         }),
-        getProducts({ 
-          category: 'shop-fitting',
+        getProducts({
+          ...(shopFittingCatId ? { categoryId: shopFittingCatId } : { category: 'shop-fitting' }),
           page,
-          limit: subcategory ? 15 : 7, // Limit each category to get variety
-          ...(subcategory && { subcategory })
-        })
+          limit: subcategory ? 15 : 7,
+          ...(subcategory && { subcategory }),
+        }),
       ]);
-      
-      // Combine products from both categories
+
       const allProducts = [...(businessResponse.data || []), ...(shopFittingResponse.data || [])];
       setProducts(allProducts);
-      
-      // Calculate pagination based on combined results
+
       const totalCombined = (businessResponse.pagination?.total || 0) + (shopFittingResponse.pagination?.total || 0);
       setTotalProducts(totalCombined);
       setTotalPages(Math.ceil(totalCombined / 15));

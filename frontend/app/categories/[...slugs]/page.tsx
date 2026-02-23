@@ -58,15 +58,15 @@ export default function NestedCategoryPage() {
       // Determine if this is a category or subcategory and set appropriate filter
       if (categoryRes?.success && categoryRes.data && categoryRes.data.length > 0) {
         const lastItem = categoryRes.data[categoryRes.data.length - 1];
-        
-        // Do not rely on legacy `level` field. Use URL depth to infer nested subcategory.
-        const base = lastItem.path || lastItem.slug || lastItem._id || lastItem.name || deepestSlug;
-        if (selectedSubcategories && selectedSubcategories.length > 0) {
-          // Respect explicit user selection (single selection supported)
-          filters.subcategory = selectedSubcategories[0];
+
+        if (lastItem._id) {
+          // Use categoryId — backend will query categoryRefs + legacy fields + all descendants
+          filters.categoryId = lastItem._id;
         } else {
-          // If URL contains multiple slugs assume the deepest slug is a subcategory
-          if (slugs.length > 1) {
+          const base = lastItem.path || lastItem.slug || lastItem.name || deepestSlug;
+          if (selectedSubcategories && selectedSubcategories.length > 0) {
+            filters.subcategory = selectedSubcategories[0];
+          } else if (slugs.length > 1) {
             filters.subcategory = base;
           } else {
             filters.category = deepestSlug;
