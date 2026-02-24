@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
@@ -42,6 +43,116 @@ const FEATURES = [
   'Competitive bulk-order pricing',
 ];
 
+function ShopFittingsHero({ section }: { section?: Section }) {
+  const title    = section?.title             || 'Transform Your Retail Space';
+  const desc     = section?.description      || 'Premium shop fittings designed and manufactured in-house for leading retail brands across India.';
+  const mainLink = section?.link             || '#products';
+  const mainText = section?.linkText         || 'Explore Products';
+  const secLink  = section?.secondaryLink     || '/contact';
+  const secText  = section?.secondaryLinkText || 'Get a Quote';
+
+  const allImages: string[] = [
+    ...(section?.image ? [section.image] : []),
+    ...((section?.items || []).filter((i: any) => i.image).map((i: any) => i.image as string)),
+  ];
+
+  const [idx, setIdx] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const total = allImages.length;
+
+  const prev = () => setIdx((n) => (n - 1 + total) % total);
+  const next = () => setIdx((n) => (n + 1) % total);
+
+  useEffect(() => {
+    if (total <= 1 || paused) return;
+    const t = setInterval(next, 5000);
+    return () => clearInterval(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [total, paused, idx]);
+
+  return (
+    <section
+      className="relative min-h-[80vh] flex items-center justify-center overflow-hidden"
+      style={{ background: '#000' }}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      {/* Crossfade slides */}
+      {allImages.map((url, i) => (
+        <div
+          key={url + i}
+          className="absolute inset-0 transition-opacity duration-1000"
+          style={{ opacity: i === idx ? 1 : 0 }}
+        >
+          <Image src={url} alt={`slide ${i + 1}`} fill className="object-cover" priority={i === 0} />
+        </div>
+      ))}
+      {allImages.length === 0 && <div className="absolute inset-0 bg-gray-900" />}
+
+      <div className="absolute inset-0 bg-black/60" />
+
+      {/* Left arrow */}
+      {total > 1 && (
+        <button
+          onClick={prev}
+          className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-20 w-11 h-11 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 border border-white/20 text-white transition-all"
+          aria-label="Previous"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+      )}
+
+      {/* Right arrow */}
+      {total > 1 && (
+        <button
+          onClick={next}
+          className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-20 w-11 h-11 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 border border-white/20 text-white transition-all"
+          aria-label="Next"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      )}
+
+      {/* Content */}
+      <div className="relative z-10 text-center px-4 py-24 max-w-5xl mx-auto">
+        <span className="inline-block bg-white/10 text-white border border-white/20 text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
+          Shop Fitting Solutions
+        </span>
+        <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">{title}</h1>
+        <p className="text-xl text-white/70 max-w-3xl mx-auto mb-10">{desc}</p>
+        <div className="flex flex-wrap gap-4 justify-center">
+          <Link href={mainLink} className="bg-accent hover:bg-accent/90 text-white px-8 py-3.5 rounded-full font-semibold shadow-lg transition-all">
+            {mainText}
+          </Link>
+          <Link href={secLink} className="border border-white/30 hover:border-white text-white px-8 py-3.5 rounded-full font-semibold transition-all hover:bg-white/10">
+            {secText}
+          </Link>
+        </div>
+      </div>
+
+      {/* Dot nav */}
+      {total > 1 && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+          {allImages.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setIdx(i)}
+              className={`transition-all rounded-full ${
+                i === idx ? 'w-6 h-2.5 bg-accent' : 'w-2.5 h-2.5 bg-white/40 hover:bg-white/70'
+              }`}
+              aria-label={`Go to slide ${i + 1}`}
+            />
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 export default function ShopFittingsPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -75,46 +186,12 @@ export default function ShopFittingsPage() {
   const getSection = (id: string) => sections.find(s => s.sectionId === id);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-black">
       <Header />
       <main>
 
-        {/* ── Hero (dynamic from DB) ─────────────────────────────── */}
-        {sections.filter(s => !['products', 'cta'].includes(s.sectionId)).map(section => (
-          <div key={section._id || section.sectionId}>{renderSection(section)}</div>
-        ))}
-
-        {/* ── Fallback hero if no DB sections ───────────────────── */}
-        {sections.length === 0 && (
-          <section
-            className="relative min-h-[70vh] flex items-center justify-center overflow-hidden"
-            style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%)' }}
-          >
-            <div className="absolute inset-0 opacity-10"
-              style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")" }}
-            />
-            <div className="relative z-10 text-center px-4 py-24">
-              <span className="inline-block bg-accent/20 text-accent border border-accent/30 text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
-                Shop Fitting Solutions
-              </span>
-              <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">
-                Transform Your<br /><span className="text-accent">Retail Space</span>
-              </h1>
-              <p className="text-xl text-white/70 max-w-2xl mx-auto mb-10">
-                Premium shop fittings designed and manufactured in-house for leading retail brands across India.
-              </p>
-              <div className="flex flex-wrap gap-4 justify-center">
-                <Link href="#products" className="bg-accent hover:bg-accent/90 text-white px-8 py-3.5 rounded-full font-semibold shadow-lg transition-all">
-                  Explore Products
-                </Link>
-                <Link href="/contact" className="border border-white/30 hover:border-white text-white px-8 py-3.5 rounded-full font-semibold transition-all hover:bg-white/10">
-                  Get a Quote
-                </Link>
-              </div>
-            </div>
-          </section>
-        )}
-
+        {/* Hero */}
+        <ShopFittingsHero section={getSection('hero')} />
         {/* ── Stats bar ──────────────────────────────────────────── */}
         <section className="bg-accent">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -262,7 +339,7 @@ export default function ShopFittingsPage() {
 
         {/* ── CTA ────────────────────────────────────────────────── */}
         {getSection('cta') ? renderSection(getSection('cta')!) : (
-          <section className="py-20" style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%)' }}>
+          <section className="py-20" style={{ background: '#000' }}>
             <div className="max-w-4xl mx-auto px-4 text-center">
               <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Ready to Transform Your Store?</h2>
               <p className="text-white/70 text-lg mb-10 max-w-2xl mx-auto">

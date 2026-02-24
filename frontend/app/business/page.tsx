@@ -477,25 +477,83 @@ function ProjectsSection({ items }: { items: ProjectItem[] }) {
   );
 }
 
-// ─── Business Hero (always dark, reads DB section if available) ──────────────
+// ─── Business Hero (always dark, carousel if multiple images) ───────────────
 function BusinessHero({ section }: { section?: Section }) {
-  const title     = section?.title       || '';
-  const desc      = section?.description || section?.subtitle || '';
-  const mainLink  = section?.link        || '#products';
-  const mainText  = section?.linkText    || 'Browse Collection';
-  const secLink   = section?.secondaryLink     || '/contact';
-  const secText   = section?.secondaryLinkText || 'Request a Quote';
-  const bgImage   = section?.image || '';
+  const title    = section?.title       || '';
+  const desc     = section?.description || section?.subtitle || '';
+  const mainLink = section?.link        || '#products';
+  const mainText = section?.linkText    || 'Browse Collection';
+  const secLink  = section?.secondaryLink     || '/contact';
+  const secText  = section?.secondaryLinkText || 'Request a Quote';
+
+  const allImages: string[] = [
+    ...(section?.image ? [section.image] : []),
+    ...((section?.items || []).filter((i: any) => i.image).map((i: any) => i.image as string)),
+  ];
+
+  const [idx, setIdx] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const total = allImages.length;
+
+  const prev = () => setIdx((n) => (n - 1 + total) % total);
+  const next = () => setIdx((n) => (n + 1) % total);
+
+  useEffect(() => {
+    if (total <= 1 || paused) return;
+    const t = setInterval(next, 5000);
+    return () => clearInterval(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [total, paused, idx]);
 
   return (
     <section
       className="relative min-h-[80vh] flex items-center justify-center overflow-hidden"
-      style={{ background: 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #0f3460 100%)' }}
+      style={{ background: '#000' }}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
     >
-      {bgImage && (
-        <Image src={bgImage} alt={section?.imageAlt || title} fill className="object-cover" priority />
-      )}
+      {/* Crossfade slides */}
+      {allImages.map((url, i) => (
+        <div
+          key={url + i}
+          className="absolute inset-0 transition-opacity duration-1000"
+          style={{ opacity: i === idx ? 1 : 0 }}
+        >
+          <Image src={url} alt={`slide ${i + 1}`} fill className="object-cover" priority={i === 0} />
+        </div>
+      ))}
+      {/* no images fallback */}
+      {allImages.length === 0 && <div className="absolute inset-0 bg-gray-900" />}
+
       <div className="absolute inset-0 bg-black/55" />
+
+      {/* Left arrow */}
+      {total > 1 && (
+        <button
+          onClick={prev}
+          className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-20 w-11 h-11 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 border border-white/20 text-white transition-all"
+          aria-label="Previous"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+      )}
+
+      {/* Right arrow */}
+      {total > 1 && (
+        <button
+          onClick={next}
+          className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-20 w-11 h-11 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 border border-white/20 text-white transition-all"
+          aria-label="Next"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      )}
+
+      {/* Content */}
       <div className="relative z-10 text-center px-4 py-24 max-w-5xl mx-auto">
         <span className="inline-block bg-white/10 text-white border border-white/20 text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
           Business Furniture Solutions
@@ -520,6 +578,20 @@ function BusinessHero({ section }: { section?: Section }) {
           </Link>
         </div>
       </div>
+
+      {/* Dot nav */}
+      {total > 1 && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+          {allImages.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setIdx(i)}
+              className={`transition-all rounded-full ${i === idx ? 'w-6 h-2.5 bg-accent' : 'w-2.5 h-2.5 bg-white/40 hover:bg-white/70'}`}
+              aria-label={`Go to slide ${i + 1}`}
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 }
@@ -599,55 +671,60 @@ export default function BusinessPage() {
   const gridItems      = get('image-grid')?.items?.length ? dbToGridItems(get('image-grid')!)      : PH_IMAGE_GRID;
   const split1Data     = get('split-1')                   ? dbToSplit(get('split-1')!, PH_SPLIT_1)  : PH_SPLIT_1;
   const split2Data     = get('split-2')                   ? dbToSplit(get('split-2')!, PH_SPLIT_2)  : PH_SPLIT_2;
-  const projectItems   = get('projects')?.items?.length   ? dbToProjects(get('projects')!)          : PH_PROJECTS;
+  const projectItems   = get('projects')?.items?.length   ? dbToProjects(get('projects')!)          : [];
   const adminSliderItems = get('slider')?.items?.length   ? get('slider')!.items                   : undefined;
   const ctaSection     = get('cta') || get('bulk-cta');
+  // Visibility: only hide when section exists in DB AND isVisible is explicitly false.
+  // If section has never been saved (no DB entry), always show with placeholder.
+  const visible = (id: string) => { const s = get(id); return !s || s.isVisible !== false; };
 
   const HANDLED = new Set(['hero','slider','stats-bar','image-grid','split-1','split-2','text-image','projects','cta','bulk-cta']);
   const extraSections = sections.filter((s) => !HANDLED.has(s.type) && !HANDLED.has(s.sectionId));
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-black">
       <Header />
       <main>
 
-        {/* 1. Hero — always dark cinematic, title/desc/links editable via admin */}
-        <BusinessHero section={heroSection} />
+        {/* 1. Hero */}
+        {visible('hero') && <BusinessHero section={heroSection} />}
 
         {/* 2. Category Tabs + Products */}
-        <CategoryProductTabs
-          subCategories={subCategories}
-          businessRootSlug={businessRootSlug}
-          adminSliderItems={adminSliderItems}
-        />
+        {visible('slider') && (
+          <CategoryProductTabs
+            subCategories={subCategories}
+            businessRootSlug={businessRootSlug}
+            adminSliderItems={adminSliderItems}
+          />
+        )}
 
         {/* 3. Stats Bar */}
-        <StatsBar items={statsItems} />
+        {visible('stats-bar') && <StatsBar items={statsItems} />}
 
         {/* 4. Image Grid */}
-        <ImageGrid items={gridItems} />
+        {visible('image-grid') && <ImageGrid items={gridItems} />}
 
         {/* 5. Split — Audio-Visual (image left) */}
-        <SplitContent {...split1Data} imageRight={false} bgLight={false} />
+        {visible('split-1') && <SplitContent {...split1Data} imageRight={false} bgLight={false} />}
 
         {/* 6. Split — Shop for Home (image right) */}
-        <SplitContent {...split2Data} imageRight={true} bgLight={true} />
+        {visible('split-2') && <SplitContent {...split2Data} imageRight={true} bgLight={true} />}
 
-        {/* 7. Flagship Projects */}
-        <ProjectsSection items={projectItems} />
+        {/* 7. Flagship Projects — only renders when admin has added items AND section is visible */}
+        {visible('projects') && projectItems.length > 0 && <ProjectsSection items={projectItems} />}
 
         {/* 8. Any extra DB sections */}
-        {extraSections.map((s) => (
+        {extraSections.filter(s => s.isVisible !== false).map((s) => (
           <div key={s._id || s.sectionId}>{renderSection(s)}</div>
         ))}
 
         {/* 9. CTA */}
-        {ctaSection ? (
+        {visible('cta') && (ctaSection ? (
           renderSection(ctaSection)
         ) : (
           <section
             className="py-20"
-            style={{ background: 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #0f3460 100%)' }}
+            style={{ background: '#000' }}
           >
             <div className="max-w-5xl mx-auto px-4 text-center">
               <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
@@ -667,7 +744,7 @@ export default function BusinessPage() {
               </div>
             </div>
           </section>
-        )}
+        ))}
 
       </main>
       <Footer />

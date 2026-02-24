@@ -227,11 +227,11 @@ export default function Header() {
   };
   
   // Text color based on page
-  const textColor = isHomePage ? 'text-white' : 'text-gray-900';
+  const textColor = 'text-gray-900';
   const hoverColor = 'hover:text-accent';
 
   return (
-    <header ref={megaMenuContainerRef} className="bg-transparent absolute top-0 left-0 right-0 z-40">
+    <header ref={megaMenuContainerRef} className="bg-white absolute top-0 left-0 right-0 z-40">
 
       {/* Full-width Mega Menu — rendered outside the constrained div */}
       {hoveredLink && (

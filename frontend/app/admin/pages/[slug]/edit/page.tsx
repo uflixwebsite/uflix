@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -183,16 +183,18 @@ type SectionSchema = {
   itemLabel?: string;
   itemFields: Array<'title'|'image'|'link'|'description'|'stats'|'statsLabel'>;
   noItems?: boolean;
-  isSlider?: boolean; // description field = tab grouping label
+  isSlider?: boolean;
+  isHeroImages?: boolean; // unified drag-drop image grid replaces showImage + items
 };
 
 const SECTION_SCHEMAS: Record<string, SectionSchema> = {
   hero: {
     label: 'Hero Banner',
-    hint: 'Full-width dark banner at the top of the page.',
+    hint: 'Add multiple images to create a slideshow. Drag to reorder — the first image is shown first.',
     showTitle: true, titleLabel: 'Headline',
-    showDescription: true, showImage: true, showLink: true, showSecondaryLink: true,
-    itemFields: [], noItems: true,
+    showDescription: true, showLink: true, showSecondaryLink: true,
+    isHeroImages: true,
+    itemFields: [],
   },
   'stats-bar': {
     label: 'Stats Bar',
@@ -322,7 +324,113 @@ function SectionItemEditor({ item, index, onChange, onRemove, fields, itemLabel,
     </div>
   );
 }
+// ─── Hero image grid with drag-and-drop reorder ─────────────────────────────
+function HeroImageGrid({
+  section,
+  onChangeImage,
+  onChangeItems,
+}: {
+  section: any;
+  onChangeImage: (url: string) => void;
+  onChangeItems: (items: any[]) => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const dragIdx = useRef<number | null>(null);
 
+  // Unified flat list: primary image first, then items
+  const images: string[] = [
+    ...(section.image ? [section.image as string] : []),
+    ...((section.items || []).filter((i: any) => i.image).map((i: any) => i.image as string)),
+  ];
+
+  const commit = (newImages: string[]) => {
+    onChangeImage(newImages[0] ?? '');
+    onChangeItems(newImages.slice(1).map((url) => ({ image: url, title: '', description: '', link: '', stats: '', statsLabel: '' })));
+  };
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    setUploading(true);
+    try {
+      const urls: string[] = [];
+      for (const file of files) {
+        const result = await uploadSingleImage(file, 'pages');
+        urls.push(result.data.url);
+      }
+      commit([...images, ...urls]);
+    } catch { alert('Upload failed. Please try again.'); }
+    finally { setUploading(false); }
+  };
+
+  const remove = async (idx: number) => {
+    await deleteOldCloudinaryImage(images[idx]);
+    commit(images.filter((_, i) => i !== idx));
+  };
+
+  const onDragStart = (idx: number) => { dragIdx.current = idx; };
+  const onDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    if (dragIdx.current === null || dragIdx.current === idx) return;
+    const reordered = [...images];
+    const [moved] = reordered.splice(dragIdx.current, 1);
+    reordered.splice(idx, 0, moved);
+    dragIdx.current = idx;
+    commit(reordered);
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <label className="block text-sm font-medium text-gray-700">
+          Slideshow Images <span className="text-xs font-normal text-gray-400">— drag to reorder, first image shown first</span>
+        </label>
+        <label className={`px-3 py-1.5 text-sm rounded-md cursor-pointer transition-colors ${
+          uploading ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-accent text-white hover:bg-secondary'
+        }`}>
+          {uploading ? 'Uploading…' : '+ Add Images'}
+          <input type="file" accept="image/*" multiple onChange={handleUpload} className="hidden" disabled={uploading} />
+        </label>
+      </div>
+
+      {images.length === 0 ? (
+        <div className="border-2 border-dashed border-gray-200 rounded-xl h-32 flex items-center justify-center text-sm text-gray-400">
+          No images yet — click "+ Add Images" to upload
+        </div>
+      ) : (
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+          {images.map((url, idx) => (
+            <div
+              key={url + idx}
+              draggable
+              onDragStart={() => onDragStart(idx)}
+              onDragOver={(e) => onDragOver(e, idx)}
+              className="relative group rounded-lg overflow-hidden border-2 border-gray-200 hover:border-accent cursor-grab active:cursor-grabbing aspect-video bg-gray-100"
+            >
+              {idx === 0 && (
+                <span className="absolute top-1 left-1 z-10 bg-accent text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+                  MAIN
+                </span>
+              )}
+              <img src={url} alt={`slide ${idx + 1}`} className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+              <button
+                type="button"
+                onClick={() => remove(idx)}
+                className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs hidden group-hover:flex items-center justify-center leading-none"
+              >
+                ×
+              </button>
+              <div className="absolute bottom-1 left-0 right-0 text-center">
+                <span className="text-[10px] text-white/80 bg-black/40 px-1 rounded">{idx + 1}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 // ─── Slider: nested Tabs → Cards editor ─────────────────────────────────────
 function TabGroup({ tab, onRename, onRemove, onAddCard, onUpdateCard, onRemoveCard }: any) {
   const [open, setOpen] = useState(true);
@@ -591,8 +699,17 @@ function SectionEditor({ section, index, onChange, onDelete, onMoveUp, onMoveDow
             </div>
           )}
 
-          {/* Image */}
-          {schema.showImage && (
+          {/* Hero image grid — drag-and-drop multi-image manager */}
+          {schema.isHeroImages && (
+            <HeroImageGrid
+              section={section}
+              onChangeImage={(url) => update('image', url)}
+              onChangeItems={(items) => update('items', items)}
+            />
+          )}
+
+          {/* Image (single, for non-hero sections) */}
+          {schema.showImage && !schema.isHeroImages && (
             <ImageUploader value={section.image || ''} onChange={(url) => update('image', url)} label="Image" />
           )}
 
@@ -633,7 +750,7 @@ function SectionEditor({ section, index, onChange, onDelete, onMoveUp, onMoveDow
           )}
 
           {/* Items — Slider gets nested Tabs→Cards UI, everything else gets flat list */}
-          {!schema.noItems && schema.isSlider && (
+          {!schema.noItems && !schema.isHeroImages && schema.isSlider && (
             <div className="border-t border-gray-100 pt-4">
               <h4 className="font-semibold text-sm text-gray-700 mb-3">
                 Tabs &amp; Cards ({(section.items || []).length} card{(section.items || []).length !== 1 ? 's' : ''} total)
@@ -644,7 +761,7 @@ function SectionEditor({ section, index, onChange, onDelete, onMoveUp, onMoveDow
               />
             </div>
           )}
-          {!schema.noItems && !schema.isSlider && (
+          {!schema.noItems && !schema.isHeroImages && !schema.isSlider && (
             <div className="border-t border-gray-100 pt-4">
               <div className="flex justify-between items-center mb-3">
                 <h4 className="font-semibold text-sm text-gray-700">
