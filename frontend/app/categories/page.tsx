@@ -57,7 +57,14 @@ export default function CategoriesPage() {
           <div className="text-center py-16 text-gray-500">No categories found.</div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {categories.map((category, idx) => (
+            {categories.filter(cat => {
+              const slug = (cat.slug || '').toLowerCase().replace(/[\s_]/g, '-');
+              const name = (cat.name || '').toLowerCase().trim();
+              // Block any variant of "shop fittings" or "for business"
+              const blockedBySlug = slug.includes('shop-fitting') || slug.includes('shopfitting') || slug.includes('for-business') || slug.includes('forbusiness');
+              const blockedByName = name.includes('shop fitting') || name.includes('for business');
+              return !blockedBySlug && !blockedByName;
+            }).map((category, idx) => (
               <Link
                 key={category._id}
                 href={`/category/${category.slug}`}

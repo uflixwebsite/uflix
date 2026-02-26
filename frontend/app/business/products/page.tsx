@@ -32,7 +32,13 @@ function BusinessProductsContent() {
       // Resolve category ObjectIds so products assigned via CategoryTreePicker are included
       let businessCatId: string | null = null;
       try {
-        const bizRes = await getCategoryByPath(['business']);
+        // Try 'for-business' first (the actual slug), fall back to 'business'
+        let bizRes: any = null;
+        try {
+          bizRes = await getCategoryByPath(['for-business']);
+        } catch {
+          bizRes = await getCategoryByPath(['business']);
+        }
         const bizChain = bizRes?.data;
         businessCatId = (Array.isArray(bizChain) ? bizChain[bizChain.length - 1]?._id : bizChain?._id) || null;
       } catch {}

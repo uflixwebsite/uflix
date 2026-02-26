@@ -14,6 +14,8 @@ import { getMegaMenu } from '@/services/megaMenuV2Service';
 export default function Header() {
   const pathname = usePathname();
   const isHomePage = pathname === '/';
+  // Pages that have a full-bleed dark hero — header should be transparent on mobile over these
+  const isHeroPage = pathname === '/' || pathname === '/business' || pathname === '/shop-fittings';
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [megaMenuOpen, setMegaMenuOpen] = useState(false);
@@ -225,13 +227,23 @@ export default function Header() {
     setSearchQuery('');
     setSearchResults([]);
   };
+
+  // Lock body scroll when mobile sidebar is open
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [isMenuOpen]);
   
   // Text color based on page
   const textColor = 'text-gray-900';
   const hoverColor = 'hover:text-accent';
 
   return (
-    <header ref={megaMenuContainerRef} className="bg-white absolute top-0 left-0 right-0 z-40">
+    <header ref={megaMenuContainerRef} className={`${isHeroPage ? 'bg-transparent' : 'bg-white'} lg:bg-white absolute top-0 left-0 right-0 z-40`}>
 
       {/* Full-width Mega Menu — rendered outside the constrained div */}
       {hoveredLink && (
@@ -305,7 +317,168 @@ export default function Header() {
           ) : null}
         </div>
       )}
+
+      {/* ── Mobile Sidebar Backdrop ── */}
+      <div
+        className={`fixed inset-0 bg-black/50 z-290 lg:hidden transition-opacity duration-300 ${
+          isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setIsMenuOpen(false)}
+      />
+
+      {/* ── Mobile Sidebar ── */}
+      <div
+        className={`fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-white z-300 lg:hidden flex flex-col shadow-2xl transition-transform duration-300 ease-in-out ${
+          isMenuOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        {/* Sidebar top bar */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+          <Link href="/" onClick={() => setIsMenuOpen(false)}>
+            <img src="/Logos/Uflix_Logo.png" alt="UFLIX" className="h-10 w-auto" />
+          </Link>
+          <button
+            onClick={() => setIsMenuOpen(false)}
+            className="p-2 text-gray-500 hover:text-gray-900 rounded-lg transition-colors"
+            aria-label="Close menu"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Nav links */}}
+        <nav className="flex-1 overflow-y-auto py-2">
+          {navLinks.map((link) => (
+            <Link
+              key={`sidebar-${link.label}-${link.url}`}
+              href={link.url}
+              className="flex items-center px-5 py-3.5 text-[15px] font-medium text-gray-800 hover:bg-gray-50 hover:text-accent transition-colors border-b border-gray-100 last:border-b-0"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              {link.label}
+              <svg className="w-4 h-4 ml-auto text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+          ))}
+        </nav>
+
+        {/* Bottom section */}
+        <div className="border-t border-gray-100 bg-gray-50">
+          {/* Signed-in user info */}
+          {isSignedIn && (
+            <div className="px-5 py-3 border-b border-gray-200 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-white font-bold text-sm shrink-0">
+                {user?.firstName?.[0]?.toUpperCase() || 'U'}
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-gray-900 truncate">{user?.firstName || 'User'}</p>
+                <p className="text-xs text-gray-500 truncate">{user?.primaryEmailAddress?.emailAddress}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Icon row */}
+          <div className="flex items-center justify-around px-4 py-4">
+            <button
+              onClick={() => { setIsMenuOpen(false); setTimeout(() => setIsSearchOpen(true), 300); }}
+              className="flex flex-col items-center gap-1 text-gray-600 hover:text-accent transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <span className="text-xs">Search</span>
+            </button>
+            {isSignedIn ? (
+              <Link
+                href={userRole === 'admin' ? '/admin' : '/profile'}
+                className="flex flex-col items-center gap-1 text-gray-600 hover:text-accent transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span className="text-xs">Profile</span>
+              </Link>
+            ) : (
+              <Link href="/sign-in" className="flex flex-col items-center gap-1 text-gray-600 hover:text-accent transition-colors" onClick={() => setIsMenuOpen(false)}>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span className="text-xs">Sign In</span>
+              </Link>
+            )}
+            <Link href="/wishlist" className="relative flex flex-col items-center gap-1 text-gray-600 hover:text-accent transition-colors" onClick={() => setIsMenuOpen(false)}>
+              <span className="relative">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-accent text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-semibold">{wishlistCount}</span>
+                )}
+              </span>
+              <span className="text-xs">Wishlist</span>
+            </Link>
+            <Link href="/cart" className="relative flex flex-col items-center gap-1 text-gray-600 hover:text-accent transition-colors" onClick={() => setIsMenuOpen(false)}>
+              <span className="relative">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-accent text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-semibold">{cartCount}</span>
+                )}
+              </span>
+              <span className="text-xs">Cart</span>
+            </Link>
+          </div>
+
+          {/* CTA + logout */}
+          <div className="px-4 pb-4 space-y-2">
+            {isSignedIn && (
+              <SignOutButton>
+                <button className="w-full text-center py-2 text-red-600 text-sm font-medium hover:bg-red-50 rounded-lg transition-colors">
+                  Logout
+                </button>
+              </SignOutButton>
+            )}
+          </div>
+        </div>
+      </div>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        {/* Mobile-only: For Homes / For Businesses / Shop Fittings tab bar — only on hero pages */}
+        {isHeroPage && (
+        <div className="flex lg:hidden items-center justify-center gap-0 pt-2 pb-1 border-b border-white/20">
+          <Link
+            href="/categories"
+            className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${
+              pathname === '/categories'
+                ? 'bg-accent text-white'
+                : 'text-white/90 hover:text-white'
+            }`}
+          >For Homes</Link>
+          <Link
+            href="/business"
+            className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${
+              pathname === '/business'
+                ? 'bg-accent text-white'
+                : 'text-white/90 hover:text-white'
+            }`}
+          >For Businesses</Link>
+          <Link
+            href="/shop-fittings"
+            className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${
+              pathname === '/shop-fittings'
+                ? 'bg-accent text-white'
+                : 'text-white/90 hover:text-white'
+            }`}
+          >Shop Fittings</Link>
+        </div>
+        )}
+
         <div className="flex items-center justify-between h-20">
           {/* Left: For Homes/For Businesses Tabs - Hidden on mobile */}
           <div className="hidden lg:flex gap-2">
@@ -458,15 +631,40 @@ export default function Header() {
             </Link>
           </div>
 
-          <button
-            className={`lg:hidden p-2 ${textColor}`}
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            aria-label="Toggle menu"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
+          {/* Right: mobile icons + hamburger */}
+          <div className="flex items-center gap-1 lg:hidden">
+            {/* Search */}
+            <button
+              onClick={() => setIsSearchOpen(!isSearchOpen)}
+              className={`p-2 ${isHeroPage ? 'text-white' : 'text-gray-900'}`}
+              aria-label="Search"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </button>
+            {/* Cart */}
+            <Link href="/cart" className={`relative p-2 ${isHeroPage ? 'text-white' : 'text-gray-900'}`} aria-label="Cart">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              {cartCount > 0 && (
+                <span className="absolute top-0.5 right-0.5 bg-accent text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-semibold">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
+            {/* Hamburger */}
+            <button
+              className={`p-2 ${isHeroPage ? 'text-white' : 'text-gray-900'}`}
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Search Bar Overlay */}
@@ -576,22 +774,6 @@ export default function Header() {
           ))}
         </nav>
 
-        {isMenuOpen && (
-          <div className="lg:hidden py-4 px-4 border-t border-white/20 bg-white/10 backdrop-blur-md">
-            <nav className="flex flex-col space-y-4">
-              {navLinks.map((link) => (
-                <Link
-                  key={`m-${link.label}-${link.url}`}
-                  href={link.url}
-                  className="text-sm font-medium text-white hover:text-accent transition-colors"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
-          </div>
-        )}
       </div>
     </header>
   );

@@ -1,7 +1,3 @@
 {
-  "/business/page": "app/business/page.js",
-  "/admin/page": "app/admin/page.js",
-  "/shop-fittings/page": "app/shop-fittings/page.js",
-  "/admin/pages/[slug]/edit/page": "app/admin/pages/[slug]/edit/page.js",
-  "/admin/pages/page": "app/admin/pages/page.js"
+  "/business/healthcare/page": "app/business/healthcare/page.js"
 }

@@ -145,10 +145,12 @@ function SliderCard({ image, name, link }: { image: string; name: string; link: 
 function CategoryProductTabs({
   subCategories,
   businessRootSlug,
+  businessRootId,
   adminSliderItems,
 }: {
   subCategories: any[];
   businessRootSlug: string;
+  businessRootId?: string;
   // items from the single 'slider' section; each item has description=tabName, title, image, link
   adminSliderItems?: any[];
 }) {
@@ -185,16 +187,28 @@ function CategoryProductTabs({
 
   useEffect(() => {
     if (hasAdminTabs) return;
+    if (subCategories.length === 0) {
+      // No subcategories — try fetching all products from the root business category
+      if (businessRootId) fetchTabProducts({ _id: businessRootId });
+      return;
+    }
     const cat = (subCategories as any[])[activeIdx];
     if (!cat) return;
     fetchTabProducts(cat);
-  }, [subCategories, activeIdx, hasAdminTabs]);
+  }, [subCategories, activeIdx, hasAdminTabs, businessRootId]);
 
   const fetchTabProducts = async (cat: any) => {
     setLoading(true);
     try {
       const res = await getProducts({ categoryId: cat._id, limit: 10 });
-      setProducts((res.data || []).slice(0, 10));
+      const prods = (res.data || []).slice(0, 10);
+      // If subcategory yielded no products, try the root business category as fallback
+      if (prods.length === 0 && businessRootId && cat._id !== businessRootId) {
+        const rootRes = await getProducts({ categoryId: businessRootId, limit: 10 });
+        setProducts((rootRes.data || []).slice(0, 10));
+      } else {
+        setProducts(prods);
+      }
     } catch {
       setProducts([]);
     } finally {
@@ -219,11 +233,12 @@ function CategoryProductTabs({
           Designed for better working, every day
         </h2>
 
-        {/* Rectangular segmented tabs */}
-        <div className="flex border border-gray-300 rounded-none overflow-hidden w-fit mb-8">
-          {tabs.map((cat, i) => (
+        {/* Rectangular segmented tabs — scrollable on mobile */}
+        <div className="overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0" style={{ scrollbarWidth: 'none' }}>
+          <div className="flex border border-gray-300 rounded-none overflow-hidden w-fit mb-8 min-w-max">
+            {tabs.map((cat, i) => (
             <button
-              key={cat._id}
+              key={cat._id || cat.name || i}
               onClick={() => setActiveIdx(i)}
               className={`px-6 py-3 text-sm font-medium border-r border-gray-300 last:border-r-0 transition-colors relative ${
                 activeIdx === i
@@ -237,6 +252,7 @@ function CategoryProductTabs({
               )}
             </button>
           ))}
+          </div>
         </div>
 
         {/* Horizontal scroll slider */}
@@ -263,7 +279,7 @@ function CategoryProductTabs({
                   <SliderCard key={i} image={item.image || ''} name={item.title || ''} link={item.link || `/${businessRootSlug}`} />
                 ));
               })()
-            ) : !subCategories.length ? (
+            ) : !subCategories.length && products.length === 0 ? (
               phImages.map((src, i) => (
                 <SliderCard key={i} image={src} name={phNames[i] || 'Office Chair'} link={`/category/for-business/${activeSlug}`} />
               ))
@@ -291,14 +307,10 @@ function CategoryProductTabs({
 
 // ─── Stats Bar (coral) ───────────────────────────────────────────────────────────
 function StatsBar({ items }: { items: { stats: string; statsLabel: string }[] }) {
-  const cols = Math.min(items.length, 6);
   return (
     <section style={{ backgroundColor: '#E87059' }} className="py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div
-          className="grid gap-8"
-          style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
-        >
+        <div className="grid gap-6 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
           {items.map((item, i) => (
             <div key={i} className="text-center text-white">
               <p className="text-4xl md:text-5xl font-bold">{item.stats}</p>
@@ -507,7 +519,7 @@ function BusinessHero({ section }: { section?: Section }) {
 
   return (
     <section
-      className="relative min-h-[80vh] flex items-center justify-center overflow-hidden"
+      className="relative min-h-screen flex items-center justify-center overflow-hidden"
       style={{ background: '#000' }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
@@ -554,7 +566,7 @@ function BusinessHero({ section }: { section?: Section }) {
       )}
 
       {/* Content */}
-      <div className="relative z-10 text-center px-4 py-24 max-w-5xl mx-auto">
+      <div className="relative z-10 text-center px-4 pt-32 pb-16 max-w-5xl mx-auto">
         <span className="inline-block bg-white/10 text-white border border-white/20 text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
           Business Furniture Solutions
         </span>
@@ -636,6 +648,7 @@ export default function BusinessPage() {
   const [sections, setSections] = useState<Section[]>([]);
   const [subCategories, setSubCategories] = useState<any[]>([]);
   const [businessRootSlug, setBusinessRootSlug] = useState('for-business');
+  const [businessRootId, setBusinessRootId] = useState<string | undefined>();
 
   useEffect(() => {
     fetchPageContent();
@@ -649,6 +662,7 @@ export default function BusinessPage() {
       const node = Array.isArray(chain) ? chain[chain.length - 1] : chain;
       if (node?.slug) setBusinessRootSlug(node.slug);
       if (node?._id) {
+        setBusinessRootId(node._id);
         const r = await api.get('/categories', { params: { parentId: node._id } });
         setSubCategories(r.data?.data || []);
       }
@@ -684,7 +698,7 @@ export default function BusinessPage() {
   return (
     <div className="min-h-screen bg-black">
       <Header />
-      <main>
+      <main className="homepage-main">
 
         {/* 1. Hero */}
         {visible('hero') && <BusinessHero section={heroSection} />}
@@ -694,6 +708,7 @@ export default function BusinessPage() {
           <CategoryProductTabs
             subCategories={subCategories}
             businessRootSlug={businessRootSlug}
+            businessRootId={businessRootId}
             adminSliderItems={adminSliderItems}
           />
         )}

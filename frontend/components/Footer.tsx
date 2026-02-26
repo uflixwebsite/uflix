@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { getFooterSettings } from '@/services/footerService';
 
 interface SocialLink {
@@ -138,25 +139,54 @@ const defaultFooter: FooterData = {
   ]
 };
 
+// ─── Contact icon helpers ─────────────────────────────────────────────────────
+
+const contactIcons: Record<string, JSX.Element> = {
+  address: (
+    <svg className="w-4 h-4 flex-none mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+  ),
+  phone: (
+    <svg className="w-4 h-4 flex-none mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+    </svg>
+  ),
+  email: (
+    <svg className="w-4 h-4 flex-none mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+    </svg>
+  ),
+};
+
 function renderContactValue(item: ContactItem) {
   const lines = item.value.split('\n');
   if (item.type === 'phone') {
-    return lines.map((line, i) => (
-      <span key={i}>
-        {i > 0 && <br />}
-        <a href={`tel:${line.replace(/\s/g, '')}`} className="hover:text-accent transition-colors">{line}</a>
-      </span>
-    ));
+    return (
+      <>
+        {lines.map((line, i) => (
+          <a key={i} href={`tel:${line.replace(/\s/g, '')}`}
+            className="block hover:text-accent transition-colors leading-snug">
+            {line}
+          </a>
+        ))}
+      </>
+    );
   }
   if (item.type === 'email') {
-    return lines.map((line, i) => (
-      <span key={i}>
-        {i > 0 && <br />}
-        <a href={`mailto:${line}`} className="hover:text-accent transition-colors">{line}</a>
-      </span>
-    ));
+    return (
+      <>
+        {lines.map((line, i) => (
+          <a key={i} href={`mailto:${line}`}
+            className="block hover:text-accent transition-colors leading-snug break-all">
+            {line}
+          </a>
+        ))}
+      </>
+    );
   }
-  return <span className="text-sm" dangerouslySetInnerHTML={{ __html: item.value.replace(/\n/g, '<br />') }} />;
+  return <span className="leading-snug" dangerouslySetInnerHTML={{ __html: item.value.replace(/\n/g, '<br />') }} />;
 }
 
 export default function Footer() {
@@ -175,7 +205,7 @@ export default function Footer() {
             contactTitle: res.data.contactTitle || defaultFooter.contactTitle,
             contactItems: res.data.contactItems?.length ? res.data.contactItems : defaultFooter.contactItems,
             copyrightText: res.data.copyrightText || defaultFooter.copyrightText,
-            bottomLinks: res.data.bottomLinks?.length ? res.data.bottomLinks : defaultFooter.bottomLinks
+            bottomLinks: res.data.bottomLinks?.length ? res.data.bottomLinks : defaultFooter.bottomLinks,
           });
         }
       } catch {
@@ -189,49 +219,76 @@ export default function Footer() {
   const enabledSocial = data.socialLinks.filter(s => s.enabled);
   const enabledContact = data.contactItems.filter(c => c.enabled);
   const enabledBottom = data.bottomLinks.filter(b => b.enabled);
-  const gridCols = Math.min(2 + enabledColumns.length + (enabledContact.length > 0 ? 1 : 0), 5);
-  const gridColsClass: Record<number, string> = {
-    2: 'lg:grid-cols-2',
-    3: 'lg:grid-cols-3',
-    4: 'lg:grid-cols-4',
-    5: 'lg:grid-cols-5',
-  };
 
   return (
-    <footer className="bg-foreground text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className={`grid grid-cols-1 md:grid-cols-2 ${gridColsClass[gridCols] || 'lg:grid-cols-5'} gap-8 mb-8`}>
-          <div className="lg:col-span-2">
-            <h3 className="text-2xl font-bold text-accent mb-4">{data.brandName}</h3>
-            <p className="text-gray-300 mb-4 leading-relaxed">{data.brandDescription}</p>
-            {enabledSocial.length > 0 && (
-              <div className="flex space-x-4 mt-6">
-                {enabledSocial.map((link, i) => (
-                  <a
-                    key={i}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`text-gray-300 ${socialHoverColors[link.platform] || 'hover:text-accent'} transition-colors`}
-                  >
+    <footer style={{ backgroundColor: '#0f0f0f' }} className="text-white">
+
+      {/* ── Top brand strip ───────────────────────────────────────────── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-10">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+          {/* Brand name + tagline */}
+          <div>
+            <Link href="/">
+              <Image
+                src="/Logos/Uflix_Logo.png"
+                alt={data.brandName}
+                width={140}
+                height={48}
+                className="h-12 w-auto object-contain"
+              />
+            </Link>
+            <p className="text-gray-400 text-sm mt-3 max-w-sm leading-relaxed">
+              {data.brandDescription}
+            </p>
+          </div>
+
+          {/* Social icons */}
+          {enabledSocial.length > 0 && (
+            <div className="flex gap-2.5 flex-wrap">
+              {enabledSocial.map((link, i) => (
+                <a
+                  key={i}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`w-9 h-9 flex items-center justify-center rounded-full border border-white/10 bg-white/5 text-gray-400 transition-all hover:border-white/30 hover:bg-white/10 ${socialHoverColors[link.platform] || 'hover:text-accent'}`}
+                  aria-label={link.platform}
+                >
+                  <span className="[&>svg]:w-4 [&>svg]:h-4">
                     {socialIcons[link.platform] || (
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                       </svg>
                     )}
-                  </a>
-                ))}
-              </div>
-            )}
-          </div>
+                  </span>
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
 
-          {enabledColumns.map((column, colIdx) => (
-            <div key={colIdx}>
-              <h4 className="font-semibold mb-4">{column.title}</h4>
-              <ul className="space-y-2">
-                {column.links.filter(l => l.enabled).map((link, linkIdx) => (
-                  <li key={linkIdx}>
-                    <Link href={link.url} className="text-gray-300 hover:text-accent transition-colors">
+      {/* ── Divider ───────────────────────────────────────────────────── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="h-px bg-white/8" />
+      </div>
+
+      {/* ── Link columns + contact ────────────────────────────────────── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-10">
+
+          {enabledColumns.map((column, ci) => (
+            <div key={ci}>
+              <h4 className="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-5">
+                {column.title}
+              </h4>
+              <ul className="space-y-3">
+                {column.links.filter(l => l.enabled).map((link, li) => (
+                  <li key={li}>
+                    <Link
+                      href={link.url}
+                      className="text-sm text-gray-300 hover:text-white transition-colors"
+                    >
                       {link.label}
                     </Link>
                   </li>
@@ -241,26 +298,39 @@ export default function Footer() {
           ))}
 
           {enabledContact.length > 0 && (
-            <div>
-              <h4 className="font-semibold mb-4">{data.contactTitle}</h4>
-              <ul className="space-y-2">
+            <div className="col-span-2 md:col-span-1">
+              <h4 className="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-5">
+                {data.contactTitle}
+              </h4>
+              <ul className="space-y-4">
                 {enabledContact.map((item, i) => (
-                  <li key={i} className="text-gray-300">
-                    <span className="block text-sm font-medium mb-1">{item.label}</span>
-                    {renderContactValue(item)}
+                  <li key={i} className="flex gap-2.5 text-gray-400 text-sm">
+                    <span className="text-gray-600 pt-0.5">
+                      {contactIcons[item.type] || null}
+                    </span>
+                    <div>
+                      {renderContactValue(item)}
+                    </div>
                   </li>
                 ))}
               </ul>
             </div>
           )}
         </div>
+      </div>
 
-        <div className="border-t border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-400 text-sm mb-4 md:mb-0">{data.copyrightText}</p>
+      {/* ── Bottom bar ────────────────────────────────────────────────── */}
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-xs text-gray-600">{data.copyrightText}</p>
           {enabledBottom.length > 0 && (
-            <div className="flex space-x-6">
+            <div className="flex gap-5 flex-wrap justify-center">
               {enabledBottom.map((link, i) => (
-                <Link key={i} href={link.url} className="text-gray-400 hover:text-accent text-sm transition-colors">
+                <Link
+                  key={i}
+                  href={link.url}
+                  className="text-xs text-gray-600 hover:text-gray-300 transition-colors"
+                >
                   {link.label}
                 </Link>
               ))}
@@ -268,6 +338,7 @@ export default function Footer() {
           )}
         </div>
       </div>
+
     </footer>
   );
 }

@@ -157,6 +157,21 @@ export default function AdminDashboardPage() {
           </Link>
 
           <Link
+            href="/admin/business/healthcare"
+            className="group bg-white rounded-lg border border-border p-6 hover:shadow-lg transition-all duration-200 hover:border-accent"
+          >
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-cyan-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-cyan-200 transition-colors">
+                <svg className="w-8 h-8 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+              </div>
+              <h3 className="font-semibold text-lg mb-2">Healthcare Page</h3>
+              <p className="text-sm text-neutral-dark">Edit /business/healthcare</p>
+            </div>
+          </Link>
+
+          <Link
             href="/admin/footer"
             className="group bg-white rounded-lg border border-border p-6 hover:shadow-lg transition-all duration-200 hover:border-accent"
           >
