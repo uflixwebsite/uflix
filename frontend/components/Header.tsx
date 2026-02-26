@@ -348,7 +348,7 @@ export default function Header() {
           </button>
         </div>
 
-        {/* Nav links */}}
+        {/* Nav links */}
         <nav className="flex-1 overflow-y-auto py-2">
           {navLinks.map((link) => (
             <Link
@@ -455,7 +455,7 @@ export default function Header() {
           <Link
             href="/categories"
             className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${
-              pathname === '/categories'
+              (pathname as string) === '/categories'
                 ? 'bg-accent text-white'
                 : 'text-white/90 hover:text-white'
             }`}
@@ -463,7 +463,7 @@ export default function Header() {
           <Link
             href="/business"
             className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${
-              pathname === '/business'
+              (pathname as string) === '/business'
                 ? 'bg-accent text-white'
                 : 'text-white/90 hover:text-white'
             }`}
@@ -471,7 +471,7 @@ export default function Header() {
           <Link
             href="/shop-fittings"
             className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${
-              pathname === '/shop-fittings'
+              (pathname as string) === '/shop-fittings'
                 ? 'bg-accent text-white'
                 : 'text-white/90 hover:text-white'
             }`}
