@@ -89,8 +89,6 @@ function ShopFittingsHero({ section }: { section?: Section }) {
       ))}
       {allImages.length === 0 && <div className="absolute inset-0 bg-gray-900" />}
 
-      <div className="absolute inset-0 bg-black/60" />
-
       {/* Left arrow */}
       {total > 1 && (
         <button

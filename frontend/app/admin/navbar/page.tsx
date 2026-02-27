@@ -329,6 +329,27 @@ export default function AdminNavbarPage() {
                 </button>
                 <button
                   type="button"
+                  onClick={() => ensureConfigAndSelect('/business/healthcare')}
+                  className="px-3 py-1.5 text-xs border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  Healthcare (/business/healthcare)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => ensureConfigAndSelect('/business/education')}
+                  className="px-3 py-1.5 text-xs border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  Education (/business/education)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => ensureConfigAndSelect('/business/workspace')}
+                  className="px-3 py-1.5 text-xs border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  Workspace (/business/workspace)
+                </button>
+                <button
+                  type="button"
                   onClick={() => ensureConfigAndSelect('/contact')}
                   className="px-3 py-1.5 text-xs border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
                 >

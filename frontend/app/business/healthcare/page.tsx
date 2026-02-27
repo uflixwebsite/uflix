@@ -39,6 +39,15 @@ const PH_IDEAS = [
   },
 ];
 
+const PH_STATS = [
+  { stats: '75+', statsLabel: 'National & International Awards' },
+  { stats: '900+', statsLabel: 'Design Registrations' },
+  { stats: '3500+', statsLabel: 'Exclusive Product Designs' },
+  { stats: '400+', statsLabel: 'Skilled Artisans' },
+  { stats: '20+', statsLabel: 'Years of Excellence' },
+  { stats: '300+', statsLabel: 'Corporate Clients' },
+];
+
 
 // ─── Hero ─────────────────────────────────────────────────────────────────────
 
@@ -88,8 +97,6 @@ function HealthcareHero({ section }: { section?: Section }) {
       {allImages.length === 0 && (
         <div className="absolute inset-0 bg-linear-to-br from-gray-900 via-slate-800 to-gray-900" />
       )}
-
-      <div className="absolute inset-0 bg-black/55" />
 
       {total > 1 && (
         <button
@@ -277,15 +284,19 @@ function JustArrivedSection({
                 No products configured yet. Go to the admin panel → Just Arrived to pin products or set a category path.
               </p>
             ) : (
-              displayProducts.map((p: any) => (
-                <ProductSliderCard
-                  key={p._id}
-                  image={p.images?.[0] || p.image || ''}
-                  name={p.name}
-                  variant={p.variants?.[0]?.name || p.material || ''}
-                  link={`/product/${p._id}`}
-                />
-              ))
+              displayProducts.map((p: any) => {
+                const rawImg = p.images?.[0] || p.image || '';
+                const imgUrl = typeof rawImg === 'string' ? rawImg : rawImg?.url || '';
+                return (
+                  <ProductSliderCard
+                    key={p._id}
+                    image={imgUrl}
+                    name={p.name}
+                    variant={p.variants?.[0]?.name || p.material || ''}
+                    link={`/product/${p._id}`}
+                  />
+                );
+              })
             )}
           </div>
         </div>
@@ -450,6 +461,27 @@ function PlaceholderSection({ section }: { section?: Section }) {
   );
 }
 
+function StatsBar({ items }: { items: { stats: string; statsLabel: string }[] }) {
+  return (
+    <section style={{ backgroundColor: '#E87059' }} className="py-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid gap-6 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
+          {items.map((item, i) => (
+            <div key={i} className="text-center text-white">
+              <p className="text-4xl md:text-5xl font-bold">{item.stats}</p>
+              <p className="text-white/80 mt-2 text-sm leading-snug">{item.statsLabel}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function dbToStats(s: Section) {
+  return (s.items || []).map((it: any) => ({ stats: it.stats || it.title || '', statsLabel: it.statsLabel || it.description || '' }));
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function HealthcarePage() {
@@ -470,14 +502,29 @@ export default function HealthcarePage() {
       // Priority 1: admin-pinned specific products
       const pinnedItems = (jaSection?.items || []).filter((i: any) => i._ref);
       if (pinnedItems.length > 0) {
-        setProducts(
-          pinnedItems.map((i: any) => ({
-            _id: i._ref,
-            name: i.title || '',
-            images: [i.image || ''],
-            material: i.variant || '',
-          }))
-        );
+        setProductsLoading(true);
+        try {
+          const ids: string[] = pinnedItems.map((i: any) => i._ref as string);
+          const results = await Promise.all(ids.map((id) => api.get(`/products/${id}`).catch(() => null)));
+          setProducts(
+            pinnedItems.map((i: any, idx: number) => {
+              const pd = results[idx]?.data?.data; // backend: { success, data: product }
+              // images are stored as [{url, alt}] objects — extract the url string
+              const imgUrls = pd?.images?.length
+                ? pd.images.map((img: any) => (typeof img === 'string' ? img : img?.url)).filter(Boolean)
+                : [];
+              return {
+                _id: i._ref,
+                name: i.title || pd?.name || '',
+                images: imgUrls.length ? imgUrls : (i.image ? [i.image] : []),
+                variants: pd?.variants || [],
+                material: i.variant || pd?.variants?.[0]?.name || '',
+              };
+            })
+          );
+        } catch {
+          setProducts(pinnedItems.map((i: any) => ({ _id: i._ref, name: i.title || '', images: [i.image || ''], material: i.variant || '' })));
+        }
         setProductsLoading(false);
       } else {
         // Priority 2: category path auto-fetch
@@ -530,17 +577,21 @@ export default function HealthcarePage() {
   const highlightText = textSection?.description || textSection?.content || PH_HIGHLIGHT_TEXT;
 
   // Build ideas from CMS items, falling back to sample placeholders
-  const ideasItems: IdeaItem[] = ideasSection?.items?.length
-    ? ideasSection.items.map((it: any) => ({
-        category: it.icon || 'Healthcare',
-        readTime: it.stats || '10 mins read',
-        title: it.title || '',
-        description: it.description || '',
-        image: it.image || '',
-        link: it.link || '#',
-        linkText: it.linkText || 'Read more',
-      }))
-    : PH_IDEAS;
+  const ideasItems: IdeaItem[] = (() => {
+    const cmsItems = ideasSection?.items?.length
+      ? ideasSection.items.map((it: any, idx: number) => ({
+          category: it.icon || 'Healthcare',
+          readTime: it.stats || '10 mins read',
+          title: it.title || '',
+          description: it.description || '',
+          image: it.image || PH_IDEAS[idx % PH_IDEAS.length]?.image || '',
+          link: it.link || '#',
+          linkText: it.linkText || 'Read more',
+        }))
+      : PH_IDEAS;
+    // Always render at least 2 items so the alternating layout is visible
+    return cmsItems.length < 2 ? [...cmsItems, ...PH_IDEAS.slice(cmsItems.length, 2)] : cmsItems;
+  })();
 
   const ideasHeading = ideasSection?.title || 'Ideas for healthcare spaces';
   const ideasExploreLink = ideasSection?.link || '/industries';
@@ -562,6 +613,14 @@ export default function HealthcarePage() {
         {/* 2. Highlight text */}
         {visible('text-highlight') && (
           <HighlightTextSection text={highlightText} />
+        )}
+
+        {/* 2.5 Stats bar (orange) */}
+        {visible('stats-bar') && (
+          (() => {
+            const statsItems = get('stats-bar')?.items?.length ? dbToStats(get('stats-bar')!) : PH_STATS;
+            return <StatsBar items={statsItems} />;
+          })()
         )}
 
         {/* 3. Placeholder section — admin fills this in */}

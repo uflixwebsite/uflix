@@ -252,6 +252,10 @@ export default function MegaMenuPage() {
                 <option value="/products">Products</option>
                 <option value="/categories">Categories</option>
                 <option value="/business">Business</option>
+                <option value="/business/*">Business — All Verticals (/business/*)</option>
+                <option value="/business/healthcare">Business — Healthcare</option>
+                <option value="/business/education">Business — Education</option>
+                <option value="/business/workspace">Business — Workspace</option>
                 <option value="/contact">Contact</option>
                 <option value="/about">About</option>
                 <option value="/projects">Projects</option>

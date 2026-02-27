@@ -537,8 +537,6 @@ function BusinessHero({ section }: { section?: Section }) {
       {/* no images fallback */}
       {allImages.length === 0 && <div className="absolute inset-0 bg-gray-900" />}
 
-      <div className="absolute inset-0 bg-black/55" />
-
       {/* Left arrow */}
       {total > 1 && (
         <button
