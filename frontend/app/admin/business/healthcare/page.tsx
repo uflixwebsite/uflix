@@ -34,11 +34,13 @@ function ImageUploader({
   onChange,
   label,
   folder = 'pages',
+  hint,
 }: {
   value: string;
   onChange: (url: string) => void;
   label: string;
   folder?: string;
+  hint?: string;
 }) {
   const [uploading, setUploading] = useState(false);
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,6 +64,7 @@ function ImageUploader({
   return (
     <div>
       <label className="block text-sm font-medium mb-1">{label}</label>
+      {hint && <p className="text-xs text-gray-400 mb-1.5">📐 Recommended: {hint}</p>}
       <div className="flex gap-2 items-start flex-wrap">
         <input
           type="text"
@@ -211,7 +214,7 @@ function IdeaItemEditor({
       </div>
       <Field label="Link URL" value={item.link || ''} onChange={(v) => set('link', v)} placeholder="/industries/healthcare" />
       <Field label="Button label" value={item.linkText || ''} onChange={(v) => set('linkText', v)} placeholder="Read more" />
-      <ImageUploader label="Article image" value={item.image || ''} onChange={(v) => set('image', v)} folder="healthcare" />
+      <ImageUploader label="Article image" value={item.image || ''} onChange={(v) => set('image', v)} folder="healthcare" hint="1200×600px (2:1 landscape)" />
     </div>
   );
 }
@@ -248,7 +251,7 @@ function HeroTab({ data, onChange }: { data: any; onChange: (d: any) => void }) 
         </div>
       </div>
       <div className="border-t pt-5">
-        <ImageUploader label="Main / first slide image" value={data.image || ''} onChange={(v) => set('image', v)} folder="healthcare" />
+        <ImageUploader label="Main / first slide image" value={data.image || ''} onChange={(v) => set('image', v)} folder="healthcare" hint="1920×1080px (16:9 hero, JPG/WEBP)" />
       </div>
       <div className="border-t pt-5">
         <div className="flex items-center justify-between mb-3">
@@ -264,7 +267,7 @@ function HeroTab({ data, onChange }: { data: any; onChange: (d: any) => void }) 
                 <span className="text-xs font-semibold text-gray-600">Slide {i + 1}</span>
                 <button onClick={() => removeSlide(i)} className="text-xs text-red-500 hover:text-red-700">Remove</button>
               </div>
-              <ImageUploader label="Slide image" value={slide.image || ''} onChange={(v) => setSlide(i, v)} folder="healthcare" />
+              <ImageUploader label="Slide image" value={slide.image || ''} onChange={(v) => setSlide(i, v)} folder="healthcare" hint="1920×1080px (16:9 hero, JPG/WEBP)" />
             </div>
           ))}
           {(data.items || []).length === 0 && (
@@ -313,7 +316,7 @@ function PlaceholderTab({ data, onChange }: { data: any; onChange: (d: any) => v
         <>
           <Field label="Title" value={data.title || ''} onChange={(v) => set('title', v)} />
           <Field label="Description" value={data.description || ''} onChange={(v) => set('description', v)} textarea />
-          <ImageUploader label="Image (optional)" value={data.image || ''} onChange={(v) => set('image', v)} folder="healthcare" />
+          <ImageUploader label="Image (optional)" value={data.image || ''} onChange={(v) => set('image', v)} folder="healthcare" hint="1200×600px (2:1 landscape)" />
           <Field label="Button label" value={data.linkText || ''} onChange={(v) => set('linkText', v)} />
           <Field label="Button link" value={data.link || ''} onChange={(v) => set('link', v)} />
           <div>

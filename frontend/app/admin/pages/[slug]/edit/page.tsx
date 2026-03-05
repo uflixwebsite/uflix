@@ -109,7 +109,7 @@ async function deleteOldCloudinaryImage(url: string) {
   }
 }
 
-function ImageUploader({ value, onChange, label }: { value: string; onChange: (url: string) => void; label: string }) {
+function ImageUploader({ value, onChange, label, hint }: { value: string; onChange: (url: string) => void; label: string; hint?: string }) {
   const [uploading, setUploading] = useState(false);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -141,6 +141,7 @@ function ImageUploader({ value, onChange, label }: { value: string; onChange: (u
   return (
     <div>
       <label className="block text-sm font-medium mb-1">{label}</label>
+      {hint && <p className="text-xs text-gray-400 mb-1.5">📐 Recommended: {hint}</p>}
       <div className="flex gap-2 items-center">
         <label
           className={`px-4 py-2 text-sm rounded-md cursor-pointer transition-colors ${
@@ -317,7 +318,7 @@ function SectionItemEditor({ item, index, onChange, onRemove, fields, itemLabel,
         )}
         {show('image') && (
           <div className="md:col-span-2">
-            <ImageUploader value={item.image || ''} onChange={(url) => update('image', url)} label="Image" />
+            <ImageUploader value={item.image || ''} onChange={(url) => update('image', url)} label="Image" hint="1200×600px (2:1 landscape, JPG/WEBP)" />
           </div>
         )}
       </div>
@@ -385,6 +386,7 @@ function HeroImageGrid({
         <label className="block text-sm font-medium text-gray-700">
           Slideshow Images <span className="text-xs font-normal text-gray-400">— drag to reorder, first image shown first</span>
         </label>
+        <p className="text-xs text-gray-400 mb-2">📐 Recommended: 1920×1080px (16:9, JPG/WEBP)</p>
         <label className={`px-3 py-1.5 text-sm rounded-md cursor-pointer transition-colors ${
           uploading ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-accent text-white hover:bg-secondary'
         }`}>
@@ -503,6 +505,7 @@ function TabGroup({ tab, onRename, onRemove, onAddCard, onUpdateCard, onRemoveCa
                     value={card.image || ''}
                     onChange={(url) => onUpdateCard(ci, { ...card, image: url })}
                     label="Card Image"
+                    hint="400×300px (4:3, JPG/WEBP)"
                   />
                 </div>
               </div>
@@ -710,7 +713,7 @@ function SectionEditor({ section, index, onChange, onDelete, onMoveUp, onMoveDow
 
           {/* Image (single, for non-hero sections) */}
           {schema.showImage && !schema.isHeroImages && (
-            <ImageUploader value={section.image || ''} onChange={(url) => update('image', url)} label="Image" />
+            <ImageUploader value={section.image || ''} onChange={(url) => update('image', url)} label="Image" hint="1200×600px (2:1 landscape, JPG/WEBP)" />
           )}
 
           {/* Primary link */}

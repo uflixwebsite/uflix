@@ -96,28 +96,31 @@ export default function MegaMenuPage() {
 
   const addCategory = () => {
     const newCategory = {
-      id: `cat-${Date.now()}`,
+      id: `cat-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       name: 'New Category',
       order: categories.length + 1,
       enabled: true
     };
-    setCategories([...categories, newCategory]);
+    setCategories(prev => [...prev, newCategory]);
     setSelectedCategoryId(newCategory.id);
   };
 
   const updateCategoryName = (categoryId: string, newName: string) => {
-    setCategories(categories.map(cat => 
+    setCategories(prev => prev.map(cat =>
       cat.id === categoryId ? { ...cat, name: newName } : cat
     ));
   };
 
   const deleteCategory = (categoryId: string) => {
     if (!confirm('Delete this category and all its items?')) return;
-    setCategories(categories.filter(cat => cat.id !== categoryId));
-    setItems(items.filter(item => item.categoryId !== categoryId));
-    if (selectedCategoryId === categoryId) {
-      setSelectedCategoryId(categories[0]?.id || '');
-    }
+    setCategories(prev => {
+      const remaining = prev.filter(cat => cat.id !== categoryId);
+      if (selectedCategoryId === categoryId) {
+        setSelectedCategoryId(remaining[0]?.id || '');
+      }
+      return remaining;
+    });
+    setItems(prev => prev.filter(item => item.categoryId !== categoryId));
   };
 
   const addItem = () => {
@@ -127,7 +130,7 @@ export default function MegaMenuPage() {
     }
     
     const newItem = {
-      id: `item-${Date.now()}`,
+      id: `item-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       categoryId: selectedCategoryId,
       title: 'New Item',
       url: '/shop',
@@ -135,18 +138,18 @@ export default function MegaMenuPage() {
       order: items.filter(i => i.categoryId === selectedCategoryId).length + 1,
       enabled: true
     };
-    setItems([...items, newItem]);
+    setItems(prev => [...prev, newItem]);
   };
 
   const updateItem = (itemId: string, field: string, value: any) => {
-    setItems(items.map(item =>
+    setItems(prev => prev.map(item =>
       item.id === itemId ? { ...item, [field]: value } : item
     ));
   };
 
   const deleteItem = (itemId: string) => {
     if (!confirm('Delete this item?')) return;
-    setItems(items.filter(item => item.id !== itemId));
+    setItems(prev => prev.filter(item => item.id !== itemId));
   };
 
   const handleImageUpload = async (itemId: string, file: File) => {
@@ -446,6 +449,7 @@ export default function MegaMenuPage() {
                             </div>
                             <div>
                               <label className="block text-xs font-medium text-gray-700 mb-1">Image</label>
+                              <p className="text-xs text-gray-400 mb-1.5">📐 Recommended: 400×300px (4:3, JPG/WEBP)</p>
                               <div className="flex gap-2">
                                 <label className="flex-1">
                                   <input
@@ -453,7 +457,10 @@ export default function MegaMenuPage() {
                                     accept="image/*"
                                     onChange={(e) => {
                                       const file = e.target.files?.[0];
-                                      if (file) handleImageUpload(item.id, file);
+                                      if (file) {
+                                        handleImageUpload(item.id, file);
+                                        e.target.value = ''; // reset so same file can be re-uploaded
+                                      }
                                     }}
                                     className="hidden"
                                     disabled={uploadingImageFor === item.id}

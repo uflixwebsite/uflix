@@ -29,7 +29,7 @@ async function deleteOldImage(url: string) {
 
 // ─── ImageUploader ────────────────────────────────────────────────────────────
 
-function ImageUploader({ value, onChange, label, folder = 'pages' }: { value: string; onChange: (url: string) => void; label: string; folder?: string }) {
+function ImageUploader({ value, onChange, label, folder = 'pages', hint }: { value: string; onChange: (url: string) => void; label: string; folder?: string; hint?: string }) {
   const [uploading, setUploading] = useState(false);
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -49,6 +49,7 @@ function ImageUploader({ value, onChange, label, folder = 'pages' }: { value: st
   return (
     <div>
       <label className="block text-sm font-medium mb-1">{label}</label>
+      {hint && <p className="text-xs text-gray-400 mb-1.5">📐 Recommended: {hint}</p>}
       <div className="flex gap-2 items-start flex-wrap">
         <input type="text" value={value || ''} onChange={(e) => onChange(e.target.value)} placeholder="Image URL or upload" className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
         <label className={`px-3 py-2 text-sm rounded-md cursor-pointer transition-colors whitespace-nowrap ${uploading ? 'bg-gray-300 text-gray-500' : 'bg-accent text-white hover:bg-secondary'}`}>
@@ -149,7 +150,7 @@ function IdeaItemEditor({ item, idx, onChange, onRemove, onMoveUp, onMoveDown, i
       </div>
       <Field label="Link URL" value={item.link || ''} onChange={(v) => set('link', v)} placeholder="/industries/workspace" />
       <Field label="Button label" value={item.linkText || ''} onChange={(v) => set('linkText', v)} placeholder="Read more" />
-      <ImageUploader label="Article image" value={item.image || ''} onChange={(v) => set('image', v)} folder="workspace" />
+      <ImageUploader label="Article image" value={item.image || ''} onChange={(v) => set('image', v)} folder="workspace" hint="1200×600px (2:1 landscape)" />
     </div>
   );
 }
@@ -313,7 +314,7 @@ function PlaceholderTab({ data, onChange }: { data: any; onChange: (d: any) => v
         <>
           <Field label="Title" value={data.title || ''} onChange={(v) => set('title', v)} />
           <Field label="Description" value={data.description || ''} onChange={(v) => set('description', v)} textarea />
-          <ImageUploader label="Image (optional)" value={data.image || ''} onChange={(v) => set('image', v)} folder="workspace" />
+          <ImageUploader label="Image (optional)" value={data.image || ''} onChange={(v) => set('image', v)} folder="workspace" hint="1200×600px (2:1 landscape)" />
           <Field label="Button label" value={data.linkText || ''} onChange={(v) => set('linkText', v)} />
           <Field label="Button link" value={data.link || ''} onChange={(v) => set('link', v)} />
           <div>

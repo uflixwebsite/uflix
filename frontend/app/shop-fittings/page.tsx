@@ -155,6 +155,7 @@ export default function ShopFittingsPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [sections, setSections] = useState<Section[]>([]);
+  const [pageReady, setPageReady] = useState(false);;
 
   useEffect(() => {
     fetchProducts();
@@ -176,8 +177,10 @@ export default function ShopFittingsPage() {
     try {
       const data = await getPageContent('shop-fittings');
       setSections(data.data?.sections || []);
+      setPageReady(true);
     } catch (error) {
       console.error('Error fetching page content:', error);
+      setPageReady(true);
     }
   };
 
@@ -189,7 +192,9 @@ export default function ShopFittingsPage() {
       <main>
 
         {/* Hero */}
-        <ShopFittingsHero section={getSection('hero')} />
+        {!pageReady
+          ? <div className="min-h-screen" style={{ background: '#000' }} />
+          : <ShopFittingsHero section={getSection('hero')} />}
         {/* ── Stats bar ──────────────────────────────────────────── */}
         <section className="bg-accent">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

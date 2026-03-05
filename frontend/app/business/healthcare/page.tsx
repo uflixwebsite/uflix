@@ -23,7 +23,7 @@ const PH_IDEAS = [
     title: 'Elements of a Healing Environment',
     description:
       'Mid-sized hospitals must go beyond efficiency to create healing environments that prioritize patient comfort, caregiver well-being, and smart infrastructure. Thoughtful design, ergonomic spaces, and a human-centric approach can transform healthcare experiences and build lasting trust.',
-    image: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&q=80',
+    image: '',
     link: '#',
     linkText: 'Read more',
   },
@@ -33,7 +33,7 @@ const PH_IDEAS = [
     title: 'Elevating Experiences. Enriching Lives',
     description:
       "India's rapidly evolving healthcare sector demands high-quality nursing services, yet nurses face severe physical and mental stress due to poor ergonomics, understaffing, and inefficient infrastructure. Addressing these issues is crucial to ensure a healthier, more productive nursing workforce.",
-    image: 'https://images.unsplash.com/photo-1504439468489-c8920d796a29?w=800&q=80',
+    image: '',
     link: '#',
     linkText: 'Read more',
   },
@@ -95,7 +95,7 @@ function HealthcareHero({ section }: { section?: Section }) {
         </div>
       ))}
       {allImages.length === 0 && (
-        <div className="absolute inset-0 bg-linear-to-br from-gray-900 via-slate-800 to-gray-900" />
+        <div className="absolute inset-0 bg-gray-900" />
       )}
 
       {total > 1 && (
@@ -488,6 +488,7 @@ export default function HealthcarePage() {
   const [sections, setSections] = useState<Section[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [productsLoading, setProductsLoading] = useState(false);
+  const [pageReady, setPageReady] = useState(false);
 
   useEffect(() => {
     fetchPageContent();
@@ -498,6 +499,7 @@ export default function HealthcarePage() {
       const data = await getPageContent('business-healthcare');
       const secs: Section[] = data.data?.sections || [];
       setSections(secs);
+      setPageReady(true);
       const jaSection = secs.find((s) => s.sectionId === 'just-arrived');
       // Priority 1: admin-pinned specific products
       const pinnedItems = (jaSection?.items || []).filter((i: any) => i._ref);
@@ -608,7 +610,9 @@ export default function HealthcarePage() {
       <Header />
       <main className="homepage-main">
         {/* 1. Hero */}
-        {visible('hero') && <HealthcareHero section={heroSection} />}
+        {!pageReady
+          ? <div className="min-h-screen" style={{ background: '#000' }} />
+          : visible('hero') && <HealthcareHero section={heroSection} />}
 
         {/* 2. Highlight text */}
         {visible('text-highlight') && (

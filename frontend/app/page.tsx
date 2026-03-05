@@ -3,8 +3,11 @@
 import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
-import CategoryNav from '@/components/CategoryNav';
+import CategorySlider from '@/components/CategorySlider';
 import FeaturedCollections from '@/components/FeaturedCollections';
+import PhotoGrid from '@/components/PhotoGrid';
+import PromoCards from '@/components/PromoCards';
+import StatsBanner from '@/components/StatsBanner';
 import BestSellers from '@/components/BestSellers';
 import NewArrivals from '@/components/NewArrivals';
 import CategoryProducts from '@/components/CategoryProducts';
@@ -33,18 +36,35 @@ export default function Home() {
     fetchSettings();
   }, []);
 
-  const sections = settings?.sections
-    ? [...settings.sections].sort((a: any, b: any) => a.order - b.order)
-    : [
-        { type: 'hero', enabled: true, order: 0 },
-        { type: 'clients', enabled: true, order: 1 },
-        { type: 'categories', enabled: true, order: 2 },
-        { type: 'collections', enabled: true, order: 3 },
-        { type: 'products', enabled: true, order: 4 },
-        { type: 'testimonials', enabled: true, order: 5 },
-        { type: 'brandStory', enabled: true, order: 6 },
-        { type: 'benefits', enabled: true, order: 7 },
-      ];
+  const DEFAULT_SECTION_ORDER = [
+    { type: 'hero', enabled: true, order: 0 },
+    { type: 'clients', enabled: true, order: 1 },
+    { type: 'categorySlider', enabled: true, order: 2 },
+    { type: 'collections', enabled: true, order: 3 },
+    { type: 'photoGrid', enabled: true, order: 4 },
+    { type: 'promoCards', enabled: true, order: 5 },
+    { type: 'statsBanner', enabled: true, order: 6 },
+    { type: 'products', enabled: true, order: 7 },
+    { type: 'testimonials', enabled: true, order: 8 },
+    { type: 'brandStory', enabled: true, order: 9 },
+    { type: 'benefits', enabled: true, order: 10 },
+  ];
+
+  const sections = (() => {
+    if (!settings?.sections) return DEFAULT_SECTION_ORDER;
+    const existing = [...settings.sections];
+    const existingTypes = new Set(existing.map((s: any) => s.type));
+    const maxOrder = existing.reduce((m: number, s: any) => Math.max(m, s.order ?? 0), existing.length - 1);
+    let nextOrder = maxOrder + 1;
+    DEFAULT_SECTION_ORDER.forEach((def) => {
+      if (!existingTypes.has(def.type)) {
+        existing.push({ ...def, order: nextOrder++ });
+      }
+    });
+    return existing
+      .filter((s: any) => s.type !== 'categories') // remove legacy
+      .sort((a: any, b: any) => a.order - b.order);
+  })();
 
   const renderSection = (section: any) => {
     if (!section.enabled) return null;
@@ -55,9 +75,42 @@ export default function Home() {
       case 'clients':
         return <ClientCarousel key="clients" title={settings?.clients?.title} logos={settings?.clients?.logos} />;
       case 'categories':
-        return <CategoryNav key="categories" />;
+        return null; // removed — replaced by categorySlider
+      case 'categorySlider':
+        return (
+          <CategorySlider
+            key="categorySlider"
+            title={settings?.categorySlider?.title}
+            categories={settings?.categorySlider?.categories}
+          />
+        );
       case 'collections':
         return <FeaturedCollections key="collections" title={settings?.collections?.title} subtitle={settings?.collections?.subtitle} items={settings?.collections?.items} />;
+      case 'photoGrid':
+        return (
+          <PhotoGrid
+            key="photoGrid"
+            title={settings?.photoGrid?.title}
+            photos={settings?.photoGrid?.photos}
+          />
+        );
+      case 'promoCards':
+        return (
+          <PromoCards
+            key="promoCards"
+            cards={settings?.promoCards?.cards}
+          />
+        );
+      case 'statsBanner':
+        return (
+          <StatsBanner
+            key="statsBanner"
+            title={settings?.statsBanner?.title}
+            subtitle={settings?.statsBanner?.subtitle}
+            bgColor={settings?.statsBanner?.bgColor}
+            stats={settings?.statsBanner?.stats}
+          />
+        );
       case 'products':
         return (
           <div key="products">

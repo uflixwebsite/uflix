@@ -17,17 +17,27 @@ router.get('/', async (req, res) => {
       });
     }
 
-    // Find all matching menus: exact page match OR wildcard "*"
+    // Build all candidate paths from most-specific to least-specific:
+    // e.g. /business/healthcare => ['/business/healthcare', '/business/*', '*']
+    const candidatePaths = [pagePath];
+    const parts = pagePath.split('/').filter(Boolean);
+    for (let i = parts.length - 1; i > 0; i--) {
+      candidatePaths.push('/' + parts.slice(0, i).join('/') + '/*');
+    }
+    if (!candidatePaths.includes('*')) candidatePaths.push('*');
+
+    // Find all matching menus
     const megaMenus = await MegaMenu.find({
-      pagePath: { $in: [pagePath, '*'] },
+      pagePath: { $in: candidatePaths },
       navbarLinkUrl,
       enabled: true
     });
 
-    // Prefer exact page match over wildcard
-    const megaMenu = megaMenus.find(m => m.pagePath === pagePath) 
-                  || megaMenus.find(m => m.pagePath === '*') 
-                  || null;
+    // Prefer most-specific match (earliest in candidatePaths wins)
+    const megaMenu = candidatePaths.reduce((found, path) => {
+      if (found) return found;
+      return megaMenus.find(m => m.pagePath === path) || null;
+    }, null);
 
     console.log(`✅ Mega menu for [${pagePath}] ${navbarLinkUrl}:`, megaMenu ? `Found (pagePath: ${megaMenu.pagePath})` : 'Not found');
 

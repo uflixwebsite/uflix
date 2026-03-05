@@ -4,36 +4,21 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-const defaultSlides = [
-  {
-    image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1920&q=80',
-    title: 'Transform Your Living Space',
-    subtitle: 'Discover premium furniture that combines style and comfort',
-    buttonText: 'Shop Now',
-    buttonLink: '/shop',
-  },
-  {
-    image: 'https://images.unsplash.com/photo-1540574163026-643ea20ade25?w=1920&q=80',
-    title: 'Bedroom Elegance',
-    subtitle: 'Create your perfect sanctuary with our curated collection',
-    buttonText: 'Shop Now',
-    buttonLink: '/shop',
-  },
-  {
-    image: 'https://images.unsplash.com/photo-1615066390971-03e4e1c36ddf?w=1920&q=80',
-    title: 'Dining in Style',
-    subtitle: 'Gather around beautiful furniture made for memorable moments',
-    buttonText: 'Shop Now',
-    buttonLink: '/shop',
-  },
-];
 
 interface HeroProps {
   slides?: Array<{ image: string; title: string; subtitle?: string; buttonText?: string; buttonLink?: string }>;
 }
 
+const PLACEHOLDER_SLIDE = {
+  image: '',
+  title: 'Your Hero Title Here',
+  subtitle: 'Add hero slides from the admin panel',
+  buttonText: 'Shop Now',
+  buttonLink: '/shop',
+};
+
 export default function Hero({ slides: propSlides }: HeroProps) {
-  const slides = propSlides && propSlides.length > 0 ? propSlides : defaultSlides;
+  const slides = propSlides && propSlides.length > 0 ? propSlides : [PLACEHOLDER_SLIDE];
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
@@ -56,7 +41,7 @@ export default function Hero({ slides: propSlides }: HeroProps) {
   };
 
   return (
-    <section className="relative h-[600px] sm:h-[700px] bg-foreground overflow-hidden">
+    <section className="relative h-[70vh] sm:h-[85vh] lg:h-screen min-h-[600px] max-h-[1000px] bg-foreground overflow-hidden">
 
       {slides.map((slide, index) => (
         <div
@@ -65,14 +50,18 @@ export default function Hero({ slides: propSlides }: HeroProps) {
             index === currentSlide ? 'opacity-100' : 'opacity-0'
           }`}
         >
-          <Image
-            src={slide.image}
-            alt={slide.title}
-            fill
-            className="object-cover"
-            priority={index === 0}
-            loading={index === 0 ? 'eager' : 'lazy'}
-          />
+          {slide.image ? (
+            <Image
+              src={slide.image}
+              alt={slide.title}
+              fill
+              className="object-cover"
+              priority={index === 0}
+              loading={index === 0 ? 'eager' : 'lazy'}
+            />
+          ) : (
+            <div className="w-full h-full bg-gray-200" />
+          )}
           <div className="absolute inset-0 bg-gradient-to-r from-foreground/70 to-foreground/30" />
         </div>
       ))}

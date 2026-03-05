@@ -1,17 +1,10 @@
 import Image from 'next/image';
 
 const defaults = {
-  title: 'Our Story',
-  image: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=800&q=80',
-  paragraphs: [
-    'At Uflix, we believe that furniture is more than just functional pieces. It\'s about creating spaces that inspire, comfort, and bring people together.',
-    'Since our founding, we\'ve been committed to offering premium quality furniture that combines timeless design with modern craftsmanship.'
-  ],
-  stats: [
-    { value: '15+', label: 'Years Experience' },
-    { value: '50K+', label: 'Happy Customers' },
-    { value: '500+', label: 'Products' }
-  ]
+  title: '',
+  image: '',
+  paragraphs: [] as string[],
+  stats: [] as Array<{ value: string; label: string }>,
 };
 
 interface BrandStoryProps {
@@ -29,17 +22,34 @@ export default function BrandStory({ data }: BrandStoryProps) {
   const paragraphs = data?.paragraphs && data.paragraphs.length > 0 ? data.paragraphs : defaults.paragraphs;
   const stats = data?.stats && data.stats.length > 0 ? data.stats : defaults.stats;
 
+  if (!title && !image && paragraphs.length === 0) {
+    return (
+      <section className="py-16 bg-neutral-light">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="relative h-96 md:h-[500px] rounded-2xl overflow-hidden bg-gray-200" />
+            <div>
+              <div className="h-8 w-48 bg-gray-200 rounded mb-6" />
+              {[0,1,2].map((i) => (
+                <div key={i} className="h-4 bg-gray-200 rounded mb-3 last:w-3/4" />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-16 bg-neutral-light">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="relative h-96 md:h-[500px] rounded-2xl overflow-hidden">
-            <Image
-              src={image}
-              alt={title}
-              fill
-              className="object-cover"
-            />
+            {image ? (
+              <Image src={image} alt={title} fill className="object-cover" />
+            ) : (
+              <div className="w-full h-full bg-gray-200" />
+            )}
           </div>
 
           <div>

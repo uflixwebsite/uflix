@@ -9,12 +9,7 @@ const iconMap: Record<string, JSX.Element> = {
   clock: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
 };
 
-const defaultBenefits = [
-  { icon: 'check', title: 'Premium Quality', description: 'Handpicked materials and expert craftsmanship in every piece' },
-  { icon: 'gift', title: 'Free Shipping', description: 'Free delivery on orders above ₹15,000' },
-  { icon: 'shield', title: 'Secure Payment', description: 'Safe and encrypted payment processing' },
-  { icon: 'refresh', title: 'Easy Returns', description: '30-day hassle-free return policy' },
-];
+const defaultBenefits: Array<{ icon: string; title: string; description?: string }> = [];
 
 interface BenefitsProps {
   data?: {
@@ -25,9 +20,30 @@ interface BenefitsProps {
 }
 
 export default function Benefits({ data }: BenefitsProps) {
-  const sectionTitle = data?.title || 'Why Shop With Us';
-  const sectionSubtitle = data?.subtitle || 'Experience the Uflix difference';
+  const sectionTitle = data?.title || '';
+  const sectionSubtitle = data?.subtitle || '';
   const benefits = data?.items && data.items.length > 0 ? data.items : defaultBenefits;
+
+  if (!sectionTitle && benefits.length === 0) {
+    return (
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <div className="h-8 w-48 bg-gray-100 rounded mx-auto mb-4" />
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[0,1,2,3].map((i) => (
+              <div key={i} className="text-center p-6 rounded-lg border border-dashed border-gray-200">
+                <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4" />
+                <div className="h-5 w-28 bg-gray-100 rounded mx-auto mb-2" />
+                <div className="h-4 w-36 bg-gray-100 rounded mx-auto" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-16 bg-white">

@@ -24,7 +24,7 @@ const PH_IDEAS = [
     title: 'Designing Productive Offices',
     description:
       'Human-centered layouts and ergonomic furniture help teams collaborate effectively and maintain focus throughout the day. From sit-stand desks to modular acoustic pods, great workplace design starts with the right furniture.',
-    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80',
+    image: '',
     link: '#',
     linkText: 'Read more',
   },
@@ -34,7 +34,7 @@ const PH_IDEAS = [
     title: 'The Future of Collaborative Spaces',
     description:
       'As hybrid work becomes the norm, offices need to offer spaces for both focused individual work and spontaneous collaboration. Flexible zone planning and adaptable furniture are central to creating workplaces people actually love.',
-    image: 'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&q=80',
+    image: '',
     link: '#',
     linkText: 'Read more',
   },
@@ -93,7 +93,7 @@ function WorkspaceHero({ section }: { section?: Section }) {
         </div>
       ))}
       {allImages.length === 0 && (
-        <div className="absolute inset-0 bg-linear-to-br from-gray-900 via-slate-800 to-gray-900" />
+        <div className="absolute inset-0 bg-gray-900" />
       )}
 
       {total > 1 && (
@@ -355,6 +355,7 @@ export default function WorkspacePage() {
   const [sections, setSections] = useState<Section[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [productsLoading, setProductsLoading] = useState(false);
+  const [pageReady, setPageReady] = useState(false);
 
   useEffect(() => {
     fetchPageContent();
@@ -365,6 +366,7 @@ export default function WorkspacePage() {
       const data = await getPageContent('business-workspace');
       const secs: Section[] = data.data?.sections || [];
       setSections(secs);
+      setPageReady(true);
       const jaSection = secs.find((s) => s.sectionId === 'just-arrived');
       const pinnedItems = (jaSection?.items || []).filter((i: any) => i._ref);
       if (pinnedItems.length > 0) {
@@ -468,7 +470,9 @@ export default function WorkspacePage() {
     <div className="min-h-screen bg-white">
       <Header />
       <main className="homepage-main">
-        {visible('hero') && <WorkspaceHero section={heroSection} />}
+        {!pageReady
+          ? <div className="min-h-screen" style={{ background: '#000' }} />
+          : visible('hero') && <WorkspaceHero section={heroSection} />}
         {visible('text-highlight') && (
           <HighlightTextSection text={highlightText} />
         )}

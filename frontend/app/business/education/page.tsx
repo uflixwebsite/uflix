@@ -24,7 +24,7 @@ const PH_IDEAS = [
     title: 'Designing Classrooms for Engagement',
     description:
       'Adaptive classroom furniture supports collaborative learning and flexible pedagogies. Ergonomic desks and chairs, modular seating, and flexible configurations help students focus while teachers adapt the space to every lesson.',
-    image: 'https://images.unsplash.com/photo-1562774053-701939374585?w=800&q=80',
+    image: '',
     link: '#',
     linkText: 'Read more',
   },
@@ -34,7 +34,7 @@ const PH_IDEAS = [
     title: 'Spaces That Inspire Learning',
     description:
       'Modern educational institutions recognise that the physical environment has a direct impact on student performance. Thoughtfully designed libraries, labs, and breakout areas create a culture of curiosity and collaboration.',
-    image: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800&q=80',
+    image: '',
     link: '#',
     linkText: 'Read more',
   },
@@ -93,7 +93,7 @@ function EducationHero({ section }: { section?: Section }) {
         </div>
       ))}
       {allImages.length === 0 && (
-        <div className="absolute inset-0 bg-linear-to-br from-gray-900 via-slate-800 to-gray-900" />
+        <div className="absolute inset-0 bg-gray-900" />
       )}
 
       {total > 1 && (
@@ -355,6 +355,7 @@ export default function EducationPage() {
   const [sections, setSections] = useState<Section[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [productsLoading, setProductsLoading] = useState(false);
+  const [pageReady, setPageReady] = useState(false);
 
   useEffect(() => {
     fetchPageContent();
@@ -365,6 +366,7 @@ export default function EducationPage() {
       const data = await getPageContent('business-education');
       const secs: Section[] = data.data?.sections || [];
       setSections(secs);
+      setPageReady(true);
       const jaSection = secs.find((s) => s.sectionId === 'just-arrived');
       const pinnedItems = (jaSection?.items || []).filter((i: any) => i._ref);
       if (pinnedItems.length > 0) {
@@ -468,7 +470,9 @@ export default function EducationPage() {
     <div className="min-h-screen bg-white">
       <Header />
       <main className="homepage-main">
-        {visible('hero') && <EducationHero section={heroSection} />}
+        {!pageReady
+          ? <div className="min-h-screen" style={{ background: '#000' }} />
+          : visible('hero') && <EducationHero section={heroSection} />}
         {visible('text-highlight') && (
           <HighlightTextSection text={highlightText} />
         )}

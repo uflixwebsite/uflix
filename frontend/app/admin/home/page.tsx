@@ -30,7 +30,11 @@ const TABS = [
   { id: 'sections', label: 'Section Order' },
   { id: 'hero', label: 'Hero Slides' },
   { id: 'clients', label: 'Client Logos' },
+  { id: 'categorySlider', label: 'Category Slider' },
   { id: 'collections', label: 'Collections' },
+  { id: 'photoGrid', label: 'Photo Grid' },
+  { id: 'promoCards', label: 'Promo Cards' },
+  { id: 'statsBanner', label: 'Stats Banner' },
   { id: 'products', label: 'Product Sections' },
   { id: 'testimonials', label: 'Testimonials' },
   { id: 'brandStory', label: 'Our Story' },
@@ -40,8 +44,12 @@ const TABS = [
 const SECTION_LABELS: Record<string, string> = {
   hero: 'Hero Banner',
   clients: 'Client Logos',
-  categories: 'Category Navigation',
-  collections: 'Featured Collections',
+  categories: 'Category Navigation (Legacy)',
+  categorySlider: 'Category Slider',
+  collections: 'Shop by Collection',
+  photoGrid: 'Photo Grid',
+  promoCards: 'Promo Cards',
+  statsBanner: 'Stats Banner',
   products: 'Product Sections',
   testimonials: 'Testimonials',
   brandStory: 'Our Story',
@@ -50,7 +58,7 @@ const SECTION_LABELS: Record<string, string> = {
 
 const BENEFIT_ICONS = ['check', 'gift', 'shield', 'refresh', 'truck', 'star', 'heart', 'clock'];
 
-function ImageUploader({ value, onChange, label, folder = 'home' }: { value: string; onChange: (url: string) => void; label: string; folder?: string }) {
+function ImageUploader({ value, onChange, label, folder = 'home', hint }: { value: string; onChange: (url: string) => void; label: string; folder?: string; hint?: string }) {
   const [uploading, setUploading] = useState(false);
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -74,6 +82,7 @@ function ImageUploader({ value, onChange, label, folder = 'home' }: { value: str
   return (
     <div>
       <label className="block text-sm font-medium mb-1">{label}</label>
+      {hint && <p className="text-xs text-gray-400 mb-1.5">📐 Recommended: {hint}</p>}
       <div className="flex gap-2 items-start">
         <input type="text" value={value || ''} onChange={(e) => onChange(e.target.value)} placeholder="Image URL or upload" className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
         <label className={`px-3 py-2 text-sm rounded-md cursor-pointer transition-colors whitespace-nowrap ${uploading ? 'bg-gray-300 text-gray-500' : 'bg-accent text-white hover:bg-secondary'}`}>
@@ -110,7 +119,35 @@ export default function AdminHomePage() {
   const fetchData = async () => {
     try {
       const [homeRes, catRes] = await Promise.all([getHomeSettings(), getCategories()]);
-      setSettings(homeRes.data);
+      const data = homeRes.data;
+
+      // Auto-add any missing section types so new sections appear in the order editor
+      const DEFAULT_SECTION_TYPES = [
+        'hero', 'clients', 'categorySlider', 'collections',
+        'photoGrid', 'promoCards', 'statsBanner',
+        'products', 'testimonials', 'brandStory', 'benefits',
+      ];
+      if (data && Array.isArray(data.sections)) {
+        const existing = new Set(data.sections.map((s: any) => s.type));
+        const maxOrder = data.sections.reduce((m: number, s: any) => Math.max(m, s.order ?? 0), data.sections.length - 1);
+        let nextOrder = maxOrder + 1;
+        DEFAULT_SECTION_TYPES.forEach((type) => {
+          if (!existing.has(type)) {
+            // Remove legacy 'categories' if present; skip it in defaults
+            if (type === 'categories') return;
+            data.sections.push({ type, enabled: true, order: nextOrder++ });
+          }
+        });
+        // Disable legacy categories section
+        data.sections = data.sections.map((s: any) =>
+          s.type === 'categories' ? { ...s, enabled: false } : s
+        );
+        data.sections.forEach((s: any, i: number) => { if (s.order == null) s.order = i; });
+      } else if (data && !data.sections) {
+        data.sections = DEFAULT_SECTION_TYPES.map((type, i) => ({ type, enabled: true, order: i }));
+      }
+
+      setSettings(data);
       setCategories((catRes.data || []).map((c: any) => ({ _id: c.slug || c._id, name: c.name })));
     } catch (error) {
       console.error('Error fetching home settings:', error);
@@ -222,7 +259,7 @@ export default function AdminHomePage() {
                 <button onClick={() => removeSlide(index)} className="text-red-500 hover:text-red-700 text-sm">Remove</button>
               </div>
               <div className="grid gap-3">
-                <ImageUploader value={slide.image} onChange={(url) => updateSlide(index, 'image', url)} label="Background Image" folder="home/hero" />
+                <ImageUploader value={slide.image} onChange={(url) => updateSlide(index, 'image', url)} label="Background Image" folder="home/hero" hint="1920×1080px (16:9 landscape, JPG/WEBP)" />
                 <div>
                   <label className="block text-sm font-medium mb-1">Title</label>
                   <input type="text" value={slide.title || ''} onChange={(e) => updateSlide(index, 'title', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" />
@@ -281,7 +318,7 @@ export default function AdminHomePage() {
                   <label className="block text-xs font-medium mb-1">Name</label>
                   <input type="text" value={logo.name || ''} onChange={(e) => updateClient(index, 'name', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" />
                 </div>
-                <ImageUploader value={logo.image} onChange={(url) => updateClient(index, 'image', url)} label="Logo" folder="home/clients" />
+                <ImageUploader value={logo.image} onChange={(url) => updateClient(index, 'image', url)} label="Logo" folder="home/clients" hint="400×160px (transparent PNG preferred)" />
               </div>
               <button onClick={() => removeClient(index)} className="text-red-500 hover:text-red-700 text-sm mt-6">Remove</button>
             </div>
@@ -343,7 +380,7 @@ export default function AdminHomePage() {
                   <label className="block text-sm font-medium mb-1">Description</label>
                   <input type="text" value={item.description || ''} onChange={(e) => updateCollection(index, 'description', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" />
                 </div>
-                <ImageUploader value={item.image} onChange={(url) => updateCollection(index, 'image', url)} label="Image" folder="home/collections" />
+                <ImageUploader value={item.image} onChange={(url) => updateCollection(index, 'image', url)} label="Image" folder="home/collections" hint="1920×800px (wide landscape, JPG/WEBP)" />
                 <div>
                   <label className="block text-sm font-medium mb-1">Link</label>
                   <input type="text" value={item.link || ''} onChange={(e) => updateCollection(index, 'link', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" />
@@ -531,7 +568,7 @@ export default function AdminHomePage() {
                     <input type="text" value={item.handle || ''} onChange={(e) => updateTestimonial(index, 'handle', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" />
                   </div>
                 </div>
-                <ImageUploader value={item.avatar} onChange={(url) => updateTestimonial(index, 'avatar', url)} label="Avatar" folder="home/testimonials" />
+                <ImageUploader value={item.avatar} onChange={(url) => updateTestimonial(index, 'avatar', url)} label="Avatar" folder="home/testimonials" hint="200×200px (square, face photo)" />
                 <div>
                   <label className="block text-sm font-medium mb-1">Testimonial Text</label>
                   <textarea value={item.text || ''} onChange={(e) => updateTestimonial(index, 'text', e.target.value)} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" />
@@ -575,7 +612,7 @@ export default function AdminHomePage() {
           <label className="block text-sm font-medium mb-1">Section Title</label>
           <input type="text" value={bs.title || ''} onChange={(e) => setSettings({ ...settings, brandStory: { ...bs, title: e.target.value } })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" />
         </div>
-        <ImageUploader value={bs.image} onChange={(url) => setSettings({ ...settings, brandStory: { ...bs, image: url } })} label="Story Image" folder="home/story" />
+        <ImageUploader value={bs.image} onChange={(url) => setSettings({ ...settings, brandStory: { ...bs, image: url } })} label="Story Image" folder="home/story" hint="800×600px (portrait or square, JPG/WEBP)" />
 
         <div>
           <div className="flex justify-between items-center mb-2">
@@ -675,12 +712,258 @@ export default function AdminHomePage() {
     );
   };
 
+  // ===== CATEGORY SLIDER EDITOR =====
+  const renderCategorySliderTab = () => {
+    const cs = settings?.categorySlider || { title: '', categories: [] };
+    const updateCategory = (catIdx: number, field: string, value: any) => {
+      const newCats = [...(cs.categories || [])];
+      newCats[catIdx] = { ...newCats[catIdx], [field]: value };
+      setSettings({ ...settings, categorySlider: { ...cs, categories: newCats } });
+    };
+    const updateSubcategory = (catIdx: number, subIdx: number, field: string, value: string) => {
+      const newCats = [...(cs.categories || [])];
+      const newSubs = [...(newCats[catIdx]?.subcategories || [])];
+      newSubs[subIdx] = { ...newSubs[subIdx], [field]: value };
+      newCats[catIdx] = { ...newCats[catIdx], subcategories: newSubs };
+      setSettings({ ...settings, categorySlider: { ...cs, categories: newCats } });
+    };
+    const addCategory = () => {
+      setSettings({ ...settings, categorySlider: { ...cs, categories: [...(cs.categories || []), { name: '', subcategories: [] }] } });
+    };
+    const removeCategory = (catIdx: number) => {
+      setSettings({ ...settings, categorySlider: { ...cs, categories: (cs.categories || []).filter((_: any, i: number) => i !== catIdx) } });
+    };
+    const addSubcategory = (catIdx: number) => {
+      const newCats = [...(cs.categories || [])];
+      newCats[catIdx] = { ...newCats[catIdx], subcategories: [...(newCats[catIdx]?.subcategories || []), { name: '', image: '', link: '/shop' }] };
+      setSettings({ ...settings, categorySlider: { ...cs, categories: newCats } });
+    };
+    const removeSubcategory = (catIdx: number, subIdx: number) => {
+      const newCats = [...(cs.categories || [])];
+      newCats[catIdx] = { ...newCats[catIdx], subcategories: (newCats[catIdx]?.subcategories || []).filter((_: any, i: number) => i !== subIdx) };
+      setSettings({ ...settings, categorySlider: { ...cs, categories: newCats } });
+    };
+    return (
+      <div className="space-y-6">
+        <div>
+          <label className="block text-sm font-medium mb-1">Section Title</label>
+          <input type="text" value={cs.title || ''} onChange={(e) => setSettings({ ...settings, categorySlider: { ...cs, title: e.target.value } })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" placeholder="How can we help you?" />
+        </div>
+        <div className="flex justify-between items-center">
+          <p className="text-sm text-gray-600">Category tabs and their subcategory images.</p>
+          <button onClick={addCategory} className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm">+ Add Category Tab</button>
+        </div>
+        {(cs.categories || []).map((cat: any, catIdx: number) => (
+          <div key={catIdx} className="p-4 border border-gray-200 rounded-lg bg-white">
+            <div className="flex justify-between items-center mb-3">
+              <div className="flex-1 mr-3">
+                <label className="block text-xs font-medium mb-1">Tab Name</label>
+                <input type="text" value={cat.name || ''} onChange={(e) => updateCategory(catIdx, 'name', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" />
+              </div>
+              <button onClick={() => removeCategory(catIdx)} className="text-red-500 hover:text-red-700 text-sm mt-4">Remove Tab</button>
+            </div>
+            <div className="space-y-3 ml-4">
+              <div className="flex justify-between items-center">
+                <p className="text-xs text-gray-500">Subcategories:</p>
+                <button onClick={() => addSubcategory(catIdx)} className="text-xs text-green-600 hover:text-green-700">+ Add Subcategory</button>
+              </div>
+              {(cat.subcategories || []).map((sub: any, subIdx: number) => (
+                <div key={subIdx} className="flex gap-3 items-start p-3 bg-gray-50 rounded border border-gray-100">
+                  <div className="flex-1 grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="block text-xs font-medium mb-1">Name</label>
+                      <input type="text" value={sub.name || ''} onChange={(e) => updateSubcategory(catIdx, subIdx, 'name', e.target.value)} className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium mb-1">Link</label>
+                      <input type="text" value={sub.link || ''} onChange={(e) => updateSubcategory(catIdx, subIdx, 'link', e.target.value)} className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs" placeholder="/shop" />
+                    </div>
+                    <ImageUploader value={sub.image} onChange={(url) => updateSubcategory(catIdx, subIdx, 'image', url)} label="Image" folder="home/category-slider" hint="720×480px (3:2 landscape card)" />
+                  </div>
+                  <button onClick={() => removeSubcategory(catIdx, subIdx)} className="text-red-500 hover:text-red-700 text-xs mt-5">✕</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // ===== PHOTO GRID EDITOR =====
+  const renderPhotoGridTab = () => {
+    const pg = settings?.photoGrid || { title: '', photos: [] };
+    const updatePhoto = (index: number, field: string, value: any) => {
+      const newPhotos = [...(pg.photos || [])];
+      newPhotos[index] = { ...newPhotos[index], [field]: value };
+      setSettings({ ...settings, photoGrid: { ...pg, photos: newPhotos } });
+    };
+    const addPhoto = () => {
+      setSettings({ ...settings, photoGrid: { ...pg, photos: [...(pg.photos || []), { image: '', label: '', link: '/shop', showInstagramIcon: true }] } });
+    };
+    const removePhoto = (index: number) => {
+      setSettings({ ...settings, photoGrid: { ...pg, photos: (pg.photos || []).filter((_: any, i: number) => i !== index) } });
+    };
+    return (
+      <div>
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-1">Section Title</label>
+          <input type="text" value={pg.title || ''} onChange={(e) => setSettings({ ...settings, photoGrid: { ...pg, title: e.target.value } })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" placeholder="In Everyday Living" />
+        </div>
+        <div className="flex justify-between items-center mb-4">
+          <p className="text-sm text-gray-600">Photo grid (5-6 photos). The 3rd photo spans 2 rows.</p>
+          <button onClick={addPhoto} className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm">+ Add Photo</button>
+        </div>
+        <div className="space-y-4">
+          {(pg.photos || []).map((photo: any, index: number) => (
+            <div key={index} className="p-4 border border-gray-200 rounded-lg bg-white">
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="font-semibold text-sm">Photo {index + 1}{index === 2 ? ' (Tall — spans 2 rows)' : ''}</h4>
+                <button onClick={() => removePhoto(index)} className="text-red-500 hover:text-red-700 text-sm">Remove</button>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <ImageUploader value={photo.image} onChange={(url) => updatePhoto(index, 'image', url)} label="Image" folder="home/photo-grid" hint="800×800px (square) or 800×600px (landscape)" />
+                <div>
+                  <label className="block text-sm font-medium mb-1">Label (optional)</label>
+                  <input type="text" value={photo.label || ''} onChange={(e) => updatePhoto(index, 'label', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Link</label>
+                  <input type="text" value={photo.link || ''} onChange={(e) => updatePhoto(index, 'link', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" placeholder="/shop" />
+                </div>
+                <div className="flex items-center gap-2 mt-5">
+                  <input type="checkbox" id={`ig-${index}`} checked={photo.showInstagramIcon ?? true} onChange={(e) => updatePhoto(index, 'showInstagramIcon', e.target.checked)} className="w-4 h-4" />
+                  <label htmlFor={`ig-${index}`} className="text-sm">Show Instagram icon</label>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // ===== PROMO CARDS EDITOR =====
+  const renderPromoCardsTab = () => {
+    const pc = settings?.promoCards || { cards: [] };
+    const updateCard = (index: number, field: string, value: string) => {
+      const newCards = [...(pc.cards || [])];
+      newCards[index] = { ...newCards[index], [field]: value };
+      setSettings({ ...settings, promoCards: { ...pc, cards: newCards } });
+    };
+    const addCard = () => {
+      setSettings({ ...settings, promoCards: { ...pc, cards: [...(pc.cards || []), { category: '', title: '', buttonText: 'Book a consultation', buttonLink: '/contact', image: '', note: '' }] } });
+    };
+    const removeCard = (index: number) => {
+      setSettings({ ...settings, promoCards: { ...pc, cards: (pc.cards || []).filter((_: any, i: number) => i !== index) } });
+    };
+    return (
+      <div>
+        <div className="flex justify-between items-center mb-4">
+          <p className="text-sm text-gray-600">Two tall promo cards with frosted glass text overlay.</p>
+          <button onClick={addCard} className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm">+ Add Card</button>
+        </div>
+        <div className="space-y-4">
+          {(pc.cards || []).map((card: any, index: number) => (
+            <div key={index} className="p-4 border border-gray-200 rounded-lg bg-white">
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="font-semibold">Card {index + 1}</h4>
+                <button onClick={() => removeCard(index)} className="text-red-500 hover:text-red-700 text-sm">Remove</button>
+              </div>
+              <div className="grid gap-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Category Label (small text)</label>
+                    <input type="text" value={card.category || ''} onChange={(e) => updateCard(index, 'category', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" placeholder="e.g. Modular Kitchens" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Headline</label>
+                    <input type="text" value={card.title || ''} onChange={(e) => updateCard(index, 'title', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" placeholder="e.g. Looking for a new kitchen?" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Button Text</label>
+                    <input type="text" value={card.buttonText || ''} onChange={(e) => updateCard(index, 'buttonText', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Button Link</label>
+                    <input type="text" value={card.buttonLink || ''} onChange={(e) => updateCard(index, 'buttonLink', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" placeholder="/contact" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Note (optional small text below button)</label>
+                  <input type="text" value={card.note || ''} onChange={(e) => updateCard(index, 'note', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" placeholder="e.g. Available in your city" />
+                </div>
+                <ImageUploader value={card.image} onChange={(url) => updateCard(index, 'image', url)} label="Background Image" folder="home/promo-cards" hint="800×1000px (portrait, tall card)" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // ===== STATS BANNER EDITOR =====
+  const renderStatsBannerTab = () => {
+    const sb = settings?.statsBanner || { title: '', subtitle: '', bgColor: '#f05a54', stats: [] };
+    const updateStat = (index: number, field: string, value: string) => {
+      const newStats = [...(sb.stats || [])];
+      newStats[index] = { ...newStats[index], [field]: value };
+      setSettings({ ...settings, statsBanner: { ...sb, stats: newStats } });
+    };
+    const addStat = () => {
+      setSettings({ ...settings, statsBanner: { ...sb, stats: [...(sb.stats || []), { value: '', label: '' }] } });
+    };
+    const removeStat = (index: number) => {
+      setSettings({ ...settings, statsBanner: { ...sb, stats: (sb.stats || []).filter((_: any, i: number) => i !== index) } });
+    };
+    return (
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Title</label>
+            <input type="text" value={sb.title || ''} onChange={(e) => setSettings({ ...settings, statsBanner: { ...sb, title: e.target.value } })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" placeholder="e.g. Our Brand for India" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Subtitle</label>
+            <input type="text" value={sb.subtitle || ''} onChange={(e) => setSettings({ ...settings, statsBanner: { ...sb, subtitle: e.target.value } })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" placeholder="e.g. Providing comfort and style for modern living" />
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Background Color</label>
+          <div className="flex gap-3 items-center">
+            <input type="color" value={sb.bgColor || '#f05a54'} onChange={(e) => setSettings({ ...settings, statsBanner: { ...sb, bgColor: e.target.value } })} className="w-10 h-10 rounded cursor-pointer border border-gray-300" />
+            <input type="text" value={sb.bgColor || '#f05a54'} onChange={(e) => setSettings({ ...settings, statsBanner: { ...sb, bgColor: e.target.value } })} className="w-40 px-3 py-2 border border-gray-300 rounded-md text-sm" />
+          </div>
+        </div>
+        <div>
+          <div className="flex justify-between items-center mb-3">
+            <label className="block text-sm font-medium">Stats</label>
+            <button onClick={addStat} className="text-sm text-green-600 hover:text-green-700">+ Add Stat</button>
+          </div>
+          <div className="space-y-3">
+            {(sb.stats || []).map((stat: any, index: number) => (
+              <div key={index} className="flex gap-3 items-center">
+                <input type="text" value={stat.value || ''} onChange={(e) => updateStat(index, 'value', e.target.value)} placeholder="e.g. 30+" className="w-32 px-3 py-2 border border-gray-300 rounded-md text-sm" />
+                <input type="text" value={stat.label || ''} onChange={(e) => updateStat(index, 'label', e.target.value)} placeholder="e.g. Products launched every year" className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm" />
+                <button onClick={() => removeStat(index)} className="text-red-500 hover:text-red-700 text-sm">Remove</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderTabContent = () => {
     switch (activeTab) {
       case 'sections': return renderSectionsTab();
       case 'hero': return renderHeroTab();
       case 'clients': return renderClientsTab();
+      case 'categorySlider': return renderCategorySliderTab();
       case 'collections': return renderCollectionsTab();
+      case 'photoGrid': return renderPhotoGridTab();
+      case 'promoCards': return renderPromoCardsTab();
+      case 'statsBanner': return renderStatsBannerTab();
       case 'products': return renderProductsTab();
       case 'testimonials': return renderTestimonialsTab();
       case 'brandStory': return renderBrandStoryTab();

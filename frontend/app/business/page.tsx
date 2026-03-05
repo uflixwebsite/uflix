@@ -26,14 +26,14 @@ const PH_IMAGE_GRID = [
   {
     title: 'Designs for a Better Workspace',
     description: 'Ergonomic, modular office systems built around people.',
-    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80',
+    image: '',
     link: '/category/for-business',
     linkText: 'Explore Office',
   },
   {
     title: 'Collaborative Spaces',
     description: 'Meeting rooms and open-plan furniture that inspire teamwork.',
-    image: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=800&q=80',
+    image: '',
     link: '/categories',
     linkText: 'View Collection',
   },
@@ -43,7 +43,7 @@ const PH_SPLIT_1 = {
   title: 'Audio-Visual for Your Space',
   description:
     'Integrated AV furniture and cable-managed media walls — designed to complement your workspace aesthetic while keeping technology tidy and accessible.',
-  image: 'https://images.unsplash.com/photo-1560185007-c5ca9d2c014d?w=800&q=80',
+  image: '',
   link: '/contact',
   linkText: 'Get a Quote',
 };
@@ -52,71 +52,16 @@ const PH_SPLIT_2 = {
   title: 'Shop for Home — Modern Indian Living',
   description:
     'Bring the same quality and craftsmanship home. Explore our residential collection designed for modern Indian families — functional, beautiful, and built to last.',
-  image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&q=80',
+  image: '',
   link: '/shop',
   linkText: 'Shop Collection',
 };
 
-const PH_PROJECTS = [
-  {
-    title: 'HDFC Bank – Mumbai HQ',
-    description: 'Executive workstations and boardroom fitout across 12 floors.',
-    image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&q=80',
-    link: '/projects',
-    linkText: 'View project',
-  },
-  {
-    title: 'Infosys – Pune Campus',
-    description: 'Open-plan collaborative campus furniture for 2000+ seats.',
-    image: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=800&q=80',
-    link: '/projects',
-    linkText: 'View project',
-  },
-  {
-    title: 'Apollo Hospitals – Delhi',
-    description: 'Clinical and patient-comfort furniture for a 400-bed facility.',
-    image: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&q=80',
-    link: '/projects',
-    linkText: 'View project',
-  },
-  {
-    title: 'Marriott – Bengaluru',
-    description: 'Lobby, guest-room and F&B furniture for a 5-star property.',
-    image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&q=80',
-    link: '/projects',
-    linkText: 'View project',
-  },
-  {
-    title: 'IIT Delhi – Learning Spaces',
-    description: 'Flexible classroom and library furniture for modern education.',
-    image: 'https://images.unsplash.com/photo-1562774053-701939374585?w=800&q=80',
-    link: '/projects',
-    linkText: 'View project',
-  },
-];
+const PH_PROJECTS: never[] = [];
 
 // ─── Category Tabs + Horizontal Scroll Slider ─────────────────────────────────
-const PH_SLIDER_IMAGES: Record<string, string[]> = {
-  seating: [
-    'https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?w=500&q=80',
-    'https://images.unsplash.com/photo-1517705008128-361805f42e86?w=500&q=80',
-    'https://images.unsplash.com/photo-1580480055273-228ff5388ef8?w=500&q=80',
-    'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=500&q=80',
-    'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500&q=80',
-  ],
-  desking: [
-    'https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=500&q=80',
-    'https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=500&q=80',
-    'https://images.unsplash.com/photo-1497366216548-37526070297c?w=500&q=80',
-    'https://images.unsplash.com/photo-1603791440384-56cd371ee9a7?w=500&q=80',
-    'https://images.unsplash.com/photo-1593642634524-b40b5baae6bb?w=500&q=80',
-  ],
-};
-
-const PH_SLIDER_NAMES: Record<string, string[]> = {
-  seating: ['Workstation Chairs', 'Executive Chairs', 'Lounge Seating', 'Training Room Chairs', 'Conference Chairs'],
-  desking: ['Height-Adjust Desk', 'Manager Desk', 'L-Shape Desk', 'Cable-Managed Desk', 'Standing Desk'],
-};
+const PH_SLIDER_IMAGES: Record<string, string[]> = {};
+const PH_SLIDER_NAMES: Record<string, string[]> = {};
 
 function SliderCard({ image, name, link }: { image: string; name: string; link: string }) {
   return (
@@ -280,9 +225,13 @@ function CategoryProductTabs({
                 ));
               })()
             ) : !subCategories.length && products.length === 0 ? (
-              phImages.map((src, i) => (
-                <SliderCard key={i} image={src} name={phNames[i] || 'Office Chair'} link={`/category/for-business/${activeSlug}`} />
-              ))
+              phImages && phImages.length > 0 ? (
+                phImages.map((src, i) => (
+                  <SliderCard key={i} image={src} name={phNames[i] || 'Office Chair'} link={`/category/for-business/${activeSlug}`} />
+                ))
+              ) : (
+                <p className="text-gray-400 py-12">No products added yet. Add products to this category.</p>
+              )
             ) : products.length === 0 ? (
               <p className="text-gray-400 py-12">No products in this category yet.</p>
             ) : (
@@ -647,6 +596,7 @@ export default function BusinessPage() {
   const [subCategories, setSubCategories] = useState<any[]>([]);
   const [businessRootSlug, setBusinessRootSlug] = useState('for-business');
   const [businessRootId, setBusinessRootId] = useState<string | undefined>();
+  const [pageReady, setPageReady] = useState(false);
 
   useEffect(() => {
     fetchPageContent();
@@ -671,6 +621,7 @@ export default function BusinessPage() {
     try {
       const data = await getPageContent('business');
       setSections(data.data?.sections || []);
+      setPageReady(true);
     } catch {}
   };
 
@@ -699,7 +650,9 @@ export default function BusinessPage() {
       <main className="homepage-main">
 
         {/* 1. Hero */}
-        {visible('hero') && <BusinessHero section={heroSection} />}
+        {!pageReady
+          ? <div className="min-h-screen" style={{ background: '#000' }} />
+          : visible('hero') && <BusinessHero section={heroSection} />}
 
         {/* 2. Category Tabs + Products */}
         {visible('slider') && (
