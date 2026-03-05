@@ -112,7 +112,7 @@ router.put('/', protect, admin, async (req, res) => {
       settings = await HomeSettings.create(req.body);
     } else {
       // Update all provided fields
-      const fields = ['sections', 'hero', 'clients', 'collections', 'productSections', 'testimonials', 'brandStory', 'benefits'];
+      const fields = ['sections', 'hero', 'clients', 'collections', 'productSections', 'testimonials', 'brandStory', 'benefits', 'categorySlider', 'photoGrid', 'promoCards', 'statsBanner'];
       fields.forEach(field => {
         if (req.body[field] !== undefined) {
           settings[field] = req.body[field];
@@ -150,7 +150,7 @@ router.put('/sections', protect, admin, async (req, res) => {
 router.put('/:section', protect, admin, async (req, res) => {
   try {
     const { section } = req.params;
-    const validSections = ['hero', 'clients', 'collections', 'productSections', 'testimonials', 'brandStory', 'benefits', 'sections'];
+    const validSections = ['hero', 'clients', 'collections', 'productSections', 'testimonials', 'brandStory', 'benefits', 'sections', 'categorySlider', 'photoGrid', 'promoCards', 'statsBanner'];
     
     if (!validSections.includes(section)) {
       return res.status(400).json({ success: false, message: 'Invalid section' });

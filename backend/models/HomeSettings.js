@@ -52,11 +52,43 @@ const sectionSchema = new mongoose.Schema({
   type: {
     type: String,
     required: true,
-    enum: ['hero', 'clients', 'categories', 'collections', 'products', 'testimonials', 'brandStory', 'benefits']
+    enum: ['hero', 'clients', 'categories', 'collections', 'products', 'testimonials', 'brandStory', 'benefits', 'categorySlider', 'photoGrid', 'promoCards', 'statsBanner']
   },
   enabled: { type: Boolean, default: true },
   order: { type: Number, default: 0 }
 }, { _id: true });
+
+const categorySliderSubSchema = new mongoose.Schema({
+  name: { type: String },
+  image: { type: String },
+  link: { type: String, default: '/shop' }
+}, { _id: false });
+
+const categorySliderCatSchema = new mongoose.Schema({
+  name: { type: String },
+  subcategories: [categorySliderSubSchema]
+}, { _id: false });
+
+const photoGridItemSchema = new mongoose.Schema({
+  image: { type: String },
+  label: { type: String },
+  link: { type: String, default: '/shop' },
+  showInstagramIcon: { type: Boolean, default: true }
+}, { _id: false });
+
+const promoCardSchema = new mongoose.Schema({
+  category: { type: String },
+  title: { type: String },
+  buttonText: { type: String, default: 'Book a consultation' },
+  buttonLink: { type: String, default: '/contact' },
+  image: { type: String },
+  note: { type: String }
+}, { _id: false });
+
+const statsBannerStatSchema = new mongoose.Schema({
+  value: { type: String },
+  label: { type: String }
+}, { _id: false });
 
 const homeSettingsSchema = new mongoose.Schema({
   // Section ordering and visibility
@@ -124,6 +156,31 @@ const homeSettingsSchema = new mongoose.Schema({
     title: { type: String, default: 'Why Shop With Us' },
     subtitle: { type: String, default: 'Experience the Uflix difference' },
     items: [benefitSchema]
+  },
+
+  // Category slider (tabbed categories with subcategory images)
+  categorySlider: {
+    title: { type: String },
+    categories: [categorySliderCatSchema]
+  },
+
+  // Photo grid / Instagram-style grid
+  photoGrid: {
+    title: { type: String },
+    photos: [photoGridItemSchema]
+  },
+
+  // Promo cards (two tall portrait cards)
+  promoCards: {
+    cards: [promoCardSchema]
+  },
+
+  // Stats / numbers banner
+  statsBanner: {
+    title: { type: String },
+    subtitle: { type: String },
+    bgColor: { type: String, default: '#f05a54' },
+    stats: [statsBannerStatSchema]
   }
 }, {
   timestamps: true

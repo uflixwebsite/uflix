@@ -108,7 +108,7 @@ const defaultFooter: FooterData = {
       title: 'Company', order: 0, enabled: true,
       links: [
         { label: 'About UFLIX', url: '/about', enabled: true },
-        { label: 'Manufacturing', url: '/manufacturing', enabled: true },
+        { label: 'Shop Fittings', url: '/shop-fittings', enabled: true },
         { label: 'Quality & Certifications', url: '/quality', enabled: true },
         { label: 'Sustainability', url: '/sustainability', enabled: true },
         { label: 'Contact Us', url: '/contact', enabled: true }
