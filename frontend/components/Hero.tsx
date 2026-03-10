@@ -41,7 +41,7 @@ export default function Hero({ slides: propSlides }: HeroProps) {
   };
 
   return (
-    <section className="relative h-[70vh] sm:h-[85vh] lg:h-screen min-h-[600px] max-h-[1000px] bg-foreground overflow-hidden">
+    <section className="relative h-[70vh] sm:h-[85vh] lg:h-screen min-h-[600px] bg-foreground overflow-hidden">
 
       {slides.map((slide, index) => (
         <div
@@ -55,6 +55,7 @@ export default function Hero({ slides: propSlides }: HeroProps) {
               src={slide.image}
               alt={slide.title}
               fill
+              sizes="100vw"
               className="object-cover"
               priority={index === 0}
               loading={index === 0 ? 'eager' : 'lazy'}

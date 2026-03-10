@@ -121,7 +121,7 @@ function BusinessProductsContent() {
             {totalPages > 1 && (
               <div className="flex justify-center gap-2 mt-8">
                 <button
-                  onClick={() => setPage(page - 1)}
+                  onClick={() => { setPage(page - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                   disabled={page === 1}
                   className="px-4 py-2 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
                 >
@@ -130,7 +130,7 @@ function BusinessProductsContent() {
                 {[...Array(totalPages)].map((_, i) => (
                   <button
                     key={i}
-                    onClick={() => setPage(i + 1)}
+                    onClick={() => { setPage(i + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                     className={`px-4 py-2 border rounded-md ${
                       page === i + 1
                         ? 'bg-accent text-white border-accent'
@@ -141,7 +141,7 @@ function BusinessProductsContent() {
                   </button>
                 ))}
                 <button
-                  onClick={() => setPage(page + 1)}
+                  onClick={() => { setPage(page + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                   disabled={page === totalPages}
                   className="px-4 py-2 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
                 >

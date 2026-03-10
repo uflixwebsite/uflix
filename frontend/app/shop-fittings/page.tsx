@@ -65,7 +65,7 @@ function ShopFittingsHero({ section }: { section?: Section }) {
 
   return (
     <section
-      className="relative min-h-[80vh] flex items-center justify-center overflow-hidden"
+      className="relative min-h-screen flex items-center justify-center overflow-hidden"
       style={{ background: '#000' }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
@@ -77,7 +77,7 @@ function ShopFittingsHero({ section }: { section?: Section }) {
           className="absolute inset-0 transition-opacity duration-1000"
           style={{ opacity: i === idx ? 1 : 0 }}
         >
-          <Image src={url} alt={`slide ${i + 1}`} fill className="object-cover" priority={i === 0} />
+          <Image src={url} alt={`slide ${i + 1}`} fill sizes="100vw" className="object-cover" priority={i === 0} />
         </div>
       ))}
       {allImages.length === 0 && <div className="absolute inset-0 bg-gray-900" />}

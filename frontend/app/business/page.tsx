@@ -480,7 +480,7 @@ function BusinessHero({ section }: { section?: Section }) {
           className="absolute inset-0 transition-opacity duration-1000"
           style={{ opacity: i === idx ? 1 : 0 }}
         >
-          <Image src={url} alt={`slide ${i + 1}`} fill className="object-cover" priority={i === 0} />
+          <Image src={url} alt={`slide ${i + 1}`} fill sizes="100vw" className="object-cover" priority={i === 0} />
         </div>
       ))}
       {/* no images fallback */}

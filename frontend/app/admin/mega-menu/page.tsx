@@ -451,14 +451,15 @@ export default function MegaMenuPage() {
                               <label className="block text-xs font-medium text-gray-700 mb-1">Image</label>
                               <p className="text-xs text-gray-400 mb-1.5">📐 Recommended: 400×300px (4:3, JPG/WEBP)</p>
                               <div className="flex gap-2">
-                                <label className="flex-1">
+                                <label key={`upload-${item.id}`} className="flex-1">
                                   <input
                                     type="file"
                                     accept="image/*"
                                     onChange={(e) => {
                                       const file = e.target.files?.[0];
+                                      const capturedId = item.id;
                                       if (file) {
-                                        handleImageUpload(item.id, file);
+                                        handleImageUpload(capturedId, file);
                                         e.target.value = ''; // reset so same file can be re-uploaded
                                       }
                                     }}

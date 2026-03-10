@@ -217,7 +217,7 @@ function HeroImageGrid({ section, onChangeImage, onChangeItems }: { section: any
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-1">
         <label className="block text-sm font-medium text-gray-700">
           Slideshow Images <span className="text-xs font-normal text-gray-400">— drag to reorder, first image shown first</span>
         </label>
@@ -226,6 +226,7 @@ function HeroImageGrid({ section, onChangeImage, onChangeItems }: { section: any
           <input type="file" accept="image/*" multiple onChange={handleUpload} className="hidden" disabled={uploading} />
         </label>
       </div>
+      <p className="text-xs text-gray-400 mb-2">📐 Recommended: 1920×1080px (16:9, JPG/WEBP)</p>
       {images.length === 0 ? (
         <div className="border-2 border-dashed border-gray-200 rounded-xl h-32 flex items-center justify-center text-sm text-gray-400">
           No images yet — click "+ Add Images" to upload
