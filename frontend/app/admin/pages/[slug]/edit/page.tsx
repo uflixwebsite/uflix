@@ -83,6 +83,96 @@ const BUSINESS_REQUIRED_SECTIONS: any[] = [
   },
 ];
 
+// Pre-built section templates for the Shop Fittings page.
+const SHOP_FITTINGS_REQUIRED_SECTIONS: any[] = [
+  {
+    sectionId: 'hero', type: 'hero', bgColor: 'dark', order: 0, isVisible: true,
+    title: 'Transform Your Retail Space',
+    description: 'Premium shop fittings designed and manufactured in-house for leading retail brands across India.',
+    link: '#products', linkText: 'Explore Products',
+    secondaryLink: '/contact', secondaryLinkText: 'Get a Quote',
+    image: '', items: [],
+  },
+  {
+    sectionId: 'intro', type: 'custom', bgColor: 'light', order: 1, isVisible: true,
+    title: 'Retail Spaces,\nEngineered to Perform',
+    description: 'For over two decades, Uflix has delivered precision-fabricated shop fitting solutions for retail brands, government institutions, and commercial spaces across India.',
+    link: '/contact', linkText: 'Get a Consultation', image: '',
+    items: [
+      { stats: '20+', statsLabel: 'Years of Experience', title: '', description: '', image: '', link: '' },
+      { stats: '500+', statsLabel: 'Projects Delivered', title: '', description: '', image: '', link: '' },
+      { stats: 'ISO 9001:2015', statsLabel: 'Certified Quality', title: '', description: '', image: '', link: '' },
+      { stats: '50+', statsLabel: 'Retail Clients', title: '', description: '', image: '', link: '' },
+    ],
+  },
+  {
+    sectionId: 'solutions', type: 'custom', bgColor: 'white', order: 2, isVisible: true,
+    title: 'Complete Retail Fitout Solutions', image: '',
+    items: [
+      { title: 'Display Fixtures', description: 'Premium gondola shelving, pegboard panels, and display risers engineered to maximise product visibility.', image: '', link: '' },
+      { title: 'Checkout Counters', description: 'Custom-built cash-wrap counters and POS stations that combine functionality with your brand aesthetic.', image: '', link: '' },
+      { title: 'Garment & Apparel', description: 'Wall-mounted rails, floor racks, and hanging systems for apparel retailers of any size.', image: '', link: '' },
+      { title: 'Lighting & Signage', description: 'Integrated LED display lighting and branded signage solutions to elevate the in-store experience.', image: '', link: '' },
+      { title: 'Storage Systems', description: 'Back-office shelving, stockroom racking, and modular storage units built for high-volume retail.', image: '', link: '' },
+      { title: 'Custom Fabrication', description: 'Bespoke metal and wood fabrication for unique retail environments — from concept to installation.', image: '', link: '' },
+    ],
+  },
+  {
+    sectionId: 'gallery', type: 'custom', bgColor: 'light', order: 3, isVisible: true,
+    title: 'Projects That Speak for Themselves',
+    link: '/contact', linkText: 'Start Your Project', image: '',
+    items: [
+      { title: 'Flagship Retail Fitout', description: 'Display Fixtures', image: '', link: '' },
+      { title: 'Custom Checkout Counter', description: 'Checkout & POS', image: '', link: '' },
+      { title: 'Modular Shelving System', description: 'Storage & Display', image: '', link: '' },
+    ],
+  },
+  {
+    sectionId: 'products', type: 'custom', bgColor: 'light', order: 4, isVisible: true,
+    title: 'Featured Products',
+    link: '/shop', linkText: 'View all products',
+    image: '', items: [],
+  },
+  {
+    sectionId: 'industries', type: 'custom', bgColor: 'white', order: 5, isVisible: true,
+    title: 'Built for Every Industry',
+    description: 'From high-street retail to government institutions, our solutions adapt to any commercial environment.',
+    image: '',
+    items: [
+      { title: 'Retail & Fashion', description: 'End-to-end fitouts for apparel, accessories, and lifestyle stores of any size.', image: '', link: '' },
+      { title: 'Hospitality', description: 'Display counters, service stations, and décor solutions for hotels, cafes, and restaurants.', image: '', link: '' },
+      { title: 'Government & Institutional', description: 'ISO-certified supply and professional installation for public sector and institutional spaces.', image: '', link: '' },
+      { title: 'Corporate Offices', description: 'Reception desks, storage solutions, and branded display systems for modern workspaces.', image: '', link: '' },
+    ],
+  },
+  {
+    sectionId: 'process', type: 'custom', bgColor: 'dark', order: 6, isVisible: true,
+    title: 'From Vision to Reality', image: '',
+    items: [
+      { stats: '01', title: 'Consultation', description: 'We assess your space, brand, and product range to design the ideal layout and fitting solution.', image: '', link: '' },
+      { stats: '02', title: 'Design & Quote', description: 'Our design team creates detailed renderings and a transparent, itemised quotation.', image: '', link: '' },
+      { stats: '03', title: 'Manufacturing', description: 'Every unit is fabricated in our ISO-certified facility with rigorous quality control at each stage.', image: '', link: '' },
+      { stats: '04', title: 'Delivery & Install', description: 'White-glove delivery and professional installation with zero disruption to your operations.', image: '', link: '' },
+    ],
+  },
+  {
+    sectionId: 'why-cta', type: 'custom', bgColor: 'dark', order: 7, isVisible: true,
+    title: 'Ready to Transform Your Store?',
+    description: 'Get a free consultation and custom quote from our expert team.',
+    link: '/contact', linkText: 'Get Free Quote',
+    secondaryLink: 'https://wa.me/917303836300', secondaryLinkText: 'Chat on WhatsApp',
+    image: '',
+    items: [
+      { title: 'ISO 9001:2015 certified manufacturing', description: '', image: '', link: '' },
+      { title: 'In-house design and fabrication team', description: '', image: '', link: '' },
+      { title: 'Government & retail sector expertise', description: '', image: '', link: '' },
+      { title: 'Pan-India delivery and installation', description: '', image: '', link: '' },
+      { title: 'Lifetime technical support', description: '', image: '', link: '' },
+      { title: 'Competitive bulk-order pricing', description: '', image: '', link: '' },
+    ],
+  },
+];
+
 function extractCloudinaryPublicId(url: string): string | null {
   if (!url || !url.includes('res.cloudinary.com')) return null;
   try {
@@ -239,6 +329,58 @@ const SECTION_SCHEMAS: Record<string, SectionSchema> = {
     itemLabel: 'Product Card',
     itemFields: ['description', 'title', 'image', 'link'],
     isSlider: true,
+  },
+  // ─── Shop Fittings page schemas ───────────────────────────────────────────
+  intro: {
+    label: 'Intro Statement + Stats',
+    hint: 'Headline on left, 2×2 stat cards on right. Use "Number" and "Label" fields for each stat card.',
+    showTitle: true, titleLabel: 'Headline',
+    showDescription: true, showLink: true,
+    itemLabel: 'Stat Card',
+    itemFields: ['stats', 'statsLabel'],
+  },
+  solutions: {
+    label: 'What We Offer — Image Cards',
+    hint: '6 image cards with text overlay. Title always shown, description slides up on hover.',
+    showTitle: true,
+    itemLabel: 'Solution',
+    itemFields: ['title', 'description', 'image'],
+  },
+  gallery: {
+    label: 'Project Gallery — Bento Layout',
+    hint: 'Item 1 = large feature card (60%), items 2 & 3 = stacked cards (40%). Use Description for the category tag.',
+    showTitle: true,
+    showLink: true,
+    itemLabel: 'Gallery Image',
+    itemFields: ['title', 'description', 'image'],
+  },
+  products: {
+    label: 'Featured Products Scroll',
+    hint: 'Products are fetched from the catalogue automatically (tagged \'shop-fitting\'). Edit the section title and View-all link here.',
+    showTitle: true, showLink: true,
+    itemFields: [], noItems: true,
+  },
+  industries: {
+    label: 'Industries We Serve — Image Cards',
+    hint: '4 tall portrait cards. Description slides in on hover. Upload one image per industry.',
+    showTitle: true, showDescription: true,
+    itemLabel: 'Industry',
+    itemFields: ['title', 'description', 'image'],
+  },
+  process: {
+    label: 'How It Works — Process Steps',
+    hint: '4-step horizontal timeline. Use the "Number" field for the step label (01, 02…).',
+    showTitle: true,
+    itemLabel: 'Step',
+    itemFields: ['stats', 'title', 'description'],
+  },
+  'why-cta': {
+    label: 'Why Uflix + CTA Card',
+    hint: 'Dark section: bullet-point feature list on the left, CTA card on the right. Items = feature bullets (Title field only).',
+    showTitle: true, showDescription: true,
+    showLink: true, showSecondaryLink: true,
+    itemLabel: 'Feature Bullet',
+    itemFields: ['title'],
   },
 };
 
@@ -828,6 +970,17 @@ export default function AdminPageEditorPage() {
         const existing: any[] = pageData.sections || [];
         const existingIds = new Set(existing.map((s: any) => s.sectionId));
         const missing = BUSINESS_REQUIRED_SECTIONS.filter((s) => !existingIds.has(s.sectionId));
+        if (missing.length > 0) {
+          pageData.sections = [
+            ...existing,
+            ...missing.map((s, i) => ({ ...s, order: existing.length + i })),
+          ];
+        }
+      }
+      if (slug === 'shop-fittings' && pageData) {
+        const existing: any[] = pageData.sections || [];
+        const existingIds = new Set(existing.map((s: any) => s.sectionId));
+        const missing = SHOP_FITTINGS_REQUIRED_SECTIONS.filter((s) => !existingIds.has(s.sectionId));
         if (missing.length > 0) {
           pageData.sections = [
             ...existing,
