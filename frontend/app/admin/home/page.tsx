@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -108,6 +108,7 @@ export default function AdminHomePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
+  const heroDragIdx = useRef<number | null>(null);
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -245,17 +246,40 @@ export default function AdminHomePage() {
       const newSlides = slides.filter((_: any, i: number) => i !== index);
       setSettings({ ...settings, hero: { ...settings.hero, slides: newSlides } });
     };
+    const moveSlide = (fromIdx: number, toIdx: number) => {
+      if (fromIdx === toIdx) return;
+      const reordered = [...slides];
+      const [moved] = reordered.splice(fromIdx, 1);
+      reordered.splice(toIdx, 0, moved);
+      setSettings({ ...settings, hero: { ...settings.hero, slides: reordered } });
+    };
     return (
       <div>
         <div className="flex justify-between items-center mb-4">
-          <p className="text-sm text-gray-600">Manage hero banner slides.</p>
+          <p className="text-sm text-gray-600">Manage hero banner slides. Drag cards to reorder.</p>
           <button onClick={addSlide} className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm">+ Add Slide</button>
         </div>
         <div className="space-y-6">
           {slides.map((slide: any, index: number) => (
-            <div key={index} className="p-4 border border-gray-200 rounded-lg bg-white">
+            <div
+              key={index}
+              draggable
+              onDragStart={() => { heroDragIdx.current = index; }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                if (heroDragIdx.current === null || heroDragIdx.current === index) return;
+                moveSlide(heroDragIdx.current, index);
+                heroDragIdx.current = index;
+              }}
+              onDragEnd={() => { heroDragIdx.current = null; }}
+              className="p-4 border border-gray-200 rounded-lg bg-white cursor-grab active:cursor-grabbing"
+            >
               <div className="flex justify-between items-center mb-3">
-                <h4 className="font-semibold">Slide {index + 1}</h4>
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-300 select-none" title="Drag to reorder">⠿⠿</span>
+                  <h4 className="font-semibold">Slide {index + 1}</h4>
+                  {index === 0 && <span className="text-[10px] font-bold bg-accent text-white px-1.5 py-0.5 rounded">MAIN</span>}
+                </div>
                 <button onClick={() => removeSlide(index)} className="text-red-500 hover:text-red-700 text-sm">Remove</button>
               </div>
               <div className="grid gap-3">

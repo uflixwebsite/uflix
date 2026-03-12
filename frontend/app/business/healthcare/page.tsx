@@ -52,21 +52,35 @@ const PH_STATS = [
 // ─── Hero ─────────────────────────────────────────────────────────────────────
 
 function HealthcareHero({ section }: { section?: Section }) {
-  const title = section?.title || '';
-  const desc = section?.description || section?.subtitle || '';
-  const mainLink = section?.link || '#just-arrived';
-  const mainText = section?.linkText || 'Explore Products';
-  const secLink = section?.secondaryLink || '/contact';
-  const secText = section?.secondaryLinkText || 'Request a Quote';
-
-  const allImages: string[] = [
-    ...(section?.image ? [section.image] : []),
-    ...((section?.items || []).filter((i: any) => i.image).map((i: any) => i.image as string)),
-  ];
+  const allSlides = [
+    {
+      image: section?.image || '',
+      title: section?.title || '',
+      subtitle: section?.subtitle || '',
+      description: section?.description || '',
+      linkText: section?.linkText || 'Explore Products',
+      link: section?.link || '#just-arrived',
+      secondaryLinkText: section?.secondaryLinkText || 'Request a Quote',
+      secondaryLink: section?.secondaryLink || '/contact',
+    },
+    ...((section?.items || [])
+      .filter((i: any) => i.image)
+      .map((i: any) => ({
+        image: i.image as string,
+        title: i.title || section?.title || '',
+        subtitle: i.subtitle || section?.subtitle || '',
+        description: i.description || section?.description || '',
+        linkText: i.linkText || section?.linkText || 'Explore Products',
+        link: i.link || section?.link || '#just-arrived',
+        secondaryLinkText: i.secondaryLinkText || section?.secondaryLinkText || 'Request a Quote',
+        secondaryLink: i.secondaryLink || section?.secondaryLink || '/contact',
+      }))),
+  ].filter((s) => s.image);
 
   const [idx, setIdx] = useState(0);
   const [paused, setPaused] = useState(false);
-  const total = allImages.length;
+  const total = allSlides.length;
+  const cur = allSlides[idx] ?? { title: '', subtitle: '', description: '', linkText: 'Explore Products', link: '#just-arrived', secondaryLinkText: 'Request a Quote', secondaryLink: '/contact' };
 
   const prev = () => setIdx((n) => (n - 1 + total) % total);
   const next = () => setIdx((n) => (n + 1) % total);
@@ -85,16 +99,16 @@ function HealthcareHero({ section }: { section?: Section }) {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {allImages.map((url, i) => (
+      {allSlides.map((s, i) => (
         <div
-          key={url + i}
+          key={s.image + i}
           className="absolute inset-0 transition-opacity duration-1000"
           style={{ opacity: i === idx ? 1 : 0 }}
         >
-          <Image src={url} alt={`slide ${i + 1}`} fill sizes="100vw" className="object-cover" priority={i === 0} />
+          <Image src={s.image} alt={`slide ${i + 1}`} fill sizes="100vw" className="object-cover" priority={i === 0} />
         </div>
       ))}
-      {allImages.length === 0 && (
+      {allSlides.length === 0 && (
         <div className="absolute inset-0 bg-gray-900" />
       )}
 
@@ -125,8 +139,8 @@ function HealthcareHero({ section }: { section?: Section }) {
         <span className="inline-block bg-white/10 text-white border border-white/20 text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
           Healthcare Furniture Solutions
         </span>
-        {title ? (
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">{title}</h1>
+        {cur.title ? (
+          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">{cur.title}</h1>
         ) : (
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
             Designed for <br />
@@ -134,28 +148,28 @@ function HealthcareHero({ section }: { section?: Section }) {
           </h1>
         )}
         <p className="text-xl text-white/70 max-w-3xl mx-auto mb-10">
-          {desc ||
+          {cur.description || cur.subtitle ||
             'Ergonomic, patient-centric furniture solutions for hospitals, clinics, and care facilities — built for comfort, hygiene, and long-term durability.'}
         </p>
         <div className="flex flex-wrap gap-4 justify-center">
           <Link
-            href={mainLink}
+            href={cur.link}
             className="bg-accent hover:bg-accent/90 text-white px-8 py-3.5 rounded-full font-semibold shadow-lg transition-all"
           >
-            {mainText}
+            {cur.linkText}
           </Link>
           <Link
-            href={secLink}
+            href={cur.secondaryLink}
             className="border border-white/30 hover:border-white text-white px-8 py-3.5 rounded-full font-semibold transition-all hover:bg-white/10"
           >
-            {secText}
+            {cur.secondaryLinkText}
           </Link>
         </div>
       </div>
 
       {total > 1 && (
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
-          {allImages.map((_, i) => (
+          {allSlides.map((_, i) => (
             <button
               key={i}
               onClick={() => setIdx(i)}

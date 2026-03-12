@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -219,63 +219,212 @@ function IdeaItemEditor({
   );
 }
 
+// ─── Hero slide editor ────────────────────────────────────────────────────────
+
+type HeroSlide = {
+  image: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  linkText: string;
+  link: string;
+  secondaryLinkText: string;
+  secondaryLink: string;
+};
+
+function dataToSlides(data: any): HeroSlide[] {
+  const first: HeroSlide = {
+    image: data.image || '',
+    title: data.title || '',
+    subtitle: data.subtitle || '',
+    description: data.description || '',
+    linkText: data.linkText || '',
+    link: data.link || '',
+    secondaryLinkText: data.secondaryLinkText || '',
+    secondaryLink: data.secondaryLink || '',
+  };
+  const rest: HeroSlide[] = (data.items || []).map((item: any) => ({
+    image: item.image || '',
+    title: item.title || '',
+    subtitle: item.subtitle || '',
+    description: item.description || '',
+    linkText: item.linkText || '',
+    link: item.link || '',
+    secondaryLinkText: item.secondaryLinkText || '',
+    secondaryLink: item.secondaryLink || '',
+  }));
+  return [first, ...rest];
+}
+
+function slidesToData(slides: HeroSlide[], existing: any): any {
+  const [s0, ...rest] = slides.length > 0
+    ? slides
+    : [{ image: '', title: '', subtitle: '', description: '', linkText: '', link: '', secondaryLinkText: '', secondaryLink: '' }];
+  return {
+    ...existing,
+    image: s0.image,
+    title: s0.title,
+    subtitle: s0.subtitle,
+    description: s0.description,
+    linkText: s0.linkText,
+    link: s0.link,
+    secondaryLinkText: s0.secondaryLinkText,
+    secondaryLink: s0.secondaryLink,
+    items: rest.map((s) => ({
+      image: s.image,
+      title: s.title,
+      subtitle: s.subtitle,
+      description: s.description,
+      linkText: s.linkText,
+      link: s.link,
+      secondaryLinkText: s.secondaryLinkText,
+      secondaryLink: s.secondaryLink,
+      stats: '',
+      statsLabel: '',
+    })),
+  };
+}
+
 // ─── Hero tab ─────────────────────────────────────────────────────────────────
 
 function HeroTab({ data, onChange }: { data: any; onChange: (d: any) => void }) {
-  const set = (k: string, v: any) => onChange({ ...data, [k]: v });
+  const [slides, setSlides] = useState<HeroSlide[]>(() => dataToSlides(data));
+  const [uploading, setUploading] = useState<number | null>(null);
+  const [expandedIdx, setExpandedIdx] = useState<number>(0);
+  const dragIdx = useRef<number | null>(null);
 
-  const addSlide = () => onChange({ ...data, items: [...(data.items || []), { image: '', title: '', description: '' }] });
-  const removeSlide = (i: number) => onChange({ ...data, items: data.items.filter((_: any, idx: number) => idx !== i) });
-  const setSlide = (i: number, img: string) => {
-    const items = [...(data.items || [])];
-    items[i] = { ...items[i], image: img };
-    onChange({ ...data, items });
+  const dataKey = (data.image || '') + '|' + (data.title || '') + '|' + (data.items || []).length;
+  useEffect(() => { setSlides(dataToSlides(data)); }, [dataKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const commit = (newSlides: HeroSlide[]) => {
+    setSlides(newSlides);
+    onChange(slidesToData(newSlides, data));
   };
 
+  const updateSlide = (i: number, key: keyof HeroSlide, value: string) => {
+    const next = [...slides];
+    next[i] = { ...next[i], [key]: value };
+    commit(next);
+  };
+
+  const removeSlide = (i: number) => {
+    if (slides.length <= 1) { alert('At least one slide is required.'); return; }
+    deleteOldImage(slides[i].image);
+    const next = slides.filter((_, idx) => idx !== i);
+    setExpandedIdx((prev) => (prev >= next.length ? next.length - 1 : prev));
+    commit(next);
+  };
+
+  const addSlide = () => {
+    const blank: HeroSlide = { image: '', title: '', subtitle: '', description: '', linkText: 'Explore Products', link: '#just-arrived', secondaryLinkText: 'Request a Quote', secondaryLink: '/contact' };
+    const next = [...slides, blank];
+    commit(next);
+    setExpandedIdx(next.length - 1);
+  };
+
+  const uploadImage = async (i: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(i);
+    try {
+      const result = await uploadSingleImage(file, 'healthcare');
+      updateSlide(i, 'image', result.data.url);
+    } catch { alert('Upload failed.'); }
+    finally { setUploading(null); }
+  };
+
+  const onDragStart = (i: number) => { dragIdx.current = i; };
+  const onDragOver = (e: React.DragEvent, i: number) => {
+    e.preventDefault();
+    if (dragIdx.current === null || dragIdx.current === i) return;
+    const next = [...slides];
+    const [moved] = next.splice(dragIdx.current, 1);
+    next.splice(i, 0, moved);
+    dragIdx.current = i;
+    commit(next);
+  };
+  const onDragEnd = () => { dragIdx.current = null; };
+
   return (
-    <div className="space-y-5">
-      <p className="text-sm text-gray-500">
-        The hero fills the full screen. Add a main image/video and up to 5 carousel slides.
-      </p>
-      <Field label="Headline" value={data.title || ''} onChange={(v) => set('title', v)} placeholder="Designed for Healing Environments" />
-      <Field label="Sub-headline" value={data.subtitle || ''} onChange={(v) => set('subtitle', v)} placeholder="Optional tagline below headline" />
-      <Field label="Description text" value={data.description || ''} onChange={(v) => set('description', v)} textarea placeholder="One or two sentences about healthcare furniture..." />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Field label="Primary button label" value={data.linkText || ''} onChange={(v) => set('linkText', v)} placeholder="Explore Products" />
-          <Field label="Primary button link" value={data.link || ''} onChange={(v) => set('link', v)} placeholder="#just-arrived" />
-        </div>
-        <div className="space-y-2">
-          <Field label="Secondary button label" value={data.secondaryLinkText || ''} onChange={(v) => set('secondaryLinkText', v)} placeholder="Request a Quote" />
-          <Field label="Secondary button link" value={data.secondaryLink || ''} onChange={(v) => set('secondaryLink', v)} placeholder="/contact" />
-        </div>
-      </div>
-      <div className="border-t pt-5">
-        <ImageUploader label="Main / first slide image" value={data.image || ''} onChange={(v) => set('image', v)} folder="healthcare" hint="1920×1080px (16:9 hero, JPG/WEBP)" />
-      </div>
-      <div className="border-t pt-5">
-        <div className="flex items-center justify-between mb-3">
-          <h4 className="text-sm font-semibold">Additional carousel slides</h4>
-          <button onClick={addSlide} className="text-xs px-3 py-1.5 bg-accent text-white rounded-md hover:bg-secondary">
-            + Add slide
-          </button>
-        </div>
-        <div className="space-y-3">
-          {(data.items || []).map((slide: any, i: number) => (
-            <div key={i} className="border border-gray-200 rounded-lg p-3 bg-gray-50">
-              <div className="flex justify-between mb-2">
-                <span className="text-xs font-semibold text-gray-600">Slide {i + 1}</span>
-                <button onClick={() => removeSlide(i)} className="text-xs text-red-500 hover:text-red-700">Remove</button>
+    <div className="space-y-4">
+      <p className="text-sm text-gray-500">Each slide has its own image, headline, description and buttons. Drag cards to reorder.</p>
+      <div className="space-y-2">
+        {slides.map((slide, i) => (
+          <div
+            key={i}
+            draggable
+            onDragStart={() => onDragStart(i)}
+            onDragOver={(e) => onDragOver(e, i)}
+            onDragEnd={onDragEnd}
+            className="border border-gray-200 rounded-xl overflow-hidden bg-white"
+          >
+            <div
+              className="flex items-center gap-3 p-3 cursor-pointer select-none hover:bg-gray-50"
+              onClick={() => setExpandedIdx(expandedIdx === i ? -1 : i)}
+            >
+              <span className="text-gray-300 text-lg leading-none shrink-0" title="Drag to reorder">⠿</span>
+              <div className="w-16 h-10 rounded overflow-hidden bg-gray-100 shrink-0 border border-gray-200">
+                {slide.image
+                  ? <img src={slide.image} alt="" className="w-full h-full object-cover" />
+                  : <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-400">No img</div>
+                }
               </div>
-              <ImageUploader label="Slide image" value={slide.image || ''} onChange={(v) => setSlide(i, v)} folder="healthcare" hint="1920×1080px (16:9 hero, JPG/WEBP)" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate text-gray-800">{slide.title || `Slide ${i + 1}`}</p>
+                {i === 0 && <span className="text-[10px] font-bold bg-accent text-white px-1.5 py-0.5 rounded">MAIN</span>}
+              </div>
+              <svg className={`w-4 h-4 text-gray-400 shrink-0 transition-transform ${expandedIdx === i ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+              <button
+                onClick={(e) => { e.stopPropagation(); removeSlide(i); }}
+                className="p-1.5 text-red-400 hover:text-red-600 rounded shrink-0"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
             </div>
-          ))}
-          {(data.items || []).length === 0 && (
-            <p className="text-xs text-gray-400">No extra slides. Add one above to enable auto-play carousel.</p>
-          )}
-        </div>
+            {expandedIdx === i && (
+              <div className="border-t border-gray-100 p-4 space-y-4 bg-gray-50/50">
+                <div>
+                  <p className="text-xs font-semibold text-gray-600 mb-2">Hero Image <span className="font-normal text-gray-400">📐 1920×1080px (16:9, JPG/WEBP)</span></p>
+                  <div className="flex gap-3 items-start">
+                    <div className="w-36 h-20 rounded-lg overflow-hidden bg-gray-100 border border-gray-200 shrink-0">
+                      {slide.image
+                        ? <img src={slide.image} alt="" className="w-full h-full object-cover" />
+                        : <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">No image</div>
+                      }
+                    </div>
+                    <div className="flex gap-2 flex-wrap pt-1">
+                      <label className={`px-3 py-2 text-sm rounded-md cursor-pointer transition-colors ${uploading === i ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-accent text-white hover:bg-secondary'}`}>
+                        {uploading === i ? 'Uploading…' : slide.image ? 'Replace' : 'Upload'}
+                        <input type="file" accept="image/*" className="hidden" disabled={uploading !== null} onChange={(e) => uploadImage(i, e)} />
+                      </label>
+                      {slide.image && (
+                        <button onClick={() => updateSlide(i, 'image', '')} className="px-3 py-2 text-sm rounded-md bg-red-50 text-red-600 hover:bg-red-100">Remove</button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <Field label="Headline" value={slide.title} onChange={(v) => updateSlide(i, 'title', v)} placeholder="e.g. Designed for Healing Environments" />
+                <Field label="Sub-headline" value={slide.subtitle} onChange={(v) => updateSlide(i, 'subtitle', v)} placeholder="Optional tagline" />
+                <Field label="Description" value={slide.description} onChange={(v) => updateSlide(i, 'description', v)} textarea placeholder="One or two sentences..." />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Field label="Primary button label" value={slide.linkText} onChange={(v) => updateSlide(i, 'linkText', v)} placeholder="Explore Products" />
+                    <Field label="Primary button link" value={slide.link} onChange={(v) => updateSlide(i, 'link', v)} placeholder="#just-arrived" />
+                  </div>
+                  <div className="space-y-2">
+                    <Field label="Secondary button label" value={slide.secondaryLinkText} onChange={(v) => updateSlide(i, 'secondaryLinkText', v)} placeholder="Request a Quote" />
+                    <Field label="Secondary button link" value={slide.secondaryLink} onChange={(v) => updateSlide(i, 'secondaryLink', v)} placeholder="/contact" />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
-      <VisibilityToggle value={data.isVisible ?? true} onChange={(v) => set('isVisible', v)} />
+      <button onClick={addSlide} className="w-full py-3 border-2 border-dashed border-gray-300 text-gray-500 hover:border-accent hover:text-accent text-sm rounded-xl transition-colors">
+        + Add slide
+      </button>
+      <VisibilityToggle value={data.isVisible ?? true} onChange={(v) => onChange({ ...data, isVisible: v })} />
     </div>
   );
 }

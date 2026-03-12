@@ -281,9 +281,7 @@ type SectionSchema = {
 const SECTION_SCHEMAS: Record<string, SectionSchema> = {
   hero: {
     label: 'Hero Banner',
-    hint: 'Add multiple images to create a slideshow. Drag to reorder — the first image is shown first.',
-    showTitle: true, titleLabel: 'Headline',
-    showDescription: true, showLink: true, showSecondaryLink: true,
+    hint: 'Each slide has its own image, headline, description and buttons. Drag cards to reorder.',
     isHeroImages: true,
     itemFields: [],
   },
@@ -467,111 +465,251 @@ function SectionItemEditor({ item, index, onChange, onRemove, fields, itemLabel,
     </div>
   );
 }
-// ─── Hero image grid with drag-and-drop reorder ─────────────────────────────
-function HeroImageGrid({
-  section,
-  onChangeImage,
-  onChangeItems,
-}: {
-  section: any;
-  onChangeImage: (url: string) => void;
-  onChangeItems: (items: any[]) => void;
-}) {
-  const [uploading, setUploading] = useState(false);
+// ─── Hero per-slide editor ────────────────────────────────────────────────────
+
+type HeroSlide = {
+  image: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  linkText: string;
+  link: string;
+  secondaryLinkText: string;
+  secondaryLink: string;
+};
+
+function heroDataToSlides(data: any): HeroSlide[] {
+  const first: HeroSlide = {
+    image: data.image || '',
+    title: data.title || '',
+    subtitle: data.subtitle || '',
+    description: data.description || '',
+    linkText: data.linkText || '',
+    link: data.link || '',
+    secondaryLinkText: data.secondaryLinkText || '',
+    secondaryLink: data.secondaryLink || '',
+  };
+  const rest: HeroSlide[] = (data.items || []).map((item: any) => ({
+    image: item.image || '',
+    title: item.title || '',
+    subtitle: item.subtitle || '',
+    description: item.description || '',
+    linkText: item.linkText || '',
+    link: item.link || '',
+    secondaryLinkText: item.secondaryLinkText || '',
+    secondaryLink: item.secondaryLink || '',
+  }));
+  return [first, ...rest];
+}
+
+function heroSlidesToData(slides: HeroSlide[], existing: any): any {
+  const [s0, ...rest] =
+    slides.length > 0
+      ? slides
+      : [{ image: '', title: '', subtitle: '', description: '', linkText: '', link: '', secondaryLinkText: '', secondaryLink: '' }];
+  return {
+    ...existing,
+    image: s0.image,
+    title: s0.title,
+    subtitle: s0.subtitle,
+    description: s0.description,
+    linkText: s0.linkText,
+    link: s0.link,
+    secondaryLinkText: s0.secondaryLinkText,
+    secondaryLink: s0.secondaryLink,
+    items: rest.map((s) => ({
+      image: s.image,
+      title: s.title,
+      subtitle: s.subtitle,
+      description: s.description,
+      linkText: s.linkText,
+      link: s.link,
+      secondaryLinkText: s.secondaryLinkText,
+      secondaryLink: s.secondaryLink,
+      stats: '',
+      statsLabel: '',
+    })),
+  };
+}
+
+function HeroPerSlideEditor({ section, onChange }: { section: any; onChange: (s: any) => void }) {
+  const [slides, setSlides] = useState<HeroSlide[]>(() => heroDataToSlides(section));
+  const [uploading, setUploading] = useState<number | null>(null);
+  const [expandedIdx, setExpandedIdx] = useState<number>(0);
   const dragIdx = useRef<number | null>(null);
 
-  // Unified flat list: primary image first, then items
-  const images: string[] = [
-    ...(section.image ? [section.image as string] : []),
-    ...((section.items || []).filter((i: any) => i.image).map((i: any) => i.image as string)),
-  ];
+  const dataKey =
+    (section.image || '') + '|' + (section.title || '') + '|' + (section.items || []).length;
+  useEffect(() => {
+    setSlides(heroDataToSlides(section));
+  }, [dataKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const commit = (newImages: string[]) => {
-    onChangeImage(newImages[0] ?? '');
-    onChangeItems(newImages.slice(1).map((url) => ({ image: url, title: '', description: '', link: '', stats: '', statsLabel: '' })));
+  const commit = (newSlides: HeroSlide[]) => {
+    setSlides(newSlides);
+    onChange(heroSlidesToData(newSlides, section));
   };
 
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (!files.length) return;
-    setUploading(true);
+  const updateSlide = (i: number, key: keyof HeroSlide, value: string) => {
+    const next = [...slides];
+    next[i] = { ...next[i], [key]: value };
+    commit(next);
+  };
+
+  const removeSlide = (i: number) => {
+    if (slides.length <= 1) { alert('At least one slide is required.'); return; }
+    deleteOldCloudinaryImage(slides[i].image);
+    const next = slides.filter((_, idx) => idx !== i);
+    setExpandedIdx((prev) => (prev >= next.length ? next.length - 1 : prev));
+    commit(next);
+  };
+
+  const addSlide = () => {
+    const blank: HeroSlide = {
+      image: '', title: '', subtitle: '', description: '',
+      linkText: 'Explore Products', link: '#just-arrived',
+      secondaryLinkText: 'Request a Quote', secondaryLink: '/contact',
+    };
+    const next = [...slides, blank];
+    commit(next);
+    setExpandedIdx(next.length - 1);
+  };
+
+  const uploadImage = async (i: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(i);
     try {
-      const urls: string[] = [];
-      for (const file of files) {
-        const result = await uploadSingleImage(file, 'pages');
-        urls.push(result.data.url);
-      }
-      commit([...images, ...urls]);
+      const result = await uploadSingleImage(file, 'pages');
+      updateSlide(i, 'image', result.data.url);
     } catch { alert('Upload failed. Please try again.'); }
-    finally { setUploading(false); }
+    finally { setUploading(null); }
   };
 
-  const remove = async (idx: number) => {
-    await deleteOldCloudinaryImage(images[idx]);
-    commit(images.filter((_, i) => i !== idx));
-  };
-
-  const onDragStart = (idx: number) => { dragIdx.current = idx; };
-  const onDragOver = (e: React.DragEvent, idx: number) => {
+  const onDragStart = (i: number) => { dragIdx.current = i; };
+  const onDragOver = (e: React.DragEvent, i: number) => {
     e.preventDefault();
-    if (dragIdx.current === null || dragIdx.current === idx) return;
-    const reordered = [...images];
-    const [moved] = reordered.splice(dragIdx.current, 1);
-    reordered.splice(idx, 0, moved);
-    dragIdx.current = idx;
-    commit(reordered);
+    if (dragIdx.current === null || dragIdx.current === i) return;
+    const next = [...slides];
+    const [moved] = next.splice(dragIdx.current, 1);
+    next.splice(i, 0, moved);
+    dragIdx.current = i;
+    commit(next);
   };
+  const onDragEnd = () => { dragIdx.current = null; };
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-2">
-        <label className="block text-sm font-medium text-gray-700">
-          Slideshow Images <span className="text-xs font-normal text-gray-400">— drag to reorder, first image shown first</span>
-        </label>
-        <p className="text-xs text-gray-400 mb-2">📐 Recommended: 1920×1080px (16:9, JPG/WEBP)</p>
-        <label className={`px-3 py-1.5 text-sm rounded-md cursor-pointer transition-colors ${
-          uploading ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-accent text-white hover:bg-secondary'
-        }`}>
-          {uploading ? 'Uploading…' : '+ Add Images'}
-          <input type="file" accept="image/*" multiple onChange={handleUpload} className="hidden" disabled={uploading} />
-        </label>
-      </div>
-
-      {images.length === 0 ? (
-        <div className="border-2 border-dashed border-gray-200 rounded-xl h-32 flex items-center justify-center text-sm text-gray-400">
-          No images yet — click "+ Add Images" to upload
-        </div>
-      ) : (
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-          {images.map((url, idx) => (
+    <div className="space-y-3">
+      <p className="text-sm text-gray-500">Each slide has its own image, headline, description and buttons. Drag cards to reorder.</p>
+      <div className="space-y-2">
+        {slides.map((slide, i) => (
+          <div
+            key={i}
+            draggable
+            onDragStart={() => onDragStart(i)}
+            onDragOver={(e) => onDragOver(e, i)}
+            onDragEnd={onDragEnd}
+            className="border border-gray-200 rounded-xl overflow-hidden bg-white"
+          >
             <div
-              key={url + idx}
-              draggable
-              onDragStart={() => onDragStart(idx)}
-              onDragOver={(e) => onDragOver(e, idx)}
-              className="relative group rounded-lg overflow-hidden border-2 border-gray-200 hover:border-accent cursor-grab active:cursor-grabbing aspect-video bg-gray-100"
+              className="flex items-center gap-3 p-3 cursor-pointer select-none hover:bg-gray-50"
+              onClick={() => setExpandedIdx(expandedIdx === i ? -1 : i)}
             >
-              {idx === 0 && (
-                <span className="absolute top-1 left-1 z-10 bg-accent text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
-                  MAIN
-                </span>
-              )}
-              <img src={url} alt={`slide ${idx + 1}`} className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-              <button
-                type="button"
-                onClick={() => remove(idx)}
-                className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs hidden group-hover:flex items-center justify-center leading-none"
-              >
-                ×
-              </button>
-              <div className="absolute bottom-1 left-0 right-0 text-center">
-                <span className="text-[10px] text-white/80 bg-black/40 px-1 rounded">{idx + 1}</span>
+              <span className="text-gray-300 text-lg leading-none shrink-0" title="Drag to reorder">⠿</span>
+              <div className="w-16 h-10 rounded overflow-hidden bg-gray-100 shrink-0 border border-gray-200">
+                {slide.image
+                  ? <img src={slide.image} alt="" className="w-full h-full object-cover" />
+                  : <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-400">No img</div>
+                }
               </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate text-gray-800">{slide.title || `Slide ${i + 1}`}</p>
+                {i === 0 && <span className="text-[10px] font-bold bg-accent text-white px-1.5 py-0.5 rounded">MAIN</span>}
+              </div>
+              <svg className={`w-4 h-4 text-gray-400 shrink-0 transition-transform ${expandedIdx === i ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+              <button
+                onClick={(e) => { e.stopPropagation(); removeSlide(i); }}
+                className="p-1.5 text-red-400 hover:text-red-600 rounded shrink-0"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
             </div>
-          ))}
-        </div>
-      )}
+            {expandedIdx === i && (
+              <div className="border-t border-gray-100 p-4 space-y-4 bg-gray-50/50">
+                <div>
+                  <p className="text-xs font-semibold text-gray-600 mb-2">Hero Image <span className="font-normal text-gray-400">📐 1920×1080px (16:9, JPG/WEBP)</span></p>
+                  <div className="flex gap-3 items-start">
+                    <div className="w-36 h-20 rounded-lg overflow-hidden bg-gray-100 border border-gray-200 shrink-0">
+                      {slide.image
+                        ? <img src={slide.image} alt="" className="w-full h-full object-cover" />
+                        : <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">No image</div>
+                      }
+                    </div>
+                    <div className="flex gap-2 flex-wrap pt-1">
+                      <label className={`px-3 py-2 text-sm rounded-md cursor-pointer transition-colors ${uploading === i ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-accent text-white hover:bg-secondary'}`}>
+                        {uploading === i ? 'Uploading…' : slide.image ? 'Replace' : 'Upload'}
+                        <input type="file" accept="image/*" className="hidden" disabled={uploading !== null} onChange={(e) => uploadImage(i, e)} />
+                      </label>
+                      {slide.image && (
+                        <button onClick={() => updateSlide(i, 'image', '')} className="px-3 py-2 text-sm rounded-md bg-red-50 text-red-600 hover:bg-red-100">Remove</button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Headline</label>
+                  <input type="text" value={slide.title} onChange={(e) => updateSlide(i, 'title', e.target.value)}
+                    placeholder="e.g. Furniture That Means Business"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Sub-headline <span className="font-normal text-gray-400">(optional)</span></label>
+                  <input type="text" value={slide.subtitle} onChange={(e) => updateSlide(i, 'subtitle', e.target.value)}
+                    placeholder="Optional tagline"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Description</label>
+                  <textarea value={slide.description} onChange={(e) => updateSlide(i, 'description', e.target.value)}
+                    rows={2} placeholder="One or two sentences..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">Primary button label</label>
+                    <input type="text" value={slide.linkText} onChange={(e) => updateSlide(i, 'linkText', e.target.value)}
+                      placeholder="Explore Products"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">Primary button link</label>
+                    <input type="text" value={slide.link} onChange={(e) => updateSlide(i, 'link', e.target.value)}
+                      placeholder="#just-arrived"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">Secondary button label</label>
+                    <input type="text" value={slide.secondaryLinkText} onChange={(e) => updateSlide(i, 'secondaryLinkText', e.target.value)}
+                      placeholder="Request a Quote"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">Secondary button link</label>
+                    <input type="text" value={slide.secondaryLink} onChange={(e) => updateSlide(i, 'secondaryLink', e.target.value)}
+                      placeholder="/contact"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+      <button
+        onClick={addSlide}
+        className="w-full py-3 border-2 border-dashed border-gray-300 text-gray-500 hover:border-accent hover:text-accent text-sm rounded-xl transition-colors"
+      >
+        + Add slide
+      </button>
     </div>
   );
 }
@@ -826,7 +964,7 @@ function SectionEditor({ section, index, onChange, onDelete, onMoveUp, onMoveDow
           </div>
 
           {/* Section-level title */}
-          {schema.showTitle && (
+          {schema.showTitle && !schema.isHeroImages && (
             <div>
               <label className="block text-sm font-medium mb-1">{schema.titleLabel || 'Title'}</label>
               <input type="text" value={section.title || ''} onChange={(e) => update('title', e.target.value)}
@@ -835,7 +973,7 @@ function SectionEditor({ section, index, onChange, onDelete, onMoveUp, onMoveDow
           )}
 
           {/* Description */}
-          {schema.showDescription && (
+          {schema.showDescription && !schema.isHeroImages && (
             <div>
               <label className="block text-sm font-medium mb-1">Description</label>
               <textarea value={section.description || ''} onChange={(e) => update('description', e.target.value)}
@@ -844,13 +982,9 @@ function SectionEditor({ section, index, onChange, onDelete, onMoveUp, onMoveDow
             </div>
           )}
 
-          {/* Hero image grid — drag-and-drop multi-image manager */}
+          {/* Hero per-slide editor — replaces global title/description/links + image grid */}
           {schema.isHeroImages && (
-            <HeroImageGrid
-              section={section}
-              onChangeImage={(url) => update('image', url)}
-              onChangeItems={(items) => update('items', items)}
-            />
+            <HeroPerSlideEditor section={section} onChange={onChange} />
           )}
 
           {/* Image (single, for non-hero sections) */}
@@ -859,7 +993,7 @@ function SectionEditor({ section, index, onChange, onDelete, onMoveUp, onMoveDow
           )}
 
           {/* Primary link */}
-          {schema.showLink && (
+          {schema.showLink && !schema.isHeroImages && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Button URL</label>
@@ -877,7 +1011,7 @@ function SectionEditor({ section, index, onChange, onDelete, onMoveUp, onMoveDow
           )}
 
           {/* Secondary link */}
-          {schema.showSecondaryLink && (
+          {schema.showSecondaryLink && !schema.isHeroImages && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Second Button URL</label>
