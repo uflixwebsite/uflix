@@ -55,11 +55,25 @@ export default function Benefits({ data }: BenefitsProps) {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="md:hidden -mx-4 px-4 overflow-x-auto snap-x snap-mandatory" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <div className="flex gap-4 pb-2" style={{ width: 'max-content' }}>
+            {benefits.map((benefit, index) => (
+              <div key={index} className="snap-center shrink-0 w-[86vw] max-w-sm text-center p-6 rounded-xl border border-gray-100 shadow-sm bg-white">
+                <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center mx-auto mb-4 text-white">
+                  {(iconMap[benefit.icon || 'check'] || iconMap.check)}
+                </div>
+                <h3 className="text-xl font-semibold mb-2">{benefit.title}</h3>
+                <p className="text-neutral-dark line-clamp-3">{benefit.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {benefits.map((benefit, index) => (
             <div key={index} className="text-center p-6 rounded-lg hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 bg-accent-light rounded-full flex items-center justify-center mx-auto mb-4 text-accent">
-                {iconMap[benefit.icon || 'check'] || iconMap.check}
+              <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center mx-auto mb-4 text-white">
+                {(iconMap[benefit.icon || 'check'] || iconMap.check)}
               </div>
               <h3 className="text-xl font-semibold mb-2">{benefit.title}</h3>
               <p className="text-neutral-dark">{benefit.description}</p>

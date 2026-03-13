@@ -1,4 +1,10 @@
 {
-  "/admin/pages/[slug]/edit/page": "app/admin/pages/[slug]/edit/page.js",
-  "/shop-fittings/page": "app/shop-fittings/page.js"
+  "/_not-found/page": "app/_not-found/page.js",
+  "/quality/page": "app/quality/page.js",
+  "/sustainability/page": "app/sustainability/page.js",
+  "/shop-fittings/page": "app/shop-fittings/page.js",
+  "/contact/page": "app/contact/page.js",
+  "/privacy/page": "app/privacy/page.js",
+  "/terms/page": "app/terms/page.js",
+  "/refund/page": "app/refund/page.js"
 }

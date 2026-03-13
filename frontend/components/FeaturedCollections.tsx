@@ -24,10 +24,10 @@ export default function FeaturedCollections({ title, subtitle, items }: Featured
     return (
       <section className="py-0 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-10">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground text-center md:text-left">
             {title || 'Shop by collection'}
           </h2>
-          <div className="relative w-full h-[55vh] max-h-[500px] min-h-[300px] overflow-hidden rounded-2xl mt-6 bg-gray-100 flex items-center justify-center">
+          <div className="relative w-full h-[55vh] max-h-125 min-h-75 overflow-hidden rounded-2xl mt-6 bg-gray-100 flex items-center justify-center">
             <p className="text-gray-300 text-sm">Add collections in the admin panel</p>
           </div>
         </div>
@@ -38,13 +38,13 @@ export default function FeaturedCollections({ title, subtitle, items }: Featured
   return (
     <section className="py-0 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-10">
-        <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+        <h2 className="text-3xl md:text-4xl font-bold text-foreground text-center md:text-left">
           {title || 'Shop by collection'}
         </h2>
-        {subtitle && <p className="text-neutral-dark mt-2">{subtitle}</p>}
+        {subtitle && <p className="text-neutral-dark mt-2 text-center md:text-left">{subtitle}</p>}
 
         {/* Contained photo carousel — cut from sides, rounded */}
-        <div className="relative w-full h-[55vh] max-h-[500px] min-h-[300px] overflow-hidden rounded-2xl mt-6">
+        <div className="relative w-full h-[64vh] max-h-140 min-h-95 overflow-hidden rounded-2xl mt-6">
         {collections.map((col, index) => (
           <div
             key={index}
@@ -57,7 +57,7 @@ export default function FeaturedCollections({ title, subtitle, items }: Featured
                 src={col.image}
                 alt={col.title}
                 fill
-                className="object-cover"
+                className="object-cover object-center"
                 priority={index === 0}
                 loading={index === 0 ? 'eager' : 'lazy'}
               />
@@ -65,17 +65,17 @@ export default function FeaturedCollections({ title, subtitle, items }: Featured
               <div className="w-full h-full bg-gray-200" />
             )}
             {/* Gradient at bottom */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/20 to-transparent" />
 
             {/* Text overlay */}
-            <div className="absolute bottom-10 left-6 sm:left-14 text-white z-10">
-              <h3 className="text-2xl sm:text-4xl font-bold mb-2">{col.title}</h3>
+            <div className="absolute left-4 right-4 sm:left-14 sm:right-auto bottom-16 sm:bottom-10 text-white z-10 text-center sm:text-left p-0">
+              <h3 className="text-2xl sm:text-3xl font-bold mb-1.5 leading-tight">{col.title}</h3>
               {col.description && (
-                <p className="text-sm sm:text-base text-white/80 mb-4 max-w-md">{col.description}</p>
+                <p className="text-xs sm:text-sm text-white/85 mb-3 max-w-md mx-auto sm:mx-0 line-clamp-2 sm:line-clamp-none">{col.description}</p>
               )}
               <Link
                 href={col.link || '/shop'}
-                className="inline-block bg-white text-foreground px-6 py-2.5 rounded-md font-semibold hover:bg-accent hover:text-white transition-colors text-sm"
+                className="inline-block bg-white text-foreground px-5 py-2 rounded-md font-semibold hover:bg-accent hover:text-white transition-colors text-xs sm:text-sm shadow-md"
               >
                 Explore Collection
               </Link>
@@ -86,7 +86,7 @@ export default function FeaturedCollections({ title, subtitle, items }: Featured
         {/* Prev / Next */}
         <button
           onClick={prev}
-          className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white/20 hover:bg-white/40 backdrop-blur-sm text-white p-3 rounded-full transition-colors"
+          className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white/20 hover:bg-white/40 backdrop-blur-sm text-white p-3 rounded-full transition-colors"
           aria-label="Previous"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -95,7 +95,7 @@ export default function FeaturedCollections({ title, subtitle, items }: Featured
         </button>
         <button
           onClick={next}
-          className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white/20 hover:bg-white/40 backdrop-blur-sm text-white p-3 rounded-full transition-colors"
+          className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white/20 hover:bg-white/40 backdrop-blur-sm text-white p-3 rounded-full transition-colors"
           aria-label="Next"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -103,19 +103,20 @@ export default function FeaturedCollections({ title, subtitle, items }: Featured
           </svg>
         </button>
 
+        </div>
+
         {/* Dot indicators */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+        <div className="mt-4 flex justify-center gap-2">
           {collections.map((_, index) => (
             <button
               key={index}
               onClick={() => goTo(index)}
               aria-label={`Go to slide ${index + 1}`}
               className={`rounded-full transition-all duration-300 ${
-                index === currentSlide ? 'w-7 h-3 bg-white' : 'w-3 h-3 bg-white/50 hover:bg-white/75'
+                index === currentSlide ? 'w-8 h-3 bg-accent' : 'w-3 h-3 bg-gray-300 hover:bg-gray-400'
               }`}
             />
           ))}
-        </div>
         </div>
       </div>
     </section>

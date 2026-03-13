@@ -277,12 +277,14 @@ type GridItem = { title: string; description: string; image: string; link: strin
 
 function ImageGrid({ items }: { items: GridItem[] }) {
   return (
-    <section className="py-12 bg-white">
+    <section className="py-10 md:py-12 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl md:text-4xl font-bold mb-6">Designs for a Better Workspace</h2>
+        <h2 className="text-4xl md:text-5xl font-bold mb-6 text-center md:text-left leading-tight">
+          Designs for a Better Workspace
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {items.map((item, i) => (
-            <div key={i} className="relative h-80 rounded-2xl overflow-hidden group">
+            <div key={i} className="relative h-72 md:h-80 rounded-2xl overflow-hidden group">
               {item.image ? (
                 <Image
                   src={item.image}
@@ -294,10 +296,12 @@ function ImageGrid({ items }: { items: GridItem[] }) {
                 <div className="absolute inset-0 bg-gray-300" />
               )}
               <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/10 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                <h3 className="text-xl font-bold">{item.title}</h3>
+              <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 text-white text-center md:text-left">
+                <h3 className="text-xl font-bold leading-tight line-clamp-2">{item.title}</h3>
                 {item.description && (
-                  <p className="text-white/80 text-sm mt-1">{item.description}</p>
+                  <p className="text-white/85 text-sm mt-1 line-clamp-2 md:line-clamp-3 max-w-md mx-auto md:mx-0">
+                    {item.description}
+                  </p>
                 )}
                 {item.link && (
                   <Link
@@ -329,11 +333,11 @@ type SplitProps = {
 
 function SplitContent({ title, description, image, link, linkText, imageRight = false, bgLight = false }: SplitProps) {
   return (
-    <section className={`py-20 ${bgLight ? 'bg-neutral-50' : 'bg-white'}`}>
+    <section className={`py-12 md:py-20 ${bgLight ? 'bg-neutral-50' : 'bg-white'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className={`grid md:grid-cols-2 gap-16 items-center`}>
+        <div className="grid md:grid-cols-2 gap-8 md:gap-16 items-center">
           {/* Image — swap order via CSS order property */}
-          <div className={`relative h-105 rounded-2xl overflow-hidden shadow-2xl ${imageRight ? 'md:order-2' : ''}`}>
+          <div className={`relative h-80 sm:h-96 md:h-105 rounded-2xl overflow-hidden shadow-2xl order-1 ${imageRight ? 'md:order-2' : 'md:order-1'}`}>
             {image ? (
               <Image src={image} alt={title} fill className="object-cover" />
             ) : (
@@ -341,9 +345,9 @@ function SplitContent({ title, description, image, link, linkText, imageRight = 
             )}
           </div>
           {/* Text */}
-          <div className={imageRight ? 'md:order-1' : ''}>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">{title}</h2>
-            <p className="text-gray-500 text-lg mb-8 leading-relaxed">{description}</p>
+          <div className={`order-2 text-center md:text-left ${imageRight ? 'md:order-1' : 'md:order-2'}`}>
+            <h2 className="text-3xl md:text-5xl font-bold mb-4 md:mb-6 leading-tight">{title}</h2>
+            <p className="text-gray-500 text-base md:text-lg mb-6 md:mb-8 leading-relaxed max-w-2xl mx-auto md:mx-0">{description}</p>
             <Link
               href={link}
               className="inline-block bg-accent hover:bg-secondary text-white px-8 py-3.5 rounded-full font-semibold transition-colors shadow-md"
@@ -362,21 +366,73 @@ type ProjectItem = { title: string; description: string; image: string; link: st
 
 function ProjectsSection({ items }: { items: ProjectItem[] }) {
   const [activeIdx, setActiveIdx] = useState(0);
+  const [mobileIdx, setMobileIdx] = useState(0);
   const active = items[activeIdx];
 
+  const onMobileScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    const cardWidth = el.clientWidth * 0.88 + 16;
+    const i = Math.round(el.scrollLeft / Math.max(cardWidth, 1));
+    setMobileIdx(Math.max(0, Math.min(items.length - 1, i)));
+  };
+
   return (
-    <section className="py-20 bg-white">
+    <section className="py-12 md:py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-10">
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900">Our flagship projects</h2>
-          <p className="text-gray-500 mt-3 text-base max-w-xl leading-relaxed">
+        <div className="mb-8 md:mb-10 text-center md:text-left">
+          <h2 className="text-3xl md:text-5xl font-bold text-gray-900">Our flagship projects</h2>
+          <p className="text-gray-500 mt-3 text-base max-w-xl leading-relaxed mx-auto md:mx-0">
             We create diverse spaces by blending strategy, design, engineering, and construction
             into a seamless, collaborative process, delivering innovative solutions tailored to
             your needs.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-[340px_1fr] gap-0 rounded-2xl overflow-hidden shadow-xl border border-gray-100">
+        {/* Mobile: swipe carousel */}
+        <div className="md:hidden">
+          <div
+            className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4"
+            onScroll={onMobileScroll}
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {items.map((item, i) => (
+              <article key={i} className="snap-center shrink-0 w-[88%] relative h-80 rounded-2xl overflow-hidden border border-gray-200">
+                {item.image ? (
+                  <Image src={item.image} alt={item.title} fill className="object-cover" />
+                ) : (
+                  <div className="absolute inset-0 bg-gray-200" />
+                )}
+                <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
+                  <h3 className="text-xl font-bold leading-tight line-clamp-2">{item.title}</h3>
+                  {item.description && (
+                    <p className="text-sm text-white/80 mt-1 line-clamp-2">{item.description}</p>
+                  )}
+                  {item.link && (
+                    <Link
+                      href={item.link}
+                      className="inline-block mt-3 text-sm font-semibold border-b border-white/60 hover:border-white"
+                    >
+                      {item.linkText || 'View project'}
+                    </Link>
+                  )}
+                </div>
+              </article>
+            ))}
+          </div>
+          {items.length > 1 && (
+            <div className="mt-1 flex justify-center gap-2">
+              {items.map((_, i) => (
+                <span
+                  key={i}
+                  className={`h-2 rounded-full transition-all ${i === mobileIdx ? 'w-6 bg-accent' : 'w-2 bg-gray-300'}`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="hidden md:grid md:grid-cols-[340px_1fr] gap-0 rounded-2xl overflow-hidden shadow-xl border border-gray-100">
           {/* Left: project list */}
           <div className="bg-white py-6 px-4">
             <ul className="space-y-0">

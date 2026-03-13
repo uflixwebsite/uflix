@@ -27,7 +27,7 @@ export default function BrandStory({ data }: BrandStoryProps) {
       <section className="py-16 bg-neutral-light">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="relative h-96 md:h-[500px] rounded-2xl overflow-hidden bg-gray-200" />
+            <div className="relative h-96 md:h-125 rounded-2xl overflow-hidden bg-gray-200" />
             <div>
               <div className="h-8 w-48 bg-gray-200 rounded mb-6" />
               {[0,1,2].map((i) => (
@@ -44,7 +44,7 @@ export default function BrandStory({ data }: BrandStoryProps) {
     <section className="py-16 bg-neutral-light">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-2 gap-12 items-center">
-          <div className="relative h-96 md:h-[500px] rounded-2xl overflow-hidden">
+          <div className="relative h-96 md:h-125 rounded-2xl overflow-hidden">
             {image ? (
               <Image src={image} alt={title} fill className="object-cover" />
             ) : (
@@ -52,10 +52,10 @@ export default function BrandStory({ data }: BrandStoryProps) {
             )}
           </div>
 
-          <div>
+          <div className="text-center md:text-left">
             <h2 className="text-3xl md:text-4xl font-bold mb-6">{title}</h2>
             {paragraphs.map((p, index) => (
-              <p key={index} className="text-lg text-neutral-dark mb-6 leading-relaxed">
+              <p key={index} className="text-lg text-neutral-dark mb-6 leading-relaxed max-w-2xl mx-auto md:mx-0">
                 {p}
               </p>
             ))}

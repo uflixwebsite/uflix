@@ -155,12 +155,12 @@ function IntroSection({ section }: { section?: Section }) {
     <section className="py-20 md:py-28" style={{ backgroundColor: '#F5F0EB' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-5 gap-14 items-center">
-          <div className="lg:col-span-3">
-            <div className="w-10 h-0.5 bg-accent mb-6" />
+          <div className="lg:col-span-3 text-center lg:text-left">
+            <div className="w-10 h-0.5 bg-accent mb-6 mx-auto lg:mx-0" />
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6 whitespace-pre-line">
               {heading}
             </h2>
-            <p className="text-gray-600 text-lg leading-relaxed mb-8 max-w-xl">{body}</p>
+            <p className="text-gray-600 text-lg leading-relaxed mb-8 max-w-xl mx-auto lg:mx-0">{body}</p>
             <Link
               href={link}
               className="inline-flex items-center gap-2 font-semibold text-accent hover:gap-3 transition-all text-base"
@@ -176,9 +176,9 @@ function IntroSection({ section }: { section?: Section }) {
               ? (section.items as any[]).map((item) => ({ value: item.stats || item.title || '', label: item.statsLabel || item.description || '' }))
               : STATS
             ).map((stat) => (
-              <div key={stat.label} className="bg-white rounded-2xl p-6 text-center shadow-sm">
-                <p className="text-3xl md:text-4xl font-bold text-gray-900">{stat.value}</p>
-                <p className="text-sm text-gray-500 mt-1.5 leading-snug">{stat.label}</p>
+              <div key={stat.label} className="bg-white rounded-2xl p-5 md:p-6 text-center shadow-sm min-h-32 flex flex-col justify-center">
+                <p className="text-2xl md:text-4xl font-bold text-gray-900 wrap-break-word leading-tight">{stat.value}</p>
+                <p className="text-xs md:text-sm text-gray-500 mt-1.5 leading-snug wrap-break-word">{stat.label}</p>
               </div>
             ))}
           </div>
@@ -197,7 +197,7 @@ function SolutionsImageGrid({ section }: { section?: Section }) {
   return (
     <section className="py-20 md:py-28 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-14">
+        <div className="mb-14 text-center">
           <span className="text-accent text-sm font-semibold uppercase tracking-widest">What We Offer</span>
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mt-3">{heading}</h2>
         </div>
@@ -248,14 +248,14 @@ function EditorialGallery({ section }: { section?: Section }) {
     <section className="py-20 md:py-28" style={{ backgroundColor: '#F5F0EB' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header row */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-          <div>
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 text-center md:text-left">
+          <div className="mx-auto md:mx-0">
             <span className="text-accent text-sm font-semibold uppercase tracking-widest">Our Work</span>
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mt-3 max-w-md leading-tight">{heading}</h2>
           </div>
           <Link
             href={ctaLink}
-            className="self-start inline-flex items-center gap-2 text-sm font-semibold text-gray-700 underline underline-offset-4 hover:text-accent transition-colors whitespace-nowrap"
+            className="self-center md:self-start inline-flex items-center gap-2 text-sm font-semibold text-gray-700 underline underline-offset-4 hover:text-accent transition-colors whitespace-nowrap"
           >
             {ctaText}
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -275,7 +275,7 @@ function EditorialGallery({ section }: { section?: Section }) {
             )}
             <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/20 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-8">
-              <span className="inline-block bg-accent text-white text-xs font-semibold px-3 py-1 rounded-full mb-3">{g0.tag}</span>
+              <span className="hidden sm:inline-block bg-accent text-white text-xs font-semibold px-3 py-1 rounded-full mb-3">{g0.tag}</span>
               <h3 className="text-white text-2xl font-bold">{g0.label}</h3>
             </div>
           </div>
@@ -291,7 +291,7 @@ function EditorialGallery({ section }: { section?: Section }) {
                 )}
                 <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/15 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-5">
-                  <span className="inline-block bg-white/10 border border-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full mb-2">{img.tag}</span>
+                  <span className="hidden sm:inline-block bg-white/10 border border-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full mb-2">{img.tag}</span>
                   <h3 className="text-white font-bold text-base">{img.label}</h3>
                 </div>
               </div>
@@ -345,7 +345,7 @@ function ProductScrollStrip({
   return (
     <section id="products" className="py-20 md:py-28" style={{ backgroundColor: '#F5F0EB' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-end mb-10">
+        <div className="flex flex-col md:flex-row justify-between items-center md:items-end gap-5 mb-10 text-center md:text-left">
           <div>
             <span className="text-accent text-sm font-semibold uppercase tracking-widest">Our Range</span>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2">{title}</h2>
@@ -546,7 +546,7 @@ function ProcessAndCTA({ processSection, whyCtaSection }: { processSection?: Sec
 
         {/* Why Uflix + CTA card */}
         <div className="grid lg:grid-cols-2 gap-14 items-center pt-20">
-          <div>
+          <div className="text-center lg:text-left">
             <span className="text-accent text-sm font-semibold uppercase tracking-widest">Why Uflix</span>
             <h2 className="text-3xl md:text-4xl font-bold text-white mt-3 mb-6">
               Built for Retail.<br />Trusted by Brands.
@@ -554,7 +554,7 @@ function ProcessAndCTA({ processSection, whyCtaSection }: { processSection?: Sec
             <p className="text-white/60 text-base leading-relaxed mb-8">
               With over two decades of manufacturing excellence, Uflix delivers shop fitting solutions that combine aesthetics, durability, and functionality — on time and on budget.
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
               {features.map((f) => (
                 <div key={f} className="flex items-start gap-3">
                   <div className="w-1.5 h-1.5 rounded-full bg-accent mt-2 shrink-0" />
@@ -638,7 +638,7 @@ export default function ShopFittingsPage() {
   return (
     <div className="min-h-screen bg-black">
       <Header />
-      <main>
+      <main className="homepage-main">
         {!pageReady ? (
           <div className="min-h-screen" style={{ background: '#000' }} />
         ) : (

@@ -64,7 +64,7 @@ function HeroSection({ section }: { section: Section }) {
   if (isDark) {
     return (
       <section
-        className={`relative ${hasImage ? 'h-125 lg:h-150' : 'h-64'} overflow-hidden`}
+        className={`relative ${hasImage ? 'min-h-screen' : 'h-64'} overflow-hidden`}
         style={{ background: 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #0f3460 100%)' }}
       >
         {hasImage && (
@@ -78,19 +78,19 @@ function HeroSection({ section }: { section: Section }) {
         )}
         <div className="absolute inset-0 flex items-center justify-center text-white z-10">
           <div className="max-w-5xl mx-auto px-4 text-center">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6">{section.title}</h1>
+            <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold mb-4 md:mb-6">{section.title}</h1>
             {section.description && (
-              <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto text-white/80">{section.description}</p>
+              <p className="text-base sm:text-lg md:text-2xl mb-7 md:mb-8 max-w-3xl mx-auto text-white/80">{section.description}</p>
             )}
             {(section.link || section.secondaryLink) && (
               <div className="flex flex-wrap justify-center gap-4">
                 {section.link && section.linkText && (
-                  <Link href={section.link} className="inline-block bg-accent hover:bg-secondary text-white px-10 py-4 rounded-full font-bold transition-colors shadow-xl text-lg">
+                  <Link href={section.link} className="inline-block bg-accent hover:bg-secondary text-white px-7 md:px-10 py-3 md:py-4 rounded-full font-bold transition-colors shadow-xl text-sm md:text-lg">
                     {section.linkText}
                   </Link>
                 )}
                 {section.secondaryLink && section.secondaryLinkText && (
-                  <Link href={section.secondaryLink} className="inline-block bg-transparent border-2 border-white text-white hover:bg-white hover:text-accent px-10 py-4 rounded-full font-bold transition-colors text-lg">
+                  <Link href={section.secondaryLink} className="inline-block bg-transparent border-2 border-white text-white hover:bg-white hover:text-accent px-7 md:px-10 py-3 md:py-4 rounded-full font-bold transition-colors text-sm md:text-lg">
                     {section.secondaryLinkText}
                   </Link>
                 )}
@@ -103,7 +103,7 @@ function HeroSection({ section }: { section: Section }) {
   }
 
   return (
-    <section className={`relative ${hasImage ? 'h-125 lg:h-150' : 'h-64'} ${getBgClass(section.bgColor)} overflow-hidden`}>
+    <section className={`relative ${hasImage ? 'min-h-screen' : 'h-64'} ${getBgClass(section.bgColor)} overflow-hidden`}>
       {hasImage && (
         <Image
           src={section.image!}
@@ -115,19 +115,19 @@ function HeroSection({ section }: { section: Section }) {
       )}
       <div className={`absolute inset-0 flex items-center justify-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
         <div className="max-w-5xl mx-auto px-4 text-center">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6">{section.title}</h1>
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold mb-4 md:mb-6">{section.title}</h1>
           {section.description && (
-            <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">{section.description}</p>
+            <p className="text-base sm:text-lg md:text-2xl mb-7 md:mb-8 max-w-3xl mx-auto">{section.description}</p>
           )}
           {(section.link || section.secondaryLink) && (
             <div className="flex flex-wrap justify-center gap-4">
               {section.link && section.linkText && (
-                <Link href={section.link} className="inline-block bg-white text-accent hover:bg-neutral-light px-10 py-4 rounded-lg font-bold transition-colors shadow-xl text-lg">
+                <Link href={section.link} className="inline-block bg-white text-accent hover:bg-neutral-light px-7 md:px-10 py-3 md:py-4 rounded-lg font-bold transition-colors shadow-xl text-sm md:text-lg">
                   {section.linkText}
                 </Link>
               )}
               {section.secondaryLink && section.secondaryLinkText && (
-                <Link href={section.secondaryLink} className="inline-block bg-transparent border-2 border-white text-white hover:bg-white hover:text-accent px-10 py-4 rounded-lg font-bold transition-colors text-lg">
+                <Link href={section.secondaryLink} className="inline-block bg-transparent border-2 border-white text-white hover:bg-white hover:text-accent px-7 md:px-10 py-3 md:py-4 rounded-lg font-bold transition-colors text-sm md:text-lg">
                   {section.secondaryLinkText}
                 </Link>
               )}
@@ -141,18 +141,18 @@ function HeroSection({ section }: { section: Section }) {
 
 function ContentSection({ section }: { section: Section }) {
   return (
-    <section className={`py-20 ${getBgClass(section.bgColor)}`}>
+    <section className={`py-12 md:py-20 ${getBgClass(section.bgColor)}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold mb-4">{section.title}</h2>
+        <div className="text-center mb-10 md:mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">{section.title}</h2>
           {(section.subtitle || section.description) && (
-            <p className="text-lg text-neutral-dark max-w-3xl mx-auto">
+            <p className="text-base md:text-lg text-neutral-dark max-w-3xl mx-auto">
               {section.subtitle || section.description}
             </p>
           )}
         </div>
         {section.content && (
-          <div className="max-w-4xl mx-auto text-lg text-neutral-dark leading-relaxed whitespace-pre-line">
+          <div className="max-w-4xl mx-auto text-base md:text-lg text-neutral-dark leading-relaxed whitespace-pre-line text-center md:text-left">
             {section.content}
           </div>
         )}
@@ -173,7 +173,28 @@ function FeaturesSection({ section }: { section: Section }) {
             {section.subtitle && <p className="text-lg text-neutral-dark max-w-3xl mx-auto">{section.subtitle}</p>}
           </div>
         )}
-        <div className={`grid md:grid-cols-2 ${cols} gap-8`}>
+        <div className="md:hidden -mx-4 px-4 overflow-x-auto snap-x snap-mandatory" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <div className="flex gap-4 pb-2" style={{ width: 'max-content' }}>
+            {items.map((item, idx) => (
+              <div key={idx} className="snap-center shrink-0 w-[86vw] max-w-sm text-center p-6 rounded-2xl shadow-lg bg-white border border-gray-100">
+                {item.image ? (
+                  <div className="w-18 h-18 rounded-2xl mx-auto mb-5 overflow-hidden">
+                    <img src={item.image} alt={item.title || ''} className="w-full h-full object-cover" />
+                  </div>
+                ) : (
+                  <div className="w-18 h-18 bg-linear-to-br from-accent to-secondary rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg">
+                    <svg className="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                )}
+                <h3 className="text-xl font-bold mb-2 leading-tight">{item.title}</h3>
+                <p className="text-neutral-dark line-clamp-3">{item.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className={`hidden md:grid md:grid-cols-2 ${cols} gap-8`}>
           {items.map((item, idx) => (
             <div key={idx} className="text-center p-8 rounded-lg hover:shadow-lg transition-shadow bg-white">
               {item.image ? (
@@ -274,7 +295,28 @@ function CardsSection({ section }: { section: Section }) {
             {section.subtitle && <p className="text-lg text-neutral-dark max-w-3xl mx-auto">{section.subtitle}</p>}
           </div>
         )}
-        <div className={`grid ${cols} gap-8`}>
+        <div className="md:hidden -mx-4 px-4 overflow-x-auto snap-x snap-mandatory" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <div className="flex gap-4 pb-2" style={{ width: 'max-content' }}>
+            {items.map((item, idx) => (
+              <div key={idx} className="snap-center shrink-0 w-[86vw] max-w-sm bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                {item.image && (
+                  <div className="w-14 h-14 rounded-2xl overflow-hidden mb-5">
+                    <img src={item.image} alt={item.title || ''} className="w-full h-full object-cover" />
+                  </div>
+                )}
+                <h3 className="text-xl font-bold mb-2 leading-tight">{item.title}</h3>
+                <p className="text-neutral-dark whitespace-pre-line line-clamp-4">{item.description}</p>
+                {item.stats && (
+                  <div className="mt-4">
+                    <div className="text-3xl font-bold text-accent">{item.stats}</div>
+                    {item.statsLabel && <p className="text-sm text-neutral-dark">{item.statsLabel}</p>}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className={`hidden md:grid ${cols} gap-8`}>
           {items.map((item, idx) => (
             <div key={idx} className="bg-white p-8 rounded-2xl shadow-lg">
               {item.image && (
@@ -301,21 +343,21 @@ function CardsSection({ section }: { section: Section }) {
 function TextImageSection({ section }: { section: Section }) {
   const items = section.items || [];
   return (
-    <section className={`py-20 ${getBgClass(section.bgColor)}`}>
+    <section className={`py-12 md:py-20 ${getBgClass(section.bgColor)}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {section.subtitle && (
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">{section.subtitle}</h2>
+          <div className="text-center mb-10 md:mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">{section.subtitle}</h2>
           </div>
         )}
-        <div className="grid md:grid-cols-2 gap-16 items-center">
-          <div>
-            <h2 className="text-4xl font-bold mb-6">{section.title}</h2>
+        <div className="grid md:grid-cols-2 gap-8 md:gap-16 items-center">
+          <div className="order-2 md:order-1 text-center md:text-left">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 md:mb-6">{section.title}</h2>
             {section.description && (
-              <p className="text-lg text-neutral-dark mb-4 leading-relaxed">{section.description}</p>
+              <p className="text-base md:text-lg text-neutral-dark mb-4 leading-relaxed">{section.description}</p>
             )}
             {section.content && (
-              <p className="text-lg text-neutral-dark mb-4 leading-relaxed whitespace-pre-line">{section.content}</p>
+              <p className="text-base md:text-lg text-neutral-dark mb-4 leading-relaxed whitespace-pre-line">{section.content}</p>
             )}
             {items.length > 0 && (
               <div className="space-y-4 mt-6">
@@ -334,7 +376,7 @@ function TextImageSection({ section }: { section: Section }) {
             )}
           </div>
           {section.image && (
-            <div className="relative h-100 rounded-2xl overflow-hidden shadow-2xl">
+            <div className="order-1 md:order-2 relative h-72 md:h-100 rounded-2xl overflow-hidden shadow-2xl">
               <Image
                 src={section.image}
                 alt={section.imageAlt || section.title || ''}
@@ -352,25 +394,25 @@ function TextImageSection({ section }: { section: Section }) {
 function ListSection({ section }: { section: Section }) {
   const items = section.items || [];
   return (
-    <section className={`py-20 ${getBgClass(section.bgColor)}`}>
+    <section className={`py-12 md:py-20 ${getBgClass(section.bgColor)}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {section.title && (
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">{section.title}</h2>
-            {section.subtitle && <p className="text-lg text-neutral-dark max-w-3xl mx-auto">{section.subtitle}</p>}
+          <div className="text-center mb-10 md:mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">{section.title}</h2>
+            {section.subtitle && <p className="text-base md:text-lg text-neutral-dark max-w-3xl mx-auto">{section.subtitle}</p>}
           </div>
         )}
-        <div className="space-y-16">
+        <div className="space-y-10 md:space-y-16">
           {items.map((item, idx) => (
-            <div key={idx} className={`grid md:grid-cols-2 gap-12 items-center`}>
+            <div key={idx} className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
               {item.image && (
-                <div className={`relative h-100 rounded-2xl overflow-hidden shadow-2xl ${idx % 2 === 1 ? 'md:order-2' : ''}`}>
+                <div className={`relative h-72 md:h-100 rounded-2xl overflow-hidden shadow-2xl ${idx % 2 === 1 ? 'md:order-2' : ''}`}>
                   <Image src={item.image} alt={item.title || ''} fill className="object-cover" />
                 </div>
               )}
-              <div className={idx % 2 === 1 ? 'md:order-1' : ''}>
-                <h3 className="text-3xl font-bold mb-4">{item.title}</h3>
-                <p className="text-lg text-neutral-dark mb-4 leading-relaxed">{item.description}</p>
+              <div className={`${idx % 2 === 1 ? 'md:order-1' : ''} text-center md:text-left`}>
+                <h3 className="text-2xl md:text-3xl font-bold mb-4">{item.title}</h3>
+                <p className="text-base md:text-lg text-neutral-dark mb-4 leading-relaxed">{item.description}</p>
                 {item.statsLabel && (
                   <p className="text-sm font-semibold text-accent">{item.statsLabel}</p>
                 )}
@@ -388,10 +430,10 @@ function ContactInfoSection({ section }: { section: Section }) {
   return (
     <section className={`py-16 ${getBgClass(section.bgColor)}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div>
-          <h2 className="text-3xl font-bold mb-6">{section.title}</h2>
+        <div className="text-center md:text-left">
+          <h2 className="text-2xl md:text-3xl font-bold mb-6">{section.title}</h2>
           {section.description && (
-            <p className="text-lg text-neutral-dark mb-8">{section.description}</p>
+            <p className="text-base md:text-lg text-neutral-dark mb-8">{section.description}</p>
           )}
           <div className="space-y-6">
             {items.map((item, idx) => (
@@ -494,10 +536,11 @@ export default function DynamicPage({ slug, fallback, children }: DynamicPagePro
 
   // If children render prop is provided, use it for custom rendering
   if (children) {
+    const hasHeroSection = (pageData.sections || []).some((s) => s.type === 'hero' && s.isVisible !== false);
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main>
+        <main className={hasHeroSection ? 'homepage-main' : ''}>
           {children(pageData.sections, pageData)}
         </main>
         <Footer />
@@ -506,10 +549,11 @@ export default function DynamicPage({ slug, fallback, children }: DynamicPagePro
   }
 
   // Default: render all sections automatically
+  const hasHeroSection = (pageData.sections || []).some((s) => s.type === 'hero' && s.isVisible !== false);
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main>
+      <main className={hasHeroSection ? 'homepage-main' : ''}>
         {pageData.sections.map((section) => (
           <div key={section._id || section.sectionId}>
             {renderSection(section)}
