@@ -350,7 +350,7 @@ function SplitContent({ title, description, image, link, linkText, imageRight = 
             <p className="text-gray-500 text-base md:text-lg mb-6 md:mb-8 leading-relaxed max-w-2xl mx-auto md:mx-0">{description}</p>
             <Link
               href={link}
-              className="inline-block bg-accent hover:bg-secondary text-white px-8 py-3.5 rounded-full font-semibold transition-colors shadow-md"
+              className="inline-block btn-primary px-8 py-3.5 rounded-full font-semibold transition-colors shadow-md"
             >
               {linkText}
             </Link>
@@ -496,21 +496,61 @@ function ProjectsSection({ items }: { items: ProjectItem[] }) {
 
 // ─── Business Hero (always dark, carousel if multiple images) ───────────────
 function BusinessHero({ section }: { section?: Section }) {
-  const title    = section?.title       || '';
-  const desc     = section?.description || section?.subtitle || '';
-  const mainLink = section?.link        || '#products';
-  const mainText = section?.linkText    || 'Browse Collection';
-  const secLink  = section?.secondaryLink     || '/contact';
-  const secText  = section?.secondaryLinkText || 'Request a Quote';
-
-  const allImages: string[] = [
-    ...(section?.image ? [section.image] : []),
-    ...((section?.items || []).filter((i: any) => i.image).map((i: any) => i.image as string)),
-  ];
+  const allSlides = [
+    {
+      image: section?.image || '',
+      title: section?.title || '',
+      subtitle: section?.subtitle || '',
+      description: section?.description || '',
+      linkText: section?.linkText || 'Browse Collection',
+      link: section?.link || '#products',
+      secondaryLinkText: section?.secondaryLinkText || 'Request a Quote',
+      secondaryLink: section?.secondaryLink || '/contact',
+      titleColor: section?.titleColor || '',
+      subtitleColor: section?.subtitleColor || '',
+      primaryButtonBg: section?.primaryButtonBg || '',
+      primaryButtonTextColor: section?.primaryButtonTextColor || '',
+      secondaryButtonBg: section?.secondaryButtonBg || '',
+      secondaryButtonTextColor: section?.secondaryButtonTextColor || '',
+    },
+    ...((section?.items || [])
+      .filter((i: any) => i.image)
+      .map((i: any) => ({
+        image: i.image as string,
+        title: i.title || section?.title || '',
+        subtitle: i.subtitle || section?.subtitle || '',
+        description: i.description || section?.description || '',
+        linkText: i.linkText || section?.linkText || 'Browse Collection',
+        link: i.link || section?.link || '#products',
+        secondaryLinkText: i.secondaryLinkText || section?.secondaryLinkText || 'Request a Quote',
+        secondaryLink: i.secondaryLink || section?.secondaryLink || '/contact',
+        titleColor: i.titleColor || section?.titleColor || '',
+        subtitleColor: i.subtitleColor || section?.subtitleColor || '',
+        primaryButtonBg: i.primaryButtonBg || section?.primaryButtonBg || '',
+        primaryButtonTextColor: i.primaryButtonTextColor || section?.primaryButtonTextColor || '',
+        secondaryButtonBg: i.secondaryButtonBg || section?.secondaryButtonBg || '',
+        secondaryButtonTextColor: i.secondaryButtonTextColor || section?.secondaryButtonTextColor || '',
+      }))),
+  ].filter((s) => s.image);
 
   const [idx, setIdx] = useState(0);
   const [paused, setPaused] = useState(false);
-  const total = allImages.length;
+  const total = allSlides.length;
+  const cur = allSlides[idx] ?? {
+    title: '',
+    subtitle: '',
+    description: '',
+    linkText: 'Browse Collection',
+    link: '#products',
+    secondaryLinkText: 'Request a Quote',
+    secondaryLink: '/contact',
+    titleColor: '',
+    subtitleColor: '',
+    primaryButtonBg: '',
+    primaryButtonTextColor: '',
+    secondaryButtonBg: '',
+    secondaryButtonTextColor: '',
+  };
 
   const prev = () => setIdx((n) => (n - 1 + total) % total);
   const next = () => setIdx((n) => (n + 1) % total);
@@ -530,17 +570,17 @@ function BusinessHero({ section }: { section?: Section }) {
       onMouseLeave={() => setPaused(false)}
     >
       {/* Crossfade slides */}
-      {allImages.map((url, i) => (
+      {allSlides.map((s, i) => (
         <div
-          key={url + i}
+          key={s.image + i}
           className="absolute inset-0 transition-opacity duration-1000"
           style={{ opacity: i === idx ? 1 : 0 }}
         >
-          <Image src={url} alt={`slide ${i + 1}`} fill sizes="100vw" className="object-cover" priority={i === 0} />
+          <Image src={s.image} alt={`slide ${i + 1}`} fill sizes="100vw" className="object-cover" priority={i === 0} />
         </div>
       ))}
       {/* no images fallback */}
-      {allImages.length === 0 && <div className="absolute inset-0 bg-gray-900" />}
+      {allSlides.length === 0 && <div className="absolute inset-0 bg-gray-900" />}
 
       {/* Left arrow */}
       {total > 1 && (
@@ -573,23 +613,23 @@ function BusinessHero({ section }: { section?: Section }) {
         <span className="inline-block bg-white/10 text-white border border-white/20 text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
           Business Furniture Solutions
         </span>
-        {title ? (
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">{title}</h1>
+        {cur.title ? (
+          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight" style={{ color: cur.titleColor || undefined }}>{cur.title}</h1>
         ) : (
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
             Furniture That <br />
             <span className="text-accent">Means Business</span>
           </h1>
         )}
-        <p className="text-xl text-white/70 max-w-3xl mx-auto mb-10">
-          {desc || 'From corporate offices to government institutions — premium, ISO-certified furniture solutions designed for productivity, durability, and your brand.'}
+        <p className="text-xl text-white/70 max-w-3xl mx-auto mb-10" style={{ color: cur.subtitleColor || undefined }}>
+          {cur.description || cur.subtitle || 'From corporate offices to government institutions — premium, ISO-certified furniture solutions designed for productivity, durability, and your brand.'}
         </p>
         <div className="flex flex-wrap gap-4 justify-center">
-          <Link href={mainLink} className="bg-accent hover:bg-accent/90 text-white px-8 py-3.5 rounded-full font-semibold shadow-lg transition-all">
-            {mainText}
+          <Link href={cur.link} className="btn-primary px-8 py-3.5 rounded-full font-semibold shadow-lg transition-all" style={{ backgroundColor: cur.primaryButtonBg || undefined, color: cur.primaryButtonTextColor || undefined }}>
+            {cur.linkText}
           </Link>
-          <Link href={secLink} className="border border-white/30 hover:border-white text-white px-8 py-3.5 rounded-full font-semibold transition-all hover:bg-white/10">
-            {secText}
+          <Link href={cur.secondaryLink} className="btn-outline-inverse px-8 py-3.5 rounded-full font-semibold transition-all hover:bg-white/10" style={{ backgroundColor: cur.secondaryButtonBg || undefined, color: cur.secondaryButtonTextColor || undefined }}>
+            {cur.secondaryLinkText}
           </Link>
         </div>
       </div>
@@ -597,7 +637,7 @@ function BusinessHero({ section }: { section?: Section }) {
       {/* Dot nav */}
       {total > 1 && (
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
-          {allImages.map((_, i) => (
+          {allSlides.map((_, i) => (
             <button
               key={i}
               onClick={() => setIdx(i)}
@@ -757,10 +797,10 @@ export default function BusinessPage() {
                 Talk to our business solutions team for a personalised quote.
               </p>
               <div className="flex flex-wrap gap-4 justify-center">
-                <Link href="/contact" className="bg-accent hover:bg-accent/90 text-white px-8 py-4 rounded-full font-bold transition-all">
+                <Link href="/contact" className="btn-primary px-8 py-4 rounded-full font-bold transition-all">
                   Get Bulk Quote
                 </Link>
-                <Link href="https://wa.me/917303836300" target="_blank" className="border border-white/30 hover:border-white text-white px-8 py-4 rounded-full font-bold transition-all hover:bg-white/10">
+                <Link href="https://wa.me/917303836300" target="_blank" className="btn-outline-inverse px-8 py-4 rounded-full font-bold transition-all hover:bg-white/10">
                   WhatsApp Us
                 </Link>
               </div>

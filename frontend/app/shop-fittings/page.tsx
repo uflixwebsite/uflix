@@ -43,6 +43,12 @@ function ShopFittingsHero({ section }: { section?: Section }) {
   const mainText = section?.linkText         || 'Explore Products';
   const secLink  = section?.secondaryLink     || '/contact';
   const secText  = section?.secondaryLinkText || 'Get a Quote';
+  const titleColor = (section as any)?.titleColor || undefined;
+  const subtitleColor = (section as any)?.subtitleColor || undefined;
+  const primaryButtonBg = (section as any)?.primaryButtonBg || undefined;
+  const primaryButtonTextColor = (section as any)?.primaryButtonTextColor || undefined;
+  const secondaryButtonBg = (section as any)?.secondaryButtonBg || undefined;
+  const secondaryButtonTextColor = (section as any)?.secondaryButtonTextColor || undefined;
 
   const allImages: string[] = [
     ...(section?.image ? [section.image] : []),
@@ -113,13 +119,13 @@ function ShopFittingsHero({ section }: { section?: Section }) {
         <span className="inline-block bg-white/10 text-white border border-white/20 text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
           Shop Fitting Solutions
         </span>
-        <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">{title}</h1>
-        <p className="text-xl text-white/70 max-w-3xl mx-auto mb-10">{desc}</p>
+        <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight" style={{ color: titleColor }}>{title}</h1>
+        <p className="text-xl text-white/70 max-w-3xl mx-auto mb-10" style={{ color: subtitleColor }}>{desc}</p>
         <div className="flex flex-wrap gap-4 justify-center">
-          <Link href={mainLink} className="bg-accent hover:bg-accent/90 text-white px-8 py-3.5 rounded-full font-semibold shadow-lg transition-all">
+          <Link href={mainLink} className="btn-primary px-8 py-3.5 rounded-full font-semibold shadow-lg transition-all" style={{ backgroundColor: primaryButtonBg, color: primaryButtonTextColor }}>
             {mainText}
           </Link>
-          <Link href={secLink} className="border border-white/30 hover:border-white text-white px-8 py-3.5 rounded-full font-semibold transition-all hover:bg-white/10">
+          <Link href={secLink} className="btn-outline-inverse px-8 py-3.5 rounded-full font-semibold transition-all hover:bg-white/10" style={{ backgroundColor: secondaryButtonBg, color: secondaryButtonTextColor }}>
             {secText}
           </Link>
         </div>
@@ -501,6 +507,10 @@ function ProcessAndCTA({ processSection, whyCtaSection }: { processSection?: Sec
   const ctaLinkText = whyCtaSection?.linkText || 'Get Free Quote';
   const ctaSecLink = whyCtaSection?.secondaryLink || 'https://wa.me/917303836300';
   const ctaSecLinkText = whyCtaSection?.secondaryLinkText || 'Chat on WhatsApp';
+  const ctaPrimaryBg = (whyCtaSection as any)?.primaryButtonBg || undefined;
+  const ctaPrimaryText = (whyCtaSection as any)?.primaryButtonTextColor || undefined;
+  const ctaSecBg = (whyCtaSection as any)?.secondaryButtonBg || undefined;
+  const ctaSecText = (whyCtaSection as any)?.secondaryButtonTextColor || undefined;
 
   const defaultFeatures = [
     'ISO 9001:2015 certified manufacturing',
@@ -569,7 +579,8 @@ function ProcessAndCTA({ processSection, whyCtaSection }: { processSection?: Sec
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link
                 href={ctaLink}
-                className="bg-accent hover:bg-accent/90 text-white px-8 py-3.5 rounded-full font-semibold shadow-lg transition-all"
+                className="btn-primary px-8 py-3.5 rounded-full font-semibold shadow-lg transition-all"
+                style={{ backgroundColor: ctaPrimaryBg, color: ctaPrimaryText }}
               >
                 {ctaLinkText}
               </Link>
@@ -577,7 +588,8 @@ function ProcessAndCTA({ processSection, whyCtaSection }: { processSection?: Sec
                 <Link
                   href={ctaSecLink}
                   target={ctaSecLink.startsWith('http') ? '_blank' : undefined}
-                  className="border border-white/30 hover:border-white text-white px-8 py-3.5 rounded-full font-semibold transition-all hover:bg-white/10"
+                  className="btn-outline-inverse px-8 py-3.5 rounded-full font-semibold transition-all hover:bg-white/10"
+                  style={{ backgroundColor: ctaSecBg, color: ctaSecText }}
                 >
                   {ctaSecLinkText}
                 </Link>

@@ -93,7 +93,7 @@ export default function ShopsPage() {
                       </div>
                     </div>
                     
-                    <button className="mt-6 w-full bg-accent hover:bg-secondary text-white py-2.5 rounded-md font-semibold transition-colors">
+                    <button className="mt-6 w-full btn-primary py-2.5 rounded-md font-semibold transition-colors">
                       Get Directions
                     </button>
                   </div>
@@ -107,7 +107,7 @@ export default function ShopsPage() {
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl font-bold mb-4">Can't Visit a Store?</h2>
             <p className="text-lg text-neutral-dark mb-8">Shop online and get free delivery on orders above Rs. 15,000</p>
-            <a href="/shop" className="inline-block bg-accent hover:bg-secondary text-white px-8 py-3 rounded-md font-semibold transition-colors">
+            <a href="/shop" className="inline-block btn-primary px-8 py-3 rounded-md font-semibold transition-colors">
               Shop Online
             </a>
           </div>

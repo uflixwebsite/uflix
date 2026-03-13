@@ -76,7 +76,7 @@ export default function OrdersPage() {
             </svg>
             <h2 className="text-2xl font-bold mb-2">No orders yet</h2>
             <p className="text-neutral-dark mb-6">Start shopping to see your orders here</p>
-            <Link href="/products" className="inline-block bg-accent hover:bg-secondary text-white px-8 py-3 rounded-md font-semibold transition-colors">
+            <Link href="/products" className="inline-block btn-primary px-8 py-3 rounded-md font-semibold transition-colors">
               Start Shopping
             </Link>
           </div>

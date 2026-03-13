@@ -10,9 +10,13 @@ interface CategoryProductsProps {
   title?: string;
   subtitle?: string;
   limit?: number;
+  ctaText?: string;
+  ctaLink?: string;
+  primaryButtonBg?: string;
+  primaryButtonTextColor?: string;
 }
 
-export default function CategoryProducts({ category, title, subtitle, limit }: CategoryProductsProps) {
+export default function CategoryProducts({ category, title, subtitle, limit, ctaText, ctaLink, primaryButtonBg, primaryButtonTextColor }: CategoryProductsProps) {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const productLimit = limit || 8;
@@ -63,8 +67,8 @@ export default function CategoryProducts({ category, title, subtitle, limit }: C
         )}
 
         <div className="text-center mt-12">
-          <Link href={`/category/${category}`} className="inline-block bg-accent hover:bg-secondary text-white px-8 py-3 rounded-md font-semibold transition-colors shadow-md">
-            View All {title || category}
+          <Link href={ctaLink || `/category/${category}`} className="inline-block btn-primary px-8 py-3 rounded-md font-semibold transition-colors shadow-md" style={{ backgroundColor: primaryButtonBg || undefined, color: primaryButtonTextColor || undefined }}>
+            {ctaText || `View All ${title || category}`}
           </Link>
         </div>
       </div>

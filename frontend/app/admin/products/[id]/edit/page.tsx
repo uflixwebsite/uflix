@@ -819,7 +819,7 @@ export default function EditProductPage() {
             <button
               type="submit"
               disabled={dataLoading || uploading}
-              className="flex-1 bg-accent hover:bg-secondary text-white py-3 rounded-md font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 btn-primary py-3 rounded-md font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {uploading ? 'Uploading Images...' : dataLoading ? 'Updating...' : 'Update Product'}
             </button>

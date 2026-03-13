@@ -9,9 +9,13 @@ interface NewArrivalsProps {
   title?: string;
   subtitle?: string;
   limit?: number;
+  ctaText?: string;
+  ctaLink?: string;
+  primaryButtonBg?: string;
+  primaryButtonTextColor?: string;
 }
 
-export default function NewArrivals({ title, subtitle, limit }: NewArrivalsProps) {
+export default function NewArrivals({ title, subtitle, limit, ctaText, ctaLink, primaryButtonBg, primaryButtonTextColor }: NewArrivalsProps) {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const productLimit = limit || 8;
@@ -68,8 +72,8 @@ export default function NewArrivals({ title, subtitle, limit }: NewArrivalsProps
         )}
 
         <div className="text-center mt-12">
-          <Link href="/shop" className="inline-block bg-accent hover:bg-secondary text-white px-8 py-3 rounded-md font-semibold transition-colors shadow-md">
-            View All Products
+          <Link href={ctaLink || '/shop'} className="inline-block btn-primary px-8 py-3 rounded-md font-semibold transition-colors shadow-md" style={{ backgroundColor: primaryButtonBg || undefined, color: primaryButtonTextColor || undefined }}>
+            {ctaText || 'View All Products'}
           </Link>
         </div>
       </div>

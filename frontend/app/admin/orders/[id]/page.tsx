@@ -64,7 +64,7 @@ export default function AdminOrderDetailsPage() {
           <div className="bg-red-50 border border-red-200 rounded-lg p-8 text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Order Not Found</h1>
             <p className="text-gray-600 mb-6">{error}</p>
-            <Link href="/admin/orders" className="inline-block bg-accent text-white px-6 py-3 rounded-lg hover:bg-secondary transition-colors">
+            <Link href="/admin/orders" className="inline-block btn-primary px-6 py-3 rounded-lg hover:bg-secondary transition-colors">
               Back to Orders
             </Link>
           </div>

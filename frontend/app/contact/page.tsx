@@ -171,7 +171,7 @@ function ContactPageContent() {
                     <label htmlFor="message" className="block text-sm font-medium mb-2">Message</label>
                     <textarea id="message" name="message" value={formData.message} onChange={handleChange} rows={5} className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent" required />
                   </div>
-                  <button type="submit" className="w-full bg-accent hover:bg-secondary text-white py-3 rounded-md font-semibold transition-colors">
+                  <button type="submit" className="w-full btn-primary py-3 rounded-md font-semibold transition-colors">
                     Send Message
                   </button>
                 </form>

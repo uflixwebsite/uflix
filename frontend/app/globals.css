@@ -10,6 +10,17 @@
   --neutral-light: #F8F8F8;
   --neutral-dark: #666666;
   --border-color: #E5E5E5;
+  --site-btn-primary-bg: #FF6B35;
+  --site-btn-primary-text: #FFFFFF;
+  --site-btn-primary-hover-bg: #C73E1D;
+  --site-btn-secondary-bg: #C73E1D;
+  --site-btn-secondary-text: #FFFFFF;
+  --site-btn-secondary-hover-bg: #E85A2A;
+  --site-btn-outline-bg: transparent;
+  --site-btn-outline-text: #FF6B35;
+  --site-btn-outline-border: #FF6B35;
+  --site-btn-outline-hover-bg: #FF6B35;
+  --site-btn-outline-hover-text: #FFFFFF;
 }
 
 @theme inline {
@@ -84,4 +95,109 @@ h1, h2, h3, h4, h5, h6 {
 
 .animate-slide-in-right {
   animation: slide-in-right 0.3s ease-out;
+}
+
+/* Global button theming for main content pages (route exclusions keep wishlist/cart/payment untouched) */
+body:not([data-route^="/wishlist"]):not([data-route^="/cart"]):not([data-route^="/checkout"]):not([data-route^="/payment"]):not([data-route^="/order-confirmation"]) main a.bg-accent,
+body:not([data-route^="/wishlist"]):not([data-route^="/cart"]):not([data-route^="/checkout"]):not([data-route^="/payment"]):not([data-route^="/order-confirmation"]) main button.bg-accent {
+  background-color: var(--site-btn-primary-bg) !important;
+  color: var(--site-btn-primary-text) !important;
+}
+
+body:not([data-route^="/wishlist"]):not([data-route^="/cart"]):not([data-route^="/checkout"]):not([data-route^="/payment"]):not([data-route^="/order-confirmation"]) main a.bg-secondary,
+body:not([data-route^="/wishlist"]):not([data-route^="/cart"]):not([data-route^="/checkout"]):not([data-route^="/payment"]):not([data-route^="/order-confirmation"]) main button.bg-secondary {
+  background-color: var(--site-btn-secondary-bg) !important;
+  color: var(--site-btn-secondary-text) !important;
+}
+
+body:not([data-route^="/wishlist"]):not([data-route^="/cart"]):not([data-route^="/checkout"]):not([data-route^="/payment"]):not([data-route^="/order-confirmation"]) main a.bg-accent-dark,
+body:not([data-route^="/wishlist"]):not([data-route^="/cart"]):not([data-route^="/checkout"]):not([data-route^="/payment"]):not([data-route^="/order-confirmation"]) main button.bg-accent-dark,
+body:not([data-route^="/wishlist"]):not([data-route^="/cart"]):not([data-route^="/checkout"]):not([data-route^="/payment"]):not([data-route^="/order-confirmation"]) main a.bg-gray-900,
+body:not([data-route^="/wishlist"]):not([data-route^="/cart"]):not([data-route^="/checkout"]):not([data-route^="/payment"]):not([data-route^="/order-confirmation"]) main button.bg-gray-900 {
+  background-color: var(--site-btn-primary-bg) !important;
+  color: var(--site-btn-primary-text) !important;
+}
+
+body:not([data-route^="/wishlist"]):not([data-route^="/cart"]):not([data-route^="/checkout"]):not([data-route^="/payment"]):not([data-route^="/order-confirmation"]) main a.hover\:bg-secondary:hover,
+body:not([data-route^="/wishlist"]):not([data-route^="/cart"]):not([data-route^="/checkout"]):not([data-route^="/payment"]):not([data-route^="/order-confirmation"]) main button.hover\:bg-secondary:hover,
+body:not([data-route^="/wishlist"]):not([data-route^="/cart"]):not([data-route^="/checkout"]):not([data-route^="/payment"]):not([data-route^="/order-confirmation"]) main a.hover\:bg-accent-dark:hover,
+body:not([data-route^="/wishlist"]):not([data-route^="/cart"]):not([data-route^="/checkout"]):not([data-route^="/payment"]):not([data-route^="/order-confirmation"]) main button.hover\:bg-accent-dark:hover {
+  background-color: var(--site-btn-primary-hover-bg) !important;
+}
+
+body:not([data-route^="/wishlist"]):not([data-route^="/cart"]):not([data-route^="/checkout"]):not([data-route^="/payment"]):not([data-route^="/order-confirmation"]) main a.hover\:bg-accent:hover,
+body:not([data-route^="/wishlist"]):not([data-route^="/cart"]):not([data-route^="/checkout"]):not([data-route^="/payment"]):not([data-route^="/order-confirmation"]) main button.hover\:bg-accent:hover,
+body:not([data-route^="/wishlist"]):not([data-route^="/cart"]):not([data-route^="/checkout"]):not([data-route^="/payment"]):not([data-route^="/order-confirmation"]) main a.hover\:bg-accent\/90:hover,
+body:not([data-route^="/wishlist"]):not([data-route^="/cart"]):not([data-route^="/checkout"]):not([data-route^="/payment"]):not([data-route^="/order-confirmation"]) main button.hover\:bg-accent\/90:hover {
+  background-color: var(--site-btn-primary-hover-bg) !important;
+}
+
+body:not([data-route^="/wishlist"]):not([data-route^="/cart"]):not([data-route^="/checkout"]):not([data-route^="/payment"]):not([data-route^="/order-confirmation"]) main a.border-accent.text-accent,
+body:not([data-route^="/wishlist"]):not([data-route^="/cart"]):not([data-route^="/checkout"]):not([data-route^="/payment"]):not([data-route^="/order-confirmation"]) main button.border-accent.text-accent {
+  background-color: var(--site-btn-outline-bg) !important;
+  color: var(--site-btn-outline-text) !important;
+  border-color: var(--site-btn-outline-border) !important;
+}
+
+body:not([data-route^="/wishlist"]):not([data-route^="/cart"]):not([data-route^="/checkout"]):not([data-route^="/payment"]):not([data-route^="/order-confirmation"]) main a.border-white\/30.text-white,
+body:not([data-route^="/wishlist"]):not([data-route^="/cart"]):not([data-route^="/checkout"]):not([data-route^="/payment"]):not([data-route^="/order-confirmation"]) main button.border-white\/30.text-white {
+  background-color: var(--site-btn-outline-bg) !important;
+  color: var(--site-btn-outline-text) !important;
+  border-color: var(--site-btn-outline-border) !important;
+}
+
+body:not([data-route^="/wishlist"]):not([data-route^="/cart"]):not([data-route^="/checkout"]):not([data-route^="/payment"]):not([data-route^="/order-confirmation"]) main a.border-accent.text-accent:hover,
+body:not([data-route^="/wishlist"]):not([data-route^="/cart"]):not([data-route^="/checkout"]):not([data-route^="/payment"]):not([data-route^="/order-confirmation"]) main button.border-accent.text-accent:hover,
+body:not([data-route^="/wishlist"]):not([data-route^="/cart"]):not([data-route^="/checkout"]):not([data-route^="/payment"]):not([data-route^="/order-confirmation"]) main a.hover\:bg-accent.hover\:text-white:hover,
+body:not([data-route^="/wishlist"]):not([data-route^="/cart"]):not([data-route^="/checkout"]):not([data-route^="/payment"]):not([data-route^="/order-confirmation"]) main button.hover\:bg-accent.hover\:text-white:hover,
+body:not([data-route^="/wishlist"]):not([data-route^="/cart"]):not([data-route^="/checkout"]):not([data-route^="/payment"]):not([data-route^="/order-confirmation"]) main a.border-white\/30.text-white:hover,
+body:not([data-route^="/wishlist"]):not([data-route^="/cart"]):not([data-route^="/checkout"]):not([data-route^="/payment"]):not([data-route^="/order-confirmation"]) main button.border-white\/30.text-white:hover,
+body:not([data-route^="/wishlist"]):not([data-route^="/cart"]):not([data-route^="/checkout"]):not([data-route^="/payment"]):not([data-route^="/order-confirmation"]) main a.hover\:bg-white\/10:hover,
+body:not([data-route^="/wishlist"]):not([data-route^="/cart"]):not([data-route^="/checkout"]):not([data-route^="/payment"]):not([data-route^="/order-confirmation"]) main button.hover\:bg-white\/10:hover {
+  background-color: var(--site-btn-outline-hover-bg) !important;
+  color: var(--site-btn-outline-hover-text) !important;
+  border-color: var(--site-btn-outline-hover-bg) !important;
+}
+
+/* Semantic button utility classes to avoid hardcoded color classes in page/component markup */
+.btn-primary {
+  background-color: var(--site-btn-primary-bg) !important;
+  color: var(--site-btn-primary-text) !important;
+}
+
+.btn-primary:hover {
+  background-color: var(--site-btn-primary-hover-bg) !important;
+}
+
+.btn-secondary {
+  background-color: var(--site-btn-secondary-bg) !important;
+  color: var(--site-btn-secondary-text) !important;
+}
+
+.btn-secondary:hover {
+  background-color: var(--site-btn-secondary-hover-bg) !important;
+}
+
+.btn-outline {
+  background-color: var(--site-btn-outline-bg) !important;
+  color: var(--site-btn-outline-text) !important;
+  border-color: var(--site-btn-outline-border) !important;
+}
+
+.btn-outline:hover {
+  background-color: var(--site-btn-outline-hover-bg) !important;
+  color: var(--site-btn-outline-hover-text) !important;
+  border-color: var(--site-btn-outline-hover-bg) !important;
+}
+
+.btn-outline-inverse {
+  background-color: var(--site-btn-outline-bg) !important;
+  color: var(--site-btn-outline-text) !important;
+  border-color: var(--site-btn-outline-border) !important;
+}
+
+.btn-outline-inverse:hover {
+  background-color: var(--site-btn-outline-hover-bg) !important;
+  color: var(--site-btn-outline-hover-text) !important;
+  border-color: var(--site-btn-outline-hover-bg) !important;
 }

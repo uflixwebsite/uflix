@@ -162,7 +162,7 @@ export default function BulkOrderQuote() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full sm:w-auto bg-accent hover:bg-secondary text-white px-10 py-4 rounded-lg font-bold transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full sm:w-auto btn-primary px-10 py-4 rounded-lg font-bold transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Submitting...' : 'Request Quote'}
               </button>

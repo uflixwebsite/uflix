@@ -119,6 +119,10 @@ export default function Home() {
                 title={settings?.productSections?.bestSellers?.title}
                 subtitle={settings?.productSections?.bestSellers?.subtitle}
                 limit={settings?.productSections?.bestSellers?.limit}
+                ctaText={settings?.productSections?.bestSellers?.ctaText}
+                ctaLink={settings?.productSections?.bestSellers?.ctaLink}
+                primaryButtonBg={settings?.productSections?.bestSellers?.primaryButtonBg}
+                primaryButtonTextColor={settings?.productSections?.bestSellers?.primaryButtonTextColor}
               />
             )}
             {(settings?.productSections?.newArrivals?.enabled !== false) && (
@@ -126,6 +130,10 @@ export default function Home() {
                 title={settings?.productSections?.newArrivals?.title}
                 subtitle={settings?.productSections?.newArrivals?.subtitle}
                 limit={settings?.productSections?.newArrivals?.limit}
+                ctaText={settings?.productSections?.newArrivals?.ctaText}
+                ctaLink={settings?.productSections?.newArrivals?.ctaLink}
+                primaryButtonBg={settings?.productSections?.newArrivals?.primaryButtonBg}
+                primaryButtonTextColor={settings?.productSections?.newArrivals?.primaryButtonTextColor}
               />
             )}
             {(settings?.productSections?.categoryProducts || [])
@@ -137,6 +145,10 @@ export default function Home() {
                   title={cp.title || cp.categoryName}
                   subtitle={cp.subtitle}
                   limit={cp.limit}
+                  ctaText={cp.ctaText}
+                  ctaLink={cp.ctaLink}
+                  primaryButtonBg={cp.primaryButtonBg}
+                  primaryButtonTextColor={cp.primaryButtonTextColor}
                 />
               ))}
           </div>

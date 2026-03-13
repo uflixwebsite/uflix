@@ -155,7 +155,7 @@ export default function ProductDetailPage() {
             <p className="text-neutral-dark mb-4">{error || "The product you're looking for doesn't exist."}</p>
             <p className="text-sm text-neutral-dark mb-8">Product ID: {params.id}</p>
             <div className="flex gap-4 justify-center">
-              <a href="/shop" className="bg-accent text-white px-6 py-3 rounded-md hover:bg-secondary transition-colors">
+              <a href="/shop" className="btn-primary px-6 py-3 rounded-md transition-colors">
                 Back to Shop
               </a>
               <button 
@@ -315,14 +315,14 @@ export default function ProductDetailPage() {
               {product.availableOnQuotation ? (
                 <button
                   onClick={() => setIsQuotationDialogOpen(true)}
-                  className="flex-1 bg-accent hover:bg-secondary text-white py-4 rounded-lg font-semibold transition-colors"
+                  className="flex-1 btn-primary py-4 rounded-lg font-semibold transition-colors"
                 >
                   Request Quotation
                 </button>
               ) : (
                 <button 
                   onClick={handleAddToCart}
-                  className="flex-1 bg-accent hover:bg-secondary text-white py-4 rounded-lg font-semibold transition-colors"
+                  className="flex-1 btn-primary py-4 rounded-lg font-semibold transition-colors"
                 >
                   Add to Cart
                 </button>

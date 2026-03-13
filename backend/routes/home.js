@@ -83,6 +83,19 @@ const getDefaults = () => ({
       { icon: 'shield', title: 'Secure Payment', description: 'Safe and encrypted payment processing' },
       { icon: 'refresh', title: 'Easy Returns', description: '30-day hassle-free return policy' }
     ]
+  },
+  siteButtonTheme: {
+    primaryBg: '#FF6B35',
+    primaryText: '#FFFFFF',
+    primaryHoverBg: '#C73E1D',
+    secondaryBg: '#C73E1D',
+    secondaryText: '#FFFFFF',
+    secondaryHoverBg: '#E85A2A',
+    outlineBg: 'transparent',
+    outlineText: '#FF6B35',
+    outlineBorder: '#FF6B35',
+    outlineHoverBg: '#FF6B35',
+    outlineHoverText: '#FFFFFF'
   }
 });
 
@@ -112,7 +125,7 @@ router.put('/', protect, admin, async (req, res) => {
       settings = await HomeSettings.create(req.body);
     } else {
       // Update all provided fields
-      const fields = ['sections', 'hero', 'clients', 'collections', 'productSections', 'testimonials', 'brandStory', 'benefits', 'categorySlider', 'photoGrid', 'promoCards', 'statsBanner'];
+      const fields = ['sections', 'hero', 'clients', 'collections', 'productSections', 'testimonials', 'brandStory', 'benefits', 'categorySlider', 'photoGrid', 'promoCards', 'statsBanner', 'siteButtonTheme'];
       fields.forEach(field => {
         if (req.body[field] !== undefined) {
           settings[field] = req.body[field];
@@ -150,7 +163,7 @@ router.put('/sections', protect, admin, async (req, res) => {
 router.put('/:section', protect, admin, async (req, res) => {
   try {
     const { section } = req.params;
-    const validSections = ['hero', 'clients', 'collections', 'productSections', 'testimonials', 'brandStory', 'benefits', 'sections', 'categorySlider', 'photoGrid', 'promoCards', 'statsBanner'];
+    const validSections = ['hero', 'clients', 'collections', 'productSections', 'testimonials', 'brandStory', 'benefits', 'sections', 'categorySlider', 'photoGrid', 'promoCards', 'statsBanner', 'siteButtonTheme'];
     
     if (!validSections.includes(section)) {
       return res.status(400).json({ success: false, message: 'Invalid section' });

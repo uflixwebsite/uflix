@@ -62,6 +62,12 @@ function HealthcareHero({ section }: { section?: Section }) {
       link: section?.link || '#just-arrived',
       secondaryLinkText: section?.secondaryLinkText || 'Request a Quote',
       secondaryLink: section?.secondaryLink || '/contact',
+      titleColor: section?.titleColor || '',
+      subtitleColor: section?.subtitleColor || '',
+      primaryButtonBg: section?.primaryButtonBg || '',
+      primaryButtonTextColor: section?.primaryButtonTextColor || '',
+      secondaryButtonBg: section?.secondaryButtonBg || '',
+      secondaryButtonTextColor: section?.secondaryButtonTextColor || '',
     },
     ...((section?.items || [])
       .filter((i: any) => i.image)
@@ -74,13 +80,19 @@ function HealthcareHero({ section }: { section?: Section }) {
         link: i.link || section?.link || '#just-arrived',
         secondaryLinkText: i.secondaryLinkText || section?.secondaryLinkText || 'Request a Quote',
         secondaryLink: i.secondaryLink || section?.secondaryLink || '/contact',
+        titleColor: i.titleColor || section?.titleColor || '',
+        subtitleColor: i.subtitleColor || section?.subtitleColor || '',
+        primaryButtonBg: i.primaryButtonBg || section?.primaryButtonBg || '',
+        primaryButtonTextColor: i.primaryButtonTextColor || section?.primaryButtonTextColor || '',
+        secondaryButtonBg: i.secondaryButtonBg || section?.secondaryButtonBg || '',
+        secondaryButtonTextColor: i.secondaryButtonTextColor || section?.secondaryButtonTextColor || '',
       }))),
   ].filter((s) => s.image);
 
   const [idx, setIdx] = useState(0);
   const [paused, setPaused] = useState(false);
   const total = allSlides.length;
-  const cur = allSlides[idx] ?? { title: '', subtitle: '', description: '', linkText: 'Explore Products', link: '#just-arrived', secondaryLinkText: 'Request a Quote', secondaryLink: '/contact' };
+  const cur = allSlides[idx] ?? { title: '', subtitle: '', description: '', linkText: 'Explore Products', link: '#just-arrived', secondaryLinkText: 'Request a Quote', secondaryLink: '/contact', titleColor: '', subtitleColor: '', primaryButtonBg: '', primaryButtonTextColor: '', secondaryButtonBg: '', secondaryButtonTextColor: '' };
 
   const prev = () => setIdx((n) => (n - 1 + total) % total);
   const next = () => setIdx((n) => (n + 1) % total);
@@ -140,27 +152,29 @@ function HealthcareHero({ section }: { section?: Section }) {
           Healthcare Furniture Solutions
         </span>
         {cur.title ? (
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">{cur.title}</h1>
+          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight" style={{ color: cur.titleColor || undefined }}>{cur.title}</h1>
         ) : (
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
             Designed for <br />
             <span style={{ color: '#E87059' }}>Healing Environments</span>
           </h1>
         )}
-        <p className="text-xl text-white/70 max-w-3xl mx-auto mb-10">
+        <p className="text-xl text-white/70 max-w-3xl mx-auto mb-10" style={{ color: cur.subtitleColor || undefined }}>
           {cur.description || cur.subtitle ||
             'Ergonomic, patient-centric furniture solutions for hospitals, clinics, and care facilities — built for comfort, hygiene, and long-term durability.'}
         </p>
         <div className="flex flex-wrap gap-4 justify-center">
           <Link
             href={cur.link}
-            className="bg-accent hover:bg-accent/90 text-white px-8 py-3.5 rounded-full font-semibold shadow-lg transition-all"
+            className="btn-primary px-8 py-3.5 rounded-full font-semibold shadow-lg transition-all"
+            style={{ backgroundColor: cur.primaryButtonBg || undefined, color: cur.primaryButtonTextColor || undefined }}
           >
             {cur.linkText}
           </Link>
           <Link
             href={cur.secondaryLink}
-            className="border border-white/30 hover:border-white text-white px-8 py-3.5 rounded-full font-semibold transition-all hover:bg-white/10"
+            className="btn-outline-inverse px-8 py-3.5 rounded-full font-semibold transition-all hover:bg-white/10"
+            style={{ backgroundColor: cur.secondaryButtonBg || undefined, color: cur.secondaryButtonTextColor || undefined }}
           >
             {cur.secondaryLinkText}
           </Link>
@@ -346,6 +360,8 @@ interface IdeaItem {
   image: string;
   link: string;
   linkText: string;
+  primaryButtonBg?: string;
+  primaryButtonTextColor?: string;
 }
 
 function IdeasSection({ heading, exploreLink, exploreText, ideas }: { heading: string; exploreLink: string; exploreText: string; ideas: IdeaItem[] }) {
@@ -417,7 +433,8 @@ function IdeasSection({ heading, exploreLink, exploreText, ideas }: { heading: s
                   {idea.link && (
                     <Link
                       href={idea.link}
-                      className="inline-block bg-gray-900 hover:bg-accent text-white px-7 py-3 rounded-full text-sm font-semibold transition-colors"
+                      className="inline-block btn-primary px-7 py-3 rounded-full text-sm font-semibold transition-colors"
+                      style={{ backgroundColor: idea.primaryButtonBg || undefined, color: idea.primaryButtonTextColor || undefined }}
                     >
                       {idea.linkText || 'Read more'}
                     </Link>
@@ -465,7 +482,8 @@ function PlaceholderSection({ section }: { section?: Section }) {
         {section.link && (
           <Link
             href={section.link}
-            className="inline-block mt-6 bg-accent hover:bg-accent/90 text-white px-8 py-3.5 rounded-full font-semibold transition-all"
+            className="inline-block mt-6 btn-primary px-8 py-3.5 rounded-full font-semibold transition-all"
+            style={{ backgroundColor: section.primaryButtonBg || undefined, color: section.primaryButtonTextColor || undefined }}
           >
             {section.linkText || 'Learn More'}
           </Link>
@@ -603,6 +621,8 @@ export default function HealthcarePage() {
           image: it.image || PH_IDEAS[idx % PH_IDEAS.length]?.image || '',
           link: it.link || '#',
           linkText: it.linkText || 'Read more',
+          primaryButtonBg: it.primaryButtonBg || '',
+          primaryButtonTextColor: it.primaryButtonTextColor || '',
         }))
       : PH_IDEAS;
     // Always render at least 2 items so the alternating layout is visible

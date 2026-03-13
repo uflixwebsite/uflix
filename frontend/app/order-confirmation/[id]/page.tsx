@@ -58,7 +58,7 @@ export default function OrderConfirmationPage() {
               </svg>
               <h1 className="text-2xl font-bold text-gray-900 mb-2">Order Not Found</h1>
               <p className="text-gray-600 mb-6">{error}</p>
-              <Link href="/shop" className="inline-block bg-accent text-white px-6 py-3 rounded-lg hover:bg-secondary transition-colors">
+              <Link href="/shop" className="inline-block btn-primary px-6 py-3 rounded-lg transition-colors">
                 Continue Shopping
               </Link>
             </div>

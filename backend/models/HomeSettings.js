@@ -5,7 +5,13 @@ const heroSlideSchema = new mongoose.Schema({
   title: { type: String, required: true },
   subtitle: { type: String },
   buttonText: { type: String, default: 'Shop Now' },
-  buttonLink: { type: String, default: '/shop' }
+  buttonLink: { type: String, default: '/shop' },
+  titleColor: { type: String, default: '' },
+  subtitleColor: { type: String, default: '' },
+  primaryButtonBg: { type: String, default: '' },
+  primaryButtonTextColor: { type: String, default: '' },
+  secondaryButtonBg: { type: String, default: '' },
+  secondaryButtonTextColor: { type: String, default: '' }
 }, { _id: true });
 
 const clientLogoSchema = new mongoose.Schema({
@@ -18,7 +24,10 @@ const collectionSchema = new mongoose.Schema({
   description: { type: String },
   image: { type: String, required: true },
   itemCount: { type: Number, default: 0 },
-  link: { type: String, default: '/shop' }
+  link: { type: String, default: '/shop' },
+  buttonText: { type: String, default: 'Explore Collection' },
+  primaryButtonBg: { type: String, default: '' },
+  primaryButtonTextColor: { type: String, default: '' }
 }, { _id: true });
 
 const testimonialSchema = new mongoose.Schema({
@@ -81,6 +90,8 @@ const promoCardSchema = new mongoose.Schema({
   title: { type: String },
   buttonText: { type: String, default: 'Book a consultation' },
   buttonLink: { type: String, default: '/contact' },
+  primaryButtonBg: { type: String, default: '' },
+  primaryButtonTextColor: { type: String, default: '' },
   image: { type: String },
   note: { type: String }
 }, { _id: false });
@@ -118,13 +129,21 @@ const homeSettingsSchema = new mongoose.Schema({
       enabled: { type: Boolean, default: true },
       title: { type: String, default: 'Best Sellers' },
       subtitle: { type: String, default: 'Our most popular and loved furniture pieces chosen by customers' },
-      limit: { type: Number, default: 8 }
+      limit: { type: Number, default: 8 },
+      ctaText: { type: String, default: 'View All Products' },
+      ctaLink: { type: String, default: '/shop' },
+      primaryButtonBg: { type: String, default: '' },
+      primaryButtonTextColor: { type: String, default: '' }
     },
     newArrivals: {
       enabled: { type: Boolean, default: true },
       title: { type: String, default: 'New Arrivals' },
       subtitle: { type: String, default: 'Discover our latest furniture collections and designs' },
-      limit: { type: Number, default: 8 }
+      limit: { type: Number, default: 8 },
+      ctaText: { type: String, default: 'View All Products' },
+      ctaLink: { type: String, default: '/shop' },
+      primaryButtonBg: { type: String, default: '' },
+      primaryButtonTextColor: { type: String, default: '' }
     },
     categoryProducts: [{
       category: { type: String, required: true },
@@ -132,7 +151,11 @@ const homeSettingsSchema = new mongoose.Schema({
       title: { type: String },
       subtitle: { type: String },
       limit: { type: Number, default: 8 },
-      enabled: { type: Boolean, default: true }
+      enabled: { type: Boolean, default: true },
+      ctaText: { type: String, default: '' },
+      ctaLink: { type: String, default: '' },
+      primaryButtonBg: { type: String, default: '' },
+      primaryButtonTextColor: { type: String, default: '' }
     }]
   },
 
@@ -181,6 +204,21 @@ const homeSettingsSchema = new mongoose.Schema({
     subtitle: { type: String },
     bgColor: { type: String, default: '#f05a54' },
     stats: [statsBannerStatSchema]
+  },
+
+  // Global button theme used across most public pages
+  siteButtonTheme: {
+    primaryBg: { type: String, default: '#FF6B35' },
+    primaryText: { type: String, default: '#FFFFFF' },
+    primaryHoverBg: { type: String, default: '#C73E1D' },
+    secondaryBg: { type: String, default: '#C73E1D' },
+    secondaryText: { type: String, default: '#FFFFFF' },
+    secondaryHoverBg: { type: String, default: '#E85A2A' },
+    outlineBg: { type: String, default: 'transparent' },
+    outlineText: { type: String, default: '#FF6B35' },
+    outlineBorder: { type: String, default: '#FF6B35' },
+    outlineHoverBg: { type: String, default: '#FF6B35' },
+    outlineHoverText: { type: String, default: '#FFFFFF' }
   }
 }, {
   timestamps: true

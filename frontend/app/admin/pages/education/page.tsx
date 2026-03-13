@@ -52,7 +52,7 @@ function ImageUploader({ value, onChange, label, folder = 'pages', hint }: { val
       {hint && <p className="text-xs text-gray-400 mb-1.5">📐 Recommended: {hint}</p>}
       <div className="flex gap-2 items-start flex-wrap">
         <input type="text" value={value || ''} onChange={(e) => onChange(e.target.value)} placeholder="Image URL or upload" className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
-        <label className={`px-3 py-2 text-sm rounded-md cursor-pointer transition-colors whitespace-nowrap ${uploading ? 'bg-gray-300 text-gray-500' : 'bg-accent text-white hover:bg-secondary'}`}>
+        <label className={`px-3 py-2 text-sm rounded-md cursor-pointer transition-colors whitespace-nowrap ${uploading ? 'bg-gray-300 text-gray-500' : 'btn-primary'}`}>
           {uploading ? 'Uploading…' : value ? 'Replace' : 'Upload'}
           <input type="file" accept="image/*" className="hidden" onChange={handleUpload} disabled={uploading} />
         </label>
@@ -80,6 +80,29 @@ function Field({ label, value, onChange, textarea = false, placeholder = '', hin
   );
 }
 
+function ColorSwatch({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <div>
+      <label className="block text-sm font-medium mb-1">{label}</label>
+      <div className="flex gap-2 items-center">
+        <input
+          type="color"
+          value={value || '#ffffff'}
+          onChange={(e) => onChange(e.target.value)}
+          className="h-10 w-12 rounded border border-gray-300 bg-white p-1"
+        />
+        <input
+          type="text"
+          value={value || ''}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="#ffffff"
+          className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+        />
+      </div>
+    </div>
+  );
+}
+
 // ─── Default section templates ────────────────────────────────────────────────
 
 const DEFAULT_SECTIONS: Record<string, any> = {
@@ -89,6 +112,9 @@ const DEFAULT_SECTIONS: Record<string, any> = {
     description: 'Ergonomic, student-centric furniture solutions for schools, colleges, and universities — built for focus, flexibility, and long-term durability.',
     link: '#just-arrived', linkText: 'Explore Products',
     secondaryLink: '/contact', secondaryLinkText: 'Request a Quote',
+    titleColor: '', subtitleColor: '',
+    primaryButtonBg: '', primaryButtonTextColor: '',
+    secondaryButtonBg: '', secondaryButtonTextColor: '',
     image: '', items: [],
   },
   'text-highlight': {
@@ -99,7 +125,9 @@ const DEFAULT_SECTIONS: Record<string, any> = {
   },
   placeholder: {
     sectionId: 'placeholder', type: 'content', bgColor: 'white', order: 2, isVisible: false,
-    title: '', description: '', image: '', link: '', linkText: '', items: [],
+    title: '', description: '', image: '', link: '', linkText: '',
+    primaryButtonBg: '', primaryButtonTextColor: '',
+    items: [],
   },
   'just-arrived': {
     sectionId: 'just-arrived', type: 'custom', bgColor: 'white', order: 3, isVisible: true,
@@ -120,6 +148,8 @@ const DEFAULT_SECTIONS: Record<string, any> = {
         image: '',
         link: '/industries',
         linkText: 'Read more',
+        primaryButtonBg: '',
+        primaryButtonTextColor: '',
         icon: 'Education',
         stats: '8 mins read',
         statsLabel: '',
@@ -150,6 +180,10 @@ function IdeaItemEditor({ item, idx, onChange, onRemove, onMoveUp, onMoveDown, i
       </div>
       <Field label="Link URL" value={item.link || ''} onChange={(v) => set('link', v)} placeholder="/industries/education" />
       <Field label="Button label" value={item.linkText || ''} onChange={(v) => set('linkText', v)} placeholder="Read more" />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <ColorSwatch label="Button Background" value={item.primaryButtonBg || '#111827'} onChange={(v) => set('primaryButtonBg', v)} />
+        <ColorSwatch label="Button Text" value={item.primaryButtonTextColor || '#ffffff'} onChange={(v) => set('primaryButtonTextColor', v)} />
+      </div>
       <ImageUploader label="Article image" value={item.image || ''} onChange={(v) => set('image', v)} folder="education" hint="1200×600px (2:1 landscape)" />
     </div>
   );
@@ -179,6 +213,12 @@ type HeroSlide = {
   link: string;
   secondaryLinkText: string;
   secondaryLink: string;
+  titleColor: string;
+  subtitleColor: string;
+  primaryButtonBg: string;
+  primaryButtonTextColor: string;
+  secondaryButtonBg: string;
+  secondaryButtonTextColor: string;
 };
 
 function dataToSlides(data: any): HeroSlide[] {
@@ -191,6 +231,12 @@ function dataToSlides(data: any): HeroSlide[] {
     link: data.link || '',
     secondaryLinkText: data.secondaryLinkText || '',
     secondaryLink: data.secondaryLink || '',
+    titleColor: data.titleColor || '',
+    subtitleColor: data.subtitleColor || '',
+    primaryButtonBg: data.primaryButtonBg || '',
+    primaryButtonTextColor: data.primaryButtonTextColor || '',
+    secondaryButtonBg: data.secondaryButtonBg || '',
+    secondaryButtonTextColor: data.secondaryButtonTextColor || '',
   };
   const rest: HeroSlide[] = (data.items || []).map((item: any) => ({
     image: item.image || '',
@@ -201,6 +247,12 @@ function dataToSlides(data: any): HeroSlide[] {
     link: item.link || '',
     secondaryLinkText: item.secondaryLinkText || '',
     secondaryLink: item.secondaryLink || '',
+    titleColor: item.titleColor || '',
+    subtitleColor: item.subtitleColor || '',
+    primaryButtonBg: item.primaryButtonBg || '',
+    primaryButtonTextColor: item.primaryButtonTextColor || '',
+    secondaryButtonBg: item.secondaryButtonBg || '',
+    secondaryButtonTextColor: item.secondaryButtonTextColor || '',
   }));
   return [first, ...rest];
 }
@@ -208,7 +260,7 @@ function dataToSlides(data: any): HeroSlide[] {
 function slidesToData(slides: HeroSlide[], existing: any): any {
   const [s0, ...rest] = slides.length > 0
     ? slides
-    : [{ image: '', title: '', subtitle: '', description: '', linkText: '', link: '', secondaryLinkText: '', secondaryLink: '' }];
+    : [{ image: '', title: '', subtitle: '', description: '', linkText: '', link: '', secondaryLinkText: '', secondaryLink: '', titleColor: '', subtitleColor: '', primaryButtonBg: '', primaryButtonTextColor: '', secondaryButtonBg: '', secondaryButtonTextColor: '' }];
   return {
     ...existing,
     image: s0.image,
@@ -219,6 +271,12 @@ function slidesToData(slides: HeroSlide[], existing: any): any {
     link: s0.link,
     secondaryLinkText: s0.secondaryLinkText,
     secondaryLink: s0.secondaryLink,
+    titleColor: s0.titleColor,
+    subtitleColor: s0.subtitleColor,
+    primaryButtonBg: s0.primaryButtonBg,
+    primaryButtonTextColor: s0.primaryButtonTextColor,
+    secondaryButtonBg: s0.secondaryButtonBg,
+    secondaryButtonTextColor: s0.secondaryButtonTextColor,
     items: rest.map((s) => ({
       image: s.image,
       title: s.title,
@@ -228,6 +286,12 @@ function slidesToData(slides: HeroSlide[], existing: any): any {
       link: s.link,
       secondaryLinkText: s.secondaryLinkText,
       secondaryLink: s.secondaryLink,
+      titleColor: s.titleColor,
+      subtitleColor: s.subtitleColor,
+      primaryButtonBg: s.primaryButtonBg,
+      primaryButtonTextColor: s.primaryButtonTextColor,
+      secondaryButtonBg: s.secondaryButtonBg,
+      secondaryButtonTextColor: s.secondaryButtonTextColor,
       stats: '',
       statsLabel: '',
     })),
@@ -265,7 +329,7 @@ function HeroTab({ data, onChange }: { data: any; onChange: (d: any) => void }) 
   };
 
   const addSlide = () => {
-    const blank: HeroSlide = { image: '', title: '', subtitle: '', description: '', linkText: 'Explore Products', link: '#just-arrived', secondaryLinkText: 'Request a Quote', secondaryLink: '/contact' };
+    const blank: HeroSlide = { image: '', title: '', subtitle: '', description: '', linkText: 'Explore Products', link: '#just-arrived', secondaryLinkText: 'Request a Quote', secondaryLink: '/contact', titleColor: '', subtitleColor: '', primaryButtonBg: '', primaryButtonTextColor: '', secondaryButtonBg: '', secondaryButtonTextColor: '' };
     const next = [...slides, blank];
     commit(next);
     setExpandedIdx(next.length - 1);
@@ -342,7 +406,7 @@ function HeroTab({ data, onChange }: { data: any; onChange: (d: any) => void }) 
                       }
                     </div>
                     <div className="flex gap-2 flex-wrap pt-1">
-                      <label className={`px-3 py-2 text-sm rounded-md cursor-pointer transition-colors ${uploading === i ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-accent text-white hover:bg-secondary'}`}>
+                      <label className={`px-3 py-2 text-sm rounded-md cursor-pointer transition-colors ${uploading === i ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'btn-primary'}`}>
                         {uploading === i ? 'Uploading…' : slide.image ? 'Replace' : 'Upload'}
                         <input type="file" accept="image/*" className="hidden" disabled={uploading !== null} onChange={(e) => uploadImage(i, e)} />
                       </label>
@@ -364,6 +428,14 @@ function HeroTab({ data, onChange }: { data: any; onChange: (d: any) => void }) 
                     <Field label="Secondary button label" value={slide.secondaryLinkText} onChange={(v) => updateSlide(i, 'secondaryLinkText', v)} placeholder="Request a Quote" />
                     <Field label="Secondary button link" value={slide.secondaryLink} onChange={(v) => updateSlide(i, 'secondaryLink', v)} placeholder="/contact" />
                   </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <ColorSwatch label="Heading Color" value={slide.titleColor || '#ffffff'} onChange={(v) => updateSlide(i, 'titleColor', v)} />
+                  <ColorSwatch label="Description Color" value={slide.subtitleColor || '#ffffffB3'} onChange={(v) => updateSlide(i, 'subtitleColor', v)} />
+                  <ColorSwatch label="Primary Button Bg" value={slide.primaryButtonBg || '#f97316'} onChange={(v) => updateSlide(i, 'primaryButtonBg', v)} />
+                  <ColorSwatch label="Primary Button Text" value={slide.primaryButtonTextColor || '#ffffff'} onChange={(v) => updateSlide(i, 'primaryButtonTextColor', v)} />
+                  <ColorSwatch label="Secondary Button Bg" value={slide.secondaryButtonBg || '#ffffff'} onChange={(v) => updateSlide(i, 'secondaryButtonBg', v)} />
+                  <ColorSwatch label="Secondary Button Text" value={slide.secondaryButtonTextColor || '#ffffff'} onChange={(v) => updateSlide(i, 'secondaryButtonTextColor', v)} />
                 </div>
               </div>
             )}
@@ -406,6 +478,10 @@ function PlaceholderTab({ data, onChange }: { data: any; onChange: (d: any) => v
           <ImageUploader label="Image (optional)" value={data.image || ''} onChange={(v) => set('image', v)} folder="education" hint="1200×600px (2:1 landscape)" />
           <Field label="Button label" value={data.linkText || ''} onChange={(v) => set('linkText', v)} />
           <Field label="Button link" value={data.link || ''} onChange={(v) => set('link', v)} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <ColorSwatch label="Button Background" value={data.primaryButtonBg || '#f97316'} onChange={(v) => set('primaryButtonBg', v)} />
+            <ColorSwatch label="Button Text" value={data.primaryButtonTextColor || '#ffffff'} onChange={(v) => set('primaryButtonTextColor', v)} />
+          </div>
           <div>
             <label className="block text-sm font-medium mb-1">Background colour</label>
             <select value={data.bgColor || 'white'} onChange={(e) => set('bgColor', e.target.value)} className="px-3 py-2 border border-gray-300 rounded-md text-sm w-full focus:outline-none focus:ring-2 focus:ring-accent">
@@ -473,7 +549,7 @@ function ProductPicker({ pinned, onAdd, onRemove }: { pinned: any[]; onAdd: (pro
                       <p className="text-sm font-medium text-gray-900 truncate">{p.name}</p>
                       {(p.variants?.[0]?.name || p.material) && <p className="text-xs text-gray-400">{p.variants?.[0]?.name || p.material}</p>}
                     </div>
-                    <button onClick={() => toggle(p)} className={`flex-none text-xs px-2.5 py-1 rounded-full font-semibold transition-colors ${isAdded ? 'bg-red-100 text-red-600 hover:bg-red-200' : 'bg-accent text-white hover:bg-secondary'}`}>
+                    <button onClick={() => toggle(p)} className={`flex-none text-xs px-2.5 py-1 rounded-full font-semibold transition-colors ${isAdded ? 'bg-red-100 text-red-600 hover:bg-red-200' : 'btn-primary'}`}>
                       {isAdded ? 'Remove' : '+ Add'}
                     </button>
                   </div>
@@ -549,7 +625,7 @@ function IdeasTab({ data, onChange }: { data: any; onChange: (d: any) => void })
   const set = (k: string, v: any) => onChange({ ...data, [k]: v });
   const items: any[] = data.items || [];
 
-  const addItem = () => onChange({ ...data, items: [...items, { title: '', description: '', image: '', link: '', linkText: 'Read more', icon: 'Education', stats: '8 mins read', statsLabel: '' }] });
+  const addItem = () => onChange({ ...data, items: [...items, { title: '', description: '', image: '', link: '', linkText: 'Read more', primaryButtonBg: '', primaryButtonTextColor: '', icon: 'Education', stats: '8 mins read', statsLabel: '' }] });
   const updateItem = (i: number, updated: any) => { const arr = [...items]; arr[i] = updated; onChange({ ...data, items: arr }); };
   const removeItem = (i: number) => onChange({ ...data, items: items.filter((_, idx) => idx !== i) });
   const moveUp = (i: number) => { if (i === 0) return; const arr = [...items]; [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]]; onChange({ ...data, items: arr }); };
@@ -567,7 +643,7 @@ function IdeasTab({ data, onChange }: { data: any; onChange: (d: any) => void })
       <div className="border-t pt-5">
         <div className="flex items-center justify-between mb-4">
           <h4 className="text-sm font-semibold">Articles / ideas ({items.length})</h4>
-          <button onClick={addItem} className="text-xs px-3 py-1.5 bg-accent text-white rounded-md hover:bg-secondary">+ Add idea</button>
+          <button onClick={addItem} className="text-xs px-3 py-1.5 btn-primary rounded-md hover:bg-secondary">+ Add idea</button>
         </div>
         <div className="space-y-4">
           {items.map((item, i) => (
@@ -724,7 +800,7 @@ export default function AdminEducationPage() {
               </Link>
             </p>
           </div>
-          <button onClick={saveAll} disabled={saving} className={`px-6 py-2.5 rounded-full font-semibold text-sm transition-all shadow-sm ${saved ? 'bg-green-500 text-white' : saving ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-accent hover:bg-secondary text-white'}`}>
+          <button onClick={saveAll} disabled={saving} className={`px-6 py-2.5 rounded-full font-semibold text-sm transition-all shadow-sm ${saved ? 'bg-green-500 text-white' : saving ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'btn-primary'}`}>
             {saved ? '✓ Saved' : saving ? 'Saving…' : 'Save all changes'}
           </button>
         </div>
@@ -750,7 +826,7 @@ export default function AdminEducationPage() {
 
         {/* Bottom save */}
         <div className="mt-6 flex justify-end">
-          <button onClick={saveAll} disabled={saving} className={`px-8 py-3 rounded-full font-semibold text-sm transition-all shadow-sm ${saved ? 'bg-green-500 text-white' : saving ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-accent hover:bg-secondary text-white'}`}>
+          <button onClick={saveAll} disabled={saving} className={`px-8 py-3 rounded-full font-semibold text-sm transition-all shadow-sm ${saved ? 'bg-green-500 text-white' : saving ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'btn-primary'}`}>
             {saved ? '✓ Saved' : saving ? 'Saving…' : 'Save all changes'}
           </button>
         </div>

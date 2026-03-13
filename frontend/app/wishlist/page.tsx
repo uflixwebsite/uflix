@@ -33,7 +33,7 @@ export default function WishlistPage() {
             </svg>
             <h2 className="text-2xl font-bold mb-2">Your wishlist is empty</h2>
             <p className="text-neutral-dark mb-6">Save your favorite items here!</p>
-            <Link href="/shop" className="inline-block bg-accent hover:bg-accent-dark text-white px-8 py-3 rounded-full font-medium transition-colors">
+            <Link href="/shop" className="inline-block btn-primary px-8 py-3 rounded-full font-medium transition-colors">
               Start Shopping
             </Link>
           </div>
@@ -76,7 +76,7 @@ export default function WishlistPage() {
                   </div>
                   <button
                     onClick={() => handleAddToCart(item)}
-                    className="w-full bg-accent hover:bg-secondary text-white py-2 rounded-md font-medium transition-colors"
+                    className="w-full btn-primary py-2 rounded-md font-medium transition-colors"
                   >
                     Add to Cart
                   </button>

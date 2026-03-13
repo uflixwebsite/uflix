@@ -259,7 +259,7 @@ export default function QuotationDialog({ isOpen, onClose, preSelectedProduct }:
                             className={`px-3 py-1 text-sm rounded-md transition-colors ${
                               isSelected
                                 ? 'bg-green-100 text-green-700 cursor-not-allowed'
-                                : 'bg-accent text-white hover:bg-secondary'
+                                : 'btn-primary'
                             }`}
                           >
                             {isSelected ? 'Added' : 'Add'}
@@ -277,7 +277,7 @@ export default function QuotationDialog({ isOpen, onClose, preSelectedProduct }:
             <button
               type="submit"
               disabled={submitting || selectedProducts.length === 0}
-              className="flex-1 bg-accent hover:bg-secondary text-white py-3 rounded-md font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 btn-primary py-3 rounded-md font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting ? 'Submitting...' : 'Submit Quotation Request'}
             </button>

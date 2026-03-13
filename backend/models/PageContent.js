@@ -9,7 +9,13 @@ const sectionItemSchema = new mongoose.Schema({
   linkText: { type: String, default: '' },
   items: [{ type: String }],
   stats: { type: String, default: '' },
-  statsLabel: { type: String, default: '' }
+  statsLabel: { type: String, default: '' },
+  titleColor: { type: String, default: '' },
+  subtitleColor: { type: String, default: '' },
+  primaryButtonBg: { type: String, default: '' },
+  primaryButtonTextColor: { type: String, default: '' },
+  secondaryButtonBg: { type: String, default: '' },
+  secondaryButtonTextColor: { type: String, default: '' }
 }, { _id: true });
 
 const sectionSchema = new mongoose.Schema({
@@ -34,6 +40,12 @@ const sectionSchema = new mongoose.Schema({
   linkText: { type: String, default: '' },
   secondaryLink: { type: String, default: '' },
   secondaryLinkText: { type: String, default: '' },
+  titleColor: { type: String, default: '' },
+  subtitleColor: { type: String, default: '' },
+  primaryButtonBg: { type: String, default: '' },
+  primaryButtonTextColor: { type: String, default: '' },
+  secondaryButtonBg: { type: String, default: '' },
+  secondaryButtonTextColor: { type: String, default: '' },
   order: { type: Number, default: 0 },
   isVisible: { type: Boolean, default: true }
 }, { _id: true });

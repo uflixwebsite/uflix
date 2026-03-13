@@ -6,7 +6,19 @@ import Link from 'next/link';
 
 
 interface HeroProps {
-  slides?: Array<{ image: string; title: string; subtitle?: string; buttonText?: string; buttonLink?: string }>;
+  slides?: Array<{
+    image: string;
+    title: string;
+    subtitle?: string;
+    buttonText?: string;
+    buttonLink?: string;
+    titleColor?: string;
+    subtitleColor?: string;
+    primaryButtonBg?: string;
+    primaryButtonTextColor?: string;
+    secondaryButtonBg?: string;
+    secondaryButtonTextColor?: string;
+  }>;
 }
 
 const PLACEHOLDER_SLIDE = {
@@ -41,7 +53,7 @@ export default function Hero({ slides: propSlides }: HeroProps) {
   };
 
   return (
-    <section className="relative h-[70vh] sm:h-[85vh] lg:h-screen min-h-[600px] bg-foreground overflow-hidden">
+    <section className="relative h-[70vh] sm:h-[85vh] lg:h-screen min-h-150 bg-foreground overflow-hidden">
 
       {slides.map((slide, index) => (
         <div
@@ -63,30 +75,32 @@ export default function Hero({ slides: propSlides }: HeroProps) {
           ) : (
             <div className="w-full h-full bg-gray-200" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-r from-foreground/70 to-foreground/30" />
+          <div className="absolute inset-0 bg-linear-to-r from-foreground/70 to-foreground/30" />
         </div>
       ))}
 
       <div className="absolute inset-0 flex items-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="max-w-2xl">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-3 sm:mb-4 leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-3 sm:mb-4 leading-tight" style={{ color: slides[currentSlide].titleColor || undefined }}>
               {slides[currentSlide].title}
             </h1>
-            <p className="text-base sm:text-xl md:text-2xl text-white/90 mb-6 sm:mb-8 leading-relaxed">
+            <p className="text-base sm:text-xl md:text-2xl text-white/90 mb-6 sm:mb-8 leading-relaxed" style={{ color: slides[currentSlide].subtitleColor || undefined }}>
               {slides[currentSlide].subtitle}
             </p>
             
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Link
                 href={slides[currentSlide].buttonLink || '/shop'}
-                className="bg-accent hover:bg-secondary text-white px-6 sm:px-8 py-3 rounded-md font-semibold transition-colors text-center"
+                className="btn-primary px-6 sm:px-8 py-3 rounded-md font-semibold transition-colors text-center"
+                style={{ backgroundColor: slides[currentSlide].primaryButtonBg || undefined, color: slides[currentSlide].primaryButtonTextColor || undefined }}
               >
                 {slides[currentSlide].buttonText || 'Shop Now'}
               </Link>
               <Link
                 href="/categories"
                 className="bg-white hover:bg-neutral-light text-foreground px-6 sm:px-8 py-3 rounded-md font-semibold transition-colors text-center"
+                style={{ backgroundColor: slides[currentSlide].secondaryButtonBg || undefined, color: slides[currentSlide].secondaryButtonTextColor || undefined }}
               >
                 Browse Categories
               </Link>

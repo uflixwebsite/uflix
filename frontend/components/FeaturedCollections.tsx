@@ -4,12 +4,12 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-const defaultCollections: Array<{ title: string; description?: string; image: string; itemCount?: number; link?: string }> = [];
+const defaultCollections: Array<{ title: string; description?: string; image: string; itemCount?: number; link?: string; buttonText?: string; primaryButtonBg?: string; primaryButtonTextColor?: string }> = [];
 
 interface FeaturedCollectionsProps {
   title?: string;
   subtitle?: string;
-  items?: Array<{ title: string; description?: string; image: string; itemCount?: number; link?: string }>;
+  items?: Array<{ title: string; description?: string; image: string; itemCount?: number; link?: string; buttonText?: string; primaryButtonBg?: string; primaryButtonTextColor?: string }>;
 }
 
 export default function FeaturedCollections({ title, subtitle, items }: FeaturedCollectionsProps) {
@@ -76,8 +76,9 @@ export default function FeaturedCollections({ title, subtitle, items }: Featured
               <Link
                 href={col.link || '/shop'}
                 className="inline-block bg-white text-foreground px-5 py-2 rounded-md font-semibold hover:bg-accent hover:text-white transition-colors text-xs sm:text-sm shadow-md"
+                style={{ backgroundColor: col.primaryButtonBg || undefined, color: col.primaryButtonTextColor || undefined }}
               >
-                Explore Collection
+                {col.buttonText || 'Explore Collection'}
               </Link>
             </div>
           </div>

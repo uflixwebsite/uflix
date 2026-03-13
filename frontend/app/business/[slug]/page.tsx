@@ -140,7 +140,7 @@ export default function BusinessSubcategoryPage() {
         <main className="max-w-7xl mx-auto px-4 py-24 text-center">
           <h1 className="text-4xl font-bold mb-4">Category Not Found</h1>
           <p className="text-gray-500 mb-8">The category "{toTitleCase(slug)}" doesn't exist yet.</p>
-          <Link href="/business" className="inline-block bg-accent text-white px-6 py-3 rounded-md font-semibold hover:bg-accent/90 transition-colors">
+          <Link href="/business" className="inline-block btn-primary px-6 py-3 rounded-md font-semibold hover:bg-accent/90 transition-colors">
             ← Back to Business
           </Link>
         </main>
@@ -194,7 +194,7 @@ export default function BusinessSubcategoryPage() {
                 <div className="text-6xl mb-4">📦</div>
                 <h3 className="text-2xl font-bold text-gray-700 mb-2">No Products Yet</h3>
                 <p className="text-gray-500 mb-8">Products in the <strong>{displayName}</strong> collection will appear here once added.</p>
-                <Link href="/business" className="inline-block bg-accent text-white px-6 py-3 rounded-md font-semibold hover:bg-accent/90 transition-colors">
+                <Link href="/business" className="inline-block btn-primary px-6 py-3 rounded-md font-semibold hover:bg-accent/90 transition-colors">
                   ← Back to Business
                 </Link>
               </div>

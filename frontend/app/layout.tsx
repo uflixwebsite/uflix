@@ -10,6 +10,7 @@ import PageTransition from '@/components/PageTransition';
 import PageLoadingIndicator from '@/components/PageLoadingIndicator';
 import LoadingBar from '@/components/LoadingBar';
 import WhatsAppButton from '@/components/WhatsAppButton';
+import SiteButtonThemeSync from '@/components/SiteButtonThemeSync';
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -49,6 +50,7 @@ export default function RootLayout({
           </Script>
           <LoadingBar />
           <PageLoadingIndicator />
+          <SiteButtonThemeSync />
           <UserSync />
           <CartProvider>
             <WishlistProvider>

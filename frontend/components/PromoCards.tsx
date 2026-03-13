@@ -8,6 +8,8 @@ interface PromoCard {
   title: string;
   buttonText?: string;
   buttonLink?: string;
+  primaryButtonBg?: string;
+  primaryButtonTextColor?: string;
   image: string;
   note?: string;
 }
@@ -27,7 +29,7 @@ export default function PromoCards({ cards: propCards }: PromoCardsProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[0, 1].map((i) => (
-              <div key={i} className="relative overflow-hidden rounded-xl h-[420px] sm:h-[500px] bg-gray-100 flex items-center justify-center">
+              <div key={i} className="relative overflow-hidden rounded-xl h-105 sm:h-125 bg-gray-100 flex items-center justify-center">
                 <p className="text-gray-300 text-sm">Add promo card {i + 1} in admin panel</p>
               </div>
             ))}
@@ -45,7 +47,7 @@ export default function PromoCards({ cards: propCards }: PromoCardsProps) {
             <Link
               key={index}
               href={card.buttonLink || '/contact'}
-              className="relative group overflow-hidden rounded-xl h-[420px] sm:h-[500px] block"
+              className="relative group overflow-hidden rounded-xl h-105 sm:h-125 block"
             >
               {/* Background Image */}
               {card.image ? (
@@ -72,7 +74,7 @@ export default function PromoCards({ cards: propCards }: PromoCardsProps) {
                     {card.title}
                   </h3>
                   {card.buttonText && (
-                    <span className="inline-block border-b border-white text-sm font-medium hover:opacity-80 transition-opacity cursor-pointer">
+                    <span className="inline-block border-b border-white text-sm font-medium hover:opacity-80 transition-opacity cursor-pointer px-3 py-1 rounded" style={{ backgroundColor: card.primaryButtonBg || undefined, color: card.primaryButtonTextColor || undefined }}>
                       {card.buttonText}
                     </span>
                   )}

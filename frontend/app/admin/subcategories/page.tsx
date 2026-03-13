@@ -89,7 +89,7 @@ function TreeNode({
         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
           {isEditing ? (
             <>
-              <button onClick={() => onSaveEdit(node._id)} className="px-2 py-1 bg-accent text-white text-xs rounded hover:bg-accent/90">Save</button>
+              <button onClick={() => onSaveEdit(node._id)} className="px-2 py-1 btn-primary text-xs rounded hover:bg-accent/90">Save</button>
               <button onClick={onCancelEdit} className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded hover:bg-gray-200">Cancel</button>
             </>
           ) : (

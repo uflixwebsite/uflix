@@ -130,7 +130,7 @@ export default function ProductCard({ _id, name, price, discountPrice, images, c
             </div>
             <Link
               href={`/product/${_id}`}
-              className="w-full bg-accent hover:bg-secondary text-white py-2 rounded-md font-medium transition-colors text-center block"
+              className="w-full btn-primary py-2 rounded-md font-medium transition-colors text-center block"
             >
               Request Quotation
             </Link>
@@ -145,7 +145,7 @@ export default function ProductCard({ _id, name, price, discountPrice, images, c
             </div>
             <button
               onClick={handleAddToCart}
-              className="w-full bg-accent hover:bg-secondary text-white py-2 rounded-md font-medium transition-colors"
+              className="w-full btn-primary py-2 rounded-md font-medium transition-colors"
             >
               Add to Cart
             </button>

@@ -174,7 +174,7 @@ export default function FilterSidebar({ onFilterChange, currentCategory }: Filte
 
       <button 
         onClick={handleApplyFilters}
-        className="w-full bg-accent hover:bg-secondary text-white py-2 rounded-md font-medium transition-colors"
+        className="w-full btn-primary py-2 rounded-md font-medium transition-colors"
       >
         Apply Filters
       </button>

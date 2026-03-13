@@ -101,7 +101,7 @@ export default function CartPage() {
             </svg>
             <h2 className="text-2xl font-bold mb-2">Your cart is empty</h2>
             <p className="text-neutral-dark mb-6">Add some furniture to get started!</p>
-            <Link href="/shop" className="inline-block bg-accent hover:bg-accent-dark text-white px-8 py-3 rounded-full font-medium transition-colors">
+            <Link href="/shop" className="inline-block btn-primary px-8 py-3 rounded-full font-medium transition-colors">
               Continue Shopping
             </Link>
           </div>
@@ -217,7 +217,7 @@ export default function CartPage() {
                 
                 <button 
                   onClick={handleProceedToCheckout}
-                  className="w-full bg-accent hover:bg-accent-dark text-white py-4 rounded-lg font-medium transition-colors mb-4"
+                  className="w-full btn-primary py-4 rounded-lg font-medium transition-colors mb-4"
                 >
                   Proceed to Checkout
                 </button>

@@ -244,13 +244,13 @@ export default function CheckoutPage() {
               <div className="space-y-3">
                 <Link
                   href="/sign-in"
-                  className="block w-full bg-accent hover:bg-secondary text-white py-3 rounded-md font-semibold transition-colors"
+                  className="block w-full btn-primary py-3 rounded-md font-semibold transition-colors"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/sign-up"
-                  className="block w-full border-2 border-accent text-accent hover:bg-accent hover:text-white py-3 rounded-md font-semibold transition-colors"
+                  className="block w-full btn-outline py-3 rounded-md font-semibold transition-colors"
                 >
                   Create Account
                 </Link>
@@ -606,7 +606,7 @@ export default function CheckoutPage() {
               <button
                 onClick={handlePlaceOrder}
                 disabled={processing || !selectedAddress}
-                className="w-full bg-accent hover:bg-secondary text-white py-3 rounded-md font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full btn-primary py-3 rounded-md font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {processing ? 'Processing...' : 'Place Order'}
               </button>

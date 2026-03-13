@@ -26,6 +26,18 @@ async function deleteOldImage(url: string) {
   }
 }
 
+function ColorSwatch({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <div>
+      <label className="block text-xs text-gray-500 mb-1">{label}</label>
+      <div className="flex items-center gap-2">
+        <input type="color" value={value || '#ffffff'} onChange={(e) => onChange(e.target.value)} className="w-8 h-8 rounded-md cursor-pointer border border-gray-200 p-0.5 shrink-0" />
+        <input type="text" value={value || ''} onChange={(e) => onChange(e.target.value)} className="flex-1 min-w-0 px-2 py-1.5 border border-gray-300 rounded-md text-xs font-mono focus:outline-none focus:ring-1 focus:ring-accent" maxLength={9} placeholder="#ffffff" />
+      </div>
+    </div>
+  );
+}
+
 const TABS = [
   { id: 'sections', label: 'Section Order' },
   { id: 'hero', label: 'Hero Slides' },
@@ -34,6 +46,7 @@ const TABS = [
   { id: 'collections', label: 'Collections' },
   { id: 'photoGrid', label: 'Photo Grid' },
   { id: 'promoCards', label: 'Promo Cards' },
+  { id: 'siteButtons', label: 'Site Buttons' },
   { id: 'statsBanner', label: 'Stats Banner' },
   { id: 'products', label: 'Product Sections' },
   { id: 'testimonials', label: 'Testimonials' },
@@ -85,7 +98,7 @@ function ImageUploader({ value, onChange, label, folder = 'home', hint }: { valu
       {hint && <p className="text-xs text-gray-400 mb-1.5">📐 Recommended: {hint}</p>}
       <div className="flex gap-2 items-start">
         <input type="text" value={value || ''} onChange={(e) => onChange(e.target.value)} placeholder="Image URL or upload" className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
-        <label className={`px-3 py-2 text-sm rounded-md cursor-pointer transition-colors whitespace-nowrap ${uploading ? 'bg-gray-300 text-gray-500' : 'bg-accent text-white hover:bg-secondary'}`}>
+        <label className={`px-3 py-2 text-sm rounded-md cursor-pointer transition-colors whitespace-nowrap ${uploading ? 'bg-gray-300 text-gray-500' : 'btn-primary'}`}>
           {uploading ? 'Uploading...' : 'Upload'}
           <input type="file" accept="image/*" onChange={handleUpload} className="hidden" disabled={uploading} />
         </label>
@@ -302,6 +315,17 @@ export default function AdminHomePage() {
                     <input type="text" value={slide.buttonLink || ''} onChange={(e) => updateSlide(index, 'buttonLink', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" />
                   </div>
                 </div>
+                <div className="border-t border-gray-100 pt-3">
+                  <p className="text-xs font-semibold text-gray-500 mb-2">🎨 Text &amp; Button Colors</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <ColorSwatch label="Heading Color" value={slide.titleColor || '#ffffff'} onChange={(v) => updateSlide(index, 'titleColor', v)} />
+                    <ColorSwatch label="Subtitle Color" value={slide.subtitleColor || '#ffffffE6'} onChange={(v) => updateSlide(index, 'subtitleColor', v)} />
+                    <ColorSwatch label="Primary Button Bg" value={slide.primaryButtonBg || '#f97316'} onChange={(v) => updateSlide(index, 'primaryButtonBg', v)} />
+                    <ColorSwatch label="Primary Button Text" value={slide.primaryButtonTextColor || '#ffffff'} onChange={(v) => updateSlide(index, 'primaryButtonTextColor', v)} />
+                    <ColorSwatch label="Alt Button Bg" value={slide.secondaryButtonBg || '#ffffff'} onChange={(v) => updateSlide(index, 'secondaryButtonBg', v)} />
+                    <ColorSwatch label="Alt Button Text" value={slide.secondaryButtonTextColor || '#111827'} onChange={(v) => updateSlide(index, 'secondaryButtonTextColor', v)} />
+                  </div>
+                </div>
               </div>
             </div>
           ))}
@@ -361,7 +385,7 @@ export default function AdminHomePage() {
       setSettings({ ...settings, collections: { ...coll, items: newItems } });
     };
     const addCollection = () => {
-      setSettings({ ...settings, collections: { ...coll, items: [...coll.items, { title: '', description: '', image: '', itemCount: 0, link: '/shop' }] } });
+      setSettings({ ...settings, collections: { ...coll, items: [...coll.items, { title: '', description: '', image: '', itemCount: 0, link: '/shop', buttonText: 'Explore Collection', primaryButtonBg: '', primaryButtonTextColor: '' }] } });
     };
     const removeCollection = (index: number) => {
       setSettings({ ...settings, collections: { ...coll, items: coll.items.filter((_: any, i: number) => i !== index) } });
@@ -409,6 +433,14 @@ export default function AdminHomePage() {
                   <label className="block text-sm font-medium mb-1">Link</label>
                   <input type="text" value={item.link || ''} onChange={(e) => updateCollection(index, 'link', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Button Text</label>
+                  <input type="text" value={item.buttonText || ''} onChange={(e) => updateCollection(index, 'buttonText', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <ColorSwatch label="Button Background" value={item.primaryButtonBg || '#ffffff'} onChange={(v) => updateCollection(index, 'primaryButtonBg', v)} />
+                  <ColorSwatch label="Button Text" value={item.primaryButtonTextColor || '#111827'} onChange={(v) => updateCollection(index, 'primaryButtonTextColor', v)} />
+                </div>
               </div>
             </div>
           ))}
@@ -424,7 +456,7 @@ export default function AdminHomePage() {
       setSettings({ ...settings, productSections: { ...ps, [field]: value } });
     };
     const addCategorySection = () => {
-      const newCat = { category: '', categoryName: '', title: '', subtitle: '', limit: 8, enabled: true };
+      const newCat = { category: '', categoryName: '', title: '', subtitle: '', limit: 8, enabled: true, ctaText: '', ctaLink: '', primaryButtonBg: '', primaryButtonTextColor: '' };
       updatePS('categoryProducts', [...(ps.categoryProducts || []), newCat]);
     };
     const updateCategorySection = (index: number, field: string, value: any) => {
@@ -466,6 +498,18 @@ export default function AdminHomePage() {
             <label className="block text-sm font-medium mb-1">Subtitle</label>
             <input type="text" value={ps.bestSellers?.subtitle || ''} onChange={(e) => updatePS('bestSellers', { ...ps.bestSellers, subtitle: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" />
           </div>
+          <div className="grid grid-cols-2 gap-3 mt-3">
+            <div>
+              <label className="block text-sm font-medium mb-1">Button Text</label>
+              <input type="text" value={ps.bestSellers?.ctaText || ''} onChange={(e) => updatePS('bestSellers', { ...ps.bestSellers, ctaText: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Button Link</label>
+              <input type="text" value={ps.bestSellers?.ctaLink || ''} onChange={(e) => updatePS('bestSellers', { ...ps.bestSellers, ctaLink: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" />
+            </div>
+            <ColorSwatch label="Button Background" value={ps.bestSellers?.primaryButtonBg || '#f97316'} onChange={(v) => updatePS('bestSellers', { ...ps.bestSellers, primaryButtonBg: v })} />
+            <ColorSwatch label="Button Text" value={ps.bestSellers?.primaryButtonTextColor || '#ffffff'} onChange={(v) => updatePS('bestSellers', { ...ps.bestSellers, primaryButtonTextColor: v })} />
+          </div>
         </div>
 
         {/* New Arrivals */}
@@ -490,6 +534,18 @@ export default function AdminHomePage() {
           <div className="mt-3">
             <label className="block text-sm font-medium mb-1">Subtitle</label>
             <input type="text" value={ps.newArrivals?.subtitle || ''} onChange={(e) => updatePS('newArrivals', { ...ps.newArrivals, subtitle: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" />
+          </div>
+          <div className="grid grid-cols-2 gap-3 mt-3">
+            <div>
+              <label className="block text-sm font-medium mb-1">Button Text</label>
+              <input type="text" value={ps.newArrivals?.ctaText || ''} onChange={(e) => updatePS('newArrivals', { ...ps.newArrivals, ctaText: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Button Link</label>
+              <input type="text" value={ps.newArrivals?.ctaLink || ''} onChange={(e) => updatePS('newArrivals', { ...ps.newArrivals, ctaLink: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" />
+            </div>
+            <ColorSwatch label="Button Background" value={ps.newArrivals?.primaryButtonBg || '#f97316'} onChange={(v) => updatePS('newArrivals', { ...ps.newArrivals, primaryButtonBg: v })} />
+            <ColorSwatch label="Button Text" value={ps.newArrivals?.primaryButtonTextColor || '#ffffff'} onChange={(v) => updatePS('newArrivals', { ...ps.newArrivals, primaryButtonTextColor: v })} />
           </div>
         </div>
 
@@ -535,6 +591,16 @@ export default function AdminHomePage() {
                     <label className="block text-sm font-medium mb-1">Subtitle</label>
                     <input type="text" value={cp.subtitle || ''} onChange={(e) => updateCategorySection(index, 'subtitle', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" />
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Button Text</label>
+                    <input type="text" value={cp.ctaText || ''} onChange={(e) => updateCategorySection(index, 'ctaText', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Button Link</label>
+                    <input type="text" value={cp.ctaLink || ''} onChange={(e) => updateCategorySection(index, 'ctaLink', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" />
+                  </div>
+                  <ColorSwatch label="Button Background" value={cp.primaryButtonBg || '#f97316'} onChange={(v) => updateCategorySection(index, 'primaryButtonBg', v)} />
+                  <ColorSwatch label="Button Text" value={cp.primaryButtonTextColor || '#ffffff'} onChange={(v) => updateCategorySection(index, 'primaryButtonTextColor', v)} />
                 </div>
               </div>
             ))}
@@ -876,7 +942,7 @@ export default function AdminHomePage() {
       setSettings({ ...settings, promoCards: { ...pc, cards: newCards } });
     };
     const addCard = () => {
-      setSettings({ ...settings, promoCards: { ...pc, cards: [...(pc.cards || []), { category: '', title: '', buttonText: 'Book a consultation', buttonLink: '/contact', image: '', note: '' }] } });
+      setSettings({ ...settings, promoCards: { ...pc, cards: [...(pc.cards || []), { category: '', title: '', buttonText: 'Book a consultation', buttonLink: '/contact', primaryButtonBg: '', primaryButtonTextColor: '', image: '', note: '' }] } });
     };
     const removeCard = (index: number) => {
       setSettings({ ...settings, promoCards: { ...pc, cards: (pc.cards || []).filter((_: any, i: number) => i !== index) } });
@@ -912,6 +978,8 @@ export default function AdminHomePage() {
                     <label className="block text-sm font-medium mb-1">Button Link</label>
                     <input type="text" value={card.buttonLink || ''} onChange={(e) => updateCard(index, 'buttonLink', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" placeholder="/contact" />
                   </div>
+                  <ColorSwatch label="Button Background" value={card.primaryButtonBg || '#ffffff'} onChange={(v) => updateCard(index, 'primaryButtonBg', v)} />
+                  <ColorSwatch label="Button Text" value={card.primaryButtonTextColor || '#ffffff'} onChange={(v) => updateCard(index, 'primaryButtonTextColor', v)} />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Note (optional small text below button)</label>
@@ -978,6 +1046,58 @@ export default function AdminHomePage() {
     );
   };
 
+  // ===== GLOBAL SITE BUTTON THEME =====
+  const renderSiteButtonsTab = () => {
+    const theme = settings?.siteButtonTheme || {
+      primaryBg: '#FF6B35',
+      primaryText: '#FFFFFF',
+      primaryHoverBg: '#C73E1D',
+      secondaryBg: '#C73E1D',
+      secondaryText: '#FFFFFF',
+      secondaryHoverBg: '#E85A2A',
+      outlineBg: 'transparent',
+      outlineText: '#FF6B35',
+      outlineBorder: '#FF6B35',
+      outlineHoverBg: '#FF6B35',
+      outlineHoverText: '#FFFFFF',
+    };
+    const setTheme = (field: string, value: string) => {
+      setSettings({ ...settings, siteButtonTheme: { ...theme, [field]: value } });
+    };
+
+    return (
+      <div className="space-y-6">
+        <p className="text-sm text-gray-600">These colors apply site-wide to most main content buttons. Wishlist, cart, checkout and payment routes stay unchanged.</p>
+        <div className="p-4 border border-gray-200 rounded-lg bg-white">
+          <h4 className="font-semibold mb-3">Primary Buttons</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <ColorSwatch label="Background" value={theme.primaryBg} onChange={(v) => setTheme('primaryBg', v)} />
+            <ColorSwatch label="Text" value={theme.primaryText} onChange={(v) => setTheme('primaryText', v)} />
+            <ColorSwatch label="Hover Background" value={theme.primaryHoverBg} onChange={(v) => setTheme('primaryHoverBg', v)} />
+          </div>
+        </div>
+        <div className="p-4 border border-gray-200 rounded-lg bg-white">
+          <h4 className="font-semibold mb-3">Secondary Buttons</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <ColorSwatch label="Background" value={theme.secondaryBg} onChange={(v) => setTheme('secondaryBg', v)} />
+            <ColorSwatch label="Text" value={theme.secondaryText} onChange={(v) => setTheme('secondaryText', v)} />
+            <ColorSwatch label="Hover Background" value={theme.secondaryHoverBg} onChange={(v) => setTheme('secondaryHoverBg', v)} />
+          </div>
+        </div>
+        <div className="p-4 border border-gray-200 rounded-lg bg-white">
+          <h4 className="font-semibold mb-3">Outline Buttons</h4>
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+            <ColorSwatch label="Background" value={theme.outlineBg} onChange={(v) => setTheme('outlineBg', v)} />
+            <ColorSwatch label="Text" value={theme.outlineText} onChange={(v) => setTheme('outlineText', v)} />
+            <ColorSwatch label="Border" value={theme.outlineBorder} onChange={(v) => setTheme('outlineBorder', v)} />
+            <ColorSwatch label="Hover Bg" value={theme.outlineHoverBg} onChange={(v) => setTheme('outlineHoverBg', v)} />
+            <ColorSwatch label="Hover Text" value={theme.outlineHoverText} onChange={(v) => setTheme('outlineHoverText', v)} />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderTabContent = () => {
     switch (activeTab) {
       case 'sections': return renderSectionsTab();
@@ -987,6 +1107,7 @@ export default function AdminHomePage() {
       case 'collections': return renderCollectionsTab();
       case 'photoGrid': return renderPhotoGridTab();
       case 'promoCards': return renderPromoCardsTab();
+      case 'siteButtons': return renderSiteButtonsTab();
       case 'statsBanner': return renderStatsBannerTab();
       case 'products': return renderProductsTab();
       case 'testimonials': return renderTestimonialsTab();
@@ -1012,7 +1133,7 @@ export default function AdminHomePage() {
 
         <div className="flex gap-6">
           {/* Tabs */}
-          <div className="w-48 flex-shrink-0">
+          <div className="w-48 shrink-0">
             <nav className="space-y-1">
               {TABS.map(tab => (
                 <button

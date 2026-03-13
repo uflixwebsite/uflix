@@ -226,7 +226,7 @@ export default function NestedCategoryPage() {
                 ? 'Browse a sub-category above to find products.'
                 : 'Check back soon or explore other categories.'}
             </p>
-            <Link href="/categories" className="inline-block px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors">
+            <Link href="/categories" className="inline-block px-6 py-2 btn-primary rounded-lg transition-colors">
               Browse Categories
             </Link>
           </div>

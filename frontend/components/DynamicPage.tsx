@@ -36,6 +36,12 @@ interface Section {
   linkText?: string;
   secondaryLink?: string;
   secondaryLinkText?: string;
+  titleColor?: string;
+  subtitleColor?: string;
+  primaryButtonBg?: string;
+  primaryButtonTextColor?: string;
+  secondaryButtonBg?: string;
+  secondaryButtonTextColor?: string;
   order: number;
   isVisible: boolean;
 }
@@ -78,19 +84,19 @@ function HeroSection({ section }: { section: Section }) {
         )}
         <div className="absolute inset-0 flex items-center justify-center text-white z-10">
           <div className="max-w-5xl mx-auto px-4 text-center">
-            <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold mb-4 md:mb-6">{section.title}</h1>
+            <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold mb-4 md:mb-6" style={{ color: section.titleColor || undefined }}>{section.title}</h1>
             {section.description && (
-              <p className="text-base sm:text-lg md:text-2xl mb-7 md:mb-8 max-w-3xl mx-auto text-white/80">{section.description}</p>
+              <p className="text-base sm:text-lg md:text-2xl mb-7 md:mb-8 max-w-3xl mx-auto text-white/80" style={{ color: section.subtitleColor || undefined }}>{section.description}</p>
             )}
             {(section.link || section.secondaryLink) && (
               <div className="flex flex-wrap justify-center gap-4">
                 {section.link && section.linkText && (
-                  <Link href={section.link} className="inline-block bg-accent hover:bg-secondary text-white px-7 md:px-10 py-3 md:py-4 rounded-full font-bold transition-colors shadow-xl text-sm md:text-lg">
+                  <Link href={section.link} className="inline-block btn-primary px-7 md:px-10 py-3 md:py-4 rounded-full font-bold transition-colors shadow-xl text-sm md:text-lg" style={{ backgroundColor: section.primaryButtonBg || undefined, color: section.primaryButtonTextColor || undefined }}>
                     {section.linkText}
                   </Link>
                 )}
                 {section.secondaryLink && section.secondaryLinkText && (
-                  <Link href={section.secondaryLink} className="inline-block bg-transparent border-2 border-white text-white hover:bg-white hover:text-accent px-7 md:px-10 py-3 md:py-4 rounded-full font-bold transition-colors text-sm md:text-lg">
+                  <Link href={section.secondaryLink} className="inline-block bg-transparent border-2 border-white text-white hover:bg-white hover:text-accent px-7 md:px-10 py-3 md:py-4 rounded-full font-bold transition-colors text-sm md:text-lg" style={{ backgroundColor: section.secondaryButtonBg || undefined, color: section.secondaryButtonTextColor || undefined }}>
                     {section.secondaryLinkText}
                   </Link>
                 )}
@@ -115,19 +121,19 @@ function HeroSection({ section }: { section: Section }) {
       )}
       <div className={`absolute inset-0 flex items-center justify-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
         <div className="max-w-5xl mx-auto px-4 text-center">
-          <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold mb-4 md:mb-6">{section.title}</h1>
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold mb-4 md:mb-6" style={{ color: section.titleColor || undefined }}>{section.title}</h1>
           {section.description && (
-            <p className="text-base sm:text-lg md:text-2xl mb-7 md:mb-8 max-w-3xl mx-auto">{section.description}</p>
+            <p className="text-base sm:text-lg md:text-2xl mb-7 md:mb-8 max-w-3xl mx-auto" style={{ color: section.subtitleColor || undefined }}>{section.description}</p>
           )}
           {(section.link || section.secondaryLink) && (
             <div className="flex flex-wrap justify-center gap-4">
               {section.link && section.linkText && (
-                <Link href={section.link} className="inline-block bg-white text-accent hover:bg-neutral-light px-7 md:px-10 py-3 md:py-4 rounded-lg font-bold transition-colors shadow-xl text-sm md:text-lg">
+                <Link href={section.link} className="inline-block bg-white text-accent hover:bg-neutral-light px-7 md:px-10 py-3 md:py-4 rounded-lg font-bold transition-colors shadow-xl text-sm md:text-lg" style={{ backgroundColor: section.primaryButtonBg || undefined, color: section.primaryButtonTextColor || undefined }}>
                   {section.linkText}
                 </Link>
               )}
               {section.secondaryLink && section.secondaryLinkText && (
-                <Link href={section.secondaryLink} className="inline-block bg-transparent border-2 border-white text-white hover:bg-white hover:text-accent px-7 md:px-10 py-3 md:py-4 rounded-lg font-bold transition-colors text-sm md:text-lg">
+                <Link href={section.secondaryLink} className="inline-block bg-transparent border-2 border-white text-white hover:bg-white hover:text-accent px-7 md:px-10 py-3 md:py-4 rounded-lg font-bold transition-colors text-sm md:text-lg" style={{ backgroundColor: section.secondaryButtonBg || undefined, color: section.secondaryButtonTextColor || undefined }}>
                   {section.secondaryLinkText}
                 </Link>
               )}
@@ -248,9 +254,9 @@ function CTASection({ section }: { section: Section }) {
   return (
     <section className={`py-20 ${getBgClass(section.bgColor)}`}>
       <div className={`max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center ${isGradient ? 'text-white' : ''}`}>
-        <h2 className="text-4xl font-bold mb-6">{section.title}</h2>
+        <h2 className="text-4xl font-bold mb-6" style={{ color: section.titleColor || undefined }}>{section.title}</h2>
         {section.description && (
-          <p className={`text-xl mb-10 ${isGradient ? 'opacity-90' : 'text-neutral-dark'}`}>{section.description}</p>
+          <p className={`text-xl mb-10 ${isGradient ? 'opacity-90' : 'text-neutral-dark'}`} style={{ color: section.subtitleColor || undefined }}>{section.description}</p>
         )}
         <div className="flex flex-wrap justify-center gap-4">
           {section.link && section.linkText && (
@@ -259,8 +265,9 @@ function CTASection({ section }: { section: Section }) {
               className={`inline-block px-10 py-4 rounded-lg font-bold transition-colors shadow-xl text-lg ${
                 isGradient
                   ? 'bg-white text-accent hover:bg-neutral-light'
-                  : 'bg-accent hover:bg-secondary text-white'
+                  : 'btn-primary'
               }`}
+              style={{ backgroundColor: section.primaryButtonBg || undefined, color: section.primaryButtonTextColor || undefined }}
             >
               {section.linkText}
             </Link>
@@ -271,8 +278,9 @@ function CTASection({ section }: { section: Section }) {
               className={`inline-block px-10 py-4 rounded-lg font-bold transition-colors text-lg ${
                 isGradient
                   ? 'bg-transparent border-2 border-white text-white hover:bg-white hover:text-accent'
-                  : 'border-2 border-accent text-accent hover:bg-accent hover:text-white'
+                  : 'btn-outline'
               }`}
+              style={{ backgroundColor: section.secondaryButtonBg || undefined, color: section.secondaryButtonTextColor || undefined }}
             >
               {section.secondaryLinkText}
             </Link>
