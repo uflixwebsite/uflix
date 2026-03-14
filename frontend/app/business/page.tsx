@@ -625,10 +625,24 @@ function BusinessHero({ section }: { section?: Section }) {
           {cur.description || cur.subtitle || 'From corporate offices to government institutions — premium, ISO-certified furniture solutions designed for productivity, durability, and your brand.'}
         </p>
         <div className="flex flex-wrap gap-4 justify-center">
-          <Link href={cur.link} className="btn-primary px-8 py-3.5 rounded-full font-semibold shadow-lg transition-all" style={{ backgroundColor: cur.primaryButtonBg || undefined, color: cur.primaryButtonTextColor || undefined }}>
+          <Link
+            href={cur.link}
+            className="btn-primary px-8 py-3.5 rounded-full font-semibold shadow-lg transition-all"
+            style={{
+              '--site-btn-primary-bg': cur.primaryButtonBg || undefined,
+              '--site-btn-primary-text': cur.primaryButtonTextColor || undefined,
+            } as React.CSSProperties}
+          >
             {cur.linkText}
           </Link>
-          <Link href={cur.secondaryLink} className="btn-outline-inverse px-8 py-3.5 rounded-full font-semibold transition-all hover:bg-white/10" style={{ backgroundColor: cur.secondaryButtonBg || undefined, color: cur.secondaryButtonTextColor || undefined }}>
+          <Link
+            href={cur.secondaryLink}
+            className="btn-outline-inverse px-8 py-3.5 rounded-full font-semibold transition-all hover:bg-white/10"
+            style={{
+              '--site-btn-outline-bg': cur.secondaryButtonBg || undefined,
+              '--site-btn-outline-text': cur.secondaryButtonTextColor || undefined,
+            } as React.CSSProperties}
+          >
             {cur.secondaryLinkText}
           </Link>
         </div>

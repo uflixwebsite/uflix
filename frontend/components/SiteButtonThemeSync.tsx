@@ -13,6 +13,8 @@ export default function SiteButtonThemeSync() {
 
   useEffect(() => {
     let mounted = true;
+    let pollInterval: NodeJS.Timeout | null = null;
+
     const applyTheme = async () => {
       try {
         const res = await getHomeSettings();
@@ -37,9 +39,15 @@ export default function SiteButtonThemeSync() {
       }
     };
 
+    // Apply theme immediately on mount
     applyTheme();
+
+    // Poll for theme updates every 3 seconds
+    pollInterval = setInterval(applyTheme, 3000);
+
     return () => {
       mounted = false;
+      if (pollInterval) clearInterval(pollInterval);
     };
   }, []);
 

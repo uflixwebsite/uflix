@@ -610,6 +610,10 @@ function HeroPerSlideEditor({ section, onChange }: { section: any; onChange: (s:
       image: '', title: '', subtitle: '', description: '',
       linkText: 'Explore Products', link: '#just-arrived',
       secondaryLinkText: 'Request a Quote', secondaryLink: '/contact',
+      titleColor: '', subtitleColor: '',
+      primaryButtonBg: '', primaryButtonTextColor: '',
+      secondaryButtonBg: '', secondaryButtonTextColor: '',
+      stats: '', statsLabel: '',
     };
     const next = [...slides, blank];
     commit(next);

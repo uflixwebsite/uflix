@@ -152,14 +152,20 @@ function EducationHero({ section }: { section?: Section }) {
           <Link
             href={cur.link}
             className="btn-primary px-8 py-3.5 rounded-full font-semibold shadow-lg transition-all"
-            style={{ backgroundColor: cur.primaryButtonBg || undefined, color: cur.primaryButtonTextColor || undefined }}
+            style={{
+              '--site-btn-primary-bg': cur.primaryButtonBg || undefined,
+              '--site-btn-primary-text': cur.primaryButtonTextColor || undefined,
+            } as React.CSSProperties}
           >
             {cur.linkText}
           </Link>
           <Link
             href={cur.secondaryLink}
             className="btn-outline-inverse px-8 py-3.5 rounded-full font-semibold transition-all hover:bg-white/10"
-            style={{ backgroundColor: cur.secondaryButtonBg || undefined, color: cur.secondaryButtonTextColor || undefined }}
+            style={{
+              '--site-btn-outline-bg': cur.secondaryButtonBg || undefined,
+              '--site-btn-outline-text': cur.secondaryButtonTextColor || undefined,
+            } as React.CSSProperties}
           >
             {cur.secondaryLinkText}
           </Link>
@@ -241,7 +247,7 @@ function PlaceholderSection({ section }: { section?: Section }) {
         {section.link && (
           <Link
             href={section.link}
-            className="inline-block mt-6 btn-primary px-8 py-3.5 rounded-full font-semibold transition-all"
+            className="inline-block mt-6 px-8 py-3.5 rounded-full font-semibold transition-all bg-white/10 hover:bg-white/20 text-white"
             style={{ backgroundColor: section.primaryButtonBg || undefined, color: section.primaryButtonTextColor || undefined }}
           >
             {section.linkText || 'Learn More'}
@@ -369,7 +375,7 @@ function IdeasSection({ heading, exploreLink, exploreText, ideas }: { heading: s
                   <h3 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 leading-tight">{idea.title}</h3>
                   <p className="text-gray-600 leading-relaxed text-base mb-8">{idea.description}</p>
                   {idea.link && (
-                    <Link href={idea.link} className="inline-block btn-primary px-7 py-3 rounded-full text-sm font-semibold transition-colors" style={{ backgroundColor: idea.primaryButtonBg || undefined, color: idea.primaryButtonTextColor || undefined }}>{idea.linkText || 'Read more'}</Link>
+                    <Link href={idea.link} className="inline-block px-7 py-3 rounded-full text-sm font-semibold transition-colors bg-white/10 hover:bg-white/20 text-white" style={{ backgroundColor: idea.primaryButtonBg || undefined, color: idea.primaryButtonTextColor || undefined }}>{idea.linkText || 'Read more'}</Link>
                   )}
                 </div>
               </div>

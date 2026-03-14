@@ -1,8 +1,8 @@
 {
   "/admin/page": "app/admin/page.js",
-  "/admin/home/page": "app/admin/home/page.js",
-  "/admin/pages/page": "app/admin/pages/page.js",
   "/business/page": "app/business/page.js",
-  "/contact/page": "app/contact/page.js",
-  "/admin/pages/[slug]/edit/page": "app/admin/pages/[slug]/edit/page.js"
+  "/admin/pages/page": "app/admin/pages/page.js",
+  "/admin/pages/[slug]/edit/page": "app/admin/pages/[slug]/edit/page.js",
+  "/shop-fittings/page": "app/shop-fittings/page.js",
+  "/page": "app/page.js"
 }
