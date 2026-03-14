@@ -613,7 +613,6 @@ function HeroPerSlideEditor({ section, onChange }: { section: any; onChange: (s:
       titleColor: '', subtitleColor: '',
       primaryButtonBg: '', primaryButtonTextColor: '',
       secondaryButtonBg: '', secondaryButtonTextColor: '',
-      stats: '', statsLabel: '',
     };
     const next = [...slides, blank];
     commit(next);

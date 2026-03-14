@@ -21,12 +21,32 @@ interface HeroProps {
   }>;
 }
 
-const PLACEHOLDER_SLIDE = {
+type HeroSlide = {
+  image: string;
+  title: string;
+  subtitle?: string;
+  buttonText?: string;
+  buttonLink?: string;
+  titleColor?: string;
+  subtitleColor?: string;
+  primaryButtonBg?: string;
+  primaryButtonTextColor?: string;
+  secondaryButtonBg?: string;
+  secondaryButtonTextColor?: string;
+};
+
+const PLACEHOLDER_SLIDE: HeroSlide = {
   image: '',
   title: 'Your Hero Title Here',
   subtitle: 'Add hero slides from the admin panel',
   buttonText: 'Shop Now',
   buttonLink: '/shop',
+  titleColor: '',
+  subtitleColor: '',
+  primaryButtonBg: '',
+  primaryButtonTextColor: '',
+  secondaryButtonBg: '',
+  secondaryButtonTextColor: '',
 };
 
 export default function Hero({ slides: propSlides }: HeroProps) {
