@@ -30,6 +30,7 @@ export default function AddProductPage() {
     description: '',
     price: '',
     discountPrice: '',
+    shippingFees: '',
     sku: '',
     material: '',
     dimensions: {
@@ -217,6 +218,7 @@ export default function AddProductPage() {
         description: formData.description,
         price: formData.price ? parseFloat(formData.price) : 0,
         discountPrice: formData.discountPrice ? parseFloat(formData.discountPrice) : undefined,
+        shippingFees: formData.shippingFees ? parseFloat(formData.shippingFees) : 0,
         sku: formData.sku || null,
         categories: [...new Set((allCategoryNodes as any[]).map((n: any) => n.slug).filter(Boolean))],
         categoryRef: selectedCategoryIds[selectedCategoryIds.length - 1] || null,
@@ -458,7 +460,7 @@ export default function AddProductPage() {
           {/* Pricing */}
           <div className="mb-8">
             <h2 className="text-xl font-bold mb-4">Pricing</h2>
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-2">Price (₹)</label>
                 <input
@@ -477,6 +479,18 @@ export default function AddProductPage() {
                   step="0.01"
                   value={formData.discountPrice}
                   onChange={(e) => setFormData({ ...formData, discountPrice: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Shipping Fees (₹)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={formData.shippingFees}
+                  onChange={(e) => setFormData({ ...formData, shippingFees: e.target.value })}
+                  placeholder="0 for free shipping"
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
                 />
               </div>

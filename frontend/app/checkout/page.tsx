@@ -38,6 +38,9 @@ export default function CheckoutPage() {
     isDefault: false,
   });
 
+  const normalizePhone = (value: string) => value.replace(/\D/g, '').slice(0, 10);
+  const isValidPhone = (value: string) => /^\d{10}$/.test(normalizePhone(value));
+
   useEffect(() => {
     // Wait for auth to finish loading
     if (status === 'loading') {
@@ -84,11 +87,44 @@ export default function CheckoutPage() {
     setLoading(false);
   };
 
+  const getUnifiedCheckoutItems = () => {
+    const localCart = JSON.parse(localStorage.getItem('uflix-cart') || '[]');
+    if (Array.isArray(localCart) && localCart.length > 0) {
+      return localCart.map((item: any) => ({
+        id: String(item.id),
+        product: String(item.id),
+        name: item.name,
+        image: item.image,
+        quantity: Number(item.quantity || 1),
+        unitPrice: Number(String(item.price || '0').replace(/[^0-9.]/g, '')),
+        shippingFees: Number(item.shippingFees || 0),
+      }));
+    }
+
+    if (cart?.items?.length) {
+      return cart.items.map((item: any) => ({
+        id: String(item.product?._id || item.product),
+        product: String(item.product?._id || item.product),
+        name: item.product?.name || item.name,
+        image: item.product?.images?.[0]?.url || item.image,
+        quantity: Number(item.quantity || 1),
+        unitPrice: Number(item.discountPrice || item.price || item.product?.discountPrice || item.product?.price || 0),
+        shippingFees: Number(item.shippingFees || item.product?.shippingFees || 0),
+      }));
+    }
+
+    return [];
+  };
+
   const handlePlaceOrder = async () => {
     // Validate guest info if guest checkout
     if (checkoutMode === 'guest') {
       if (!guestInfo.name || !guestInfo.email || !guestInfo.phone) {
         alert('Please fill in your contact information');
+        return;
+      }
+      if (!isValidPhone(guestInfo.phone)) {
+        alert('Guest mobile number must be exactly 10 digits');
         return;
       }
     }
@@ -98,29 +134,21 @@ export default function CheckoutPage() {
       return;
     }
 
-    // For guest checkout, get items from localStorage cart
-    // For user checkout, get from backend cart
-    let orderItems = [];
-    if (checkoutMode === 'guest') {
-      const localCart = JSON.parse(localStorage.getItem('uflix-cart') || '[]');
-      if (localCart.length === 0) {
-        alert('Your cart is empty');
-        return;
-      }
-      orderItems = localCart.map((item: any) => ({
-        product: item.id, // Already a string (MongoDB _id)
-        quantity: item.quantity,
-      }));
-    } else {
-      if (!cart || cart.items.length === 0) {
-        alert('Your cart is empty');
-        return;
-      }
-      orderItems = cart.items.map((item: any) => ({
-        product: item.product._id,
-        quantity: item.quantity,
-      }));
+    if (!isValidPhone(selectedAddress.phone || '')) {
+      alert('Delivery mobile number must be exactly 10 digits');
+      return;
     }
+
+    const checkoutItems = getUnifiedCheckoutItems();
+    if (!checkoutItems.length) {
+      alert('Your cart is empty');
+      return;
+    }
+
+    const orderItems = checkoutItems.map((item: any) => ({
+      product: item.product,
+      quantity: item.quantity,
+    }));
 
     setProcessing(true);
 
@@ -144,19 +172,10 @@ export default function CheckoutPage() {
       if (paymentMethod === 'razorpay') {
         console.log('Processing Razorpay payment first...');
         
-        // Calculate total for Razorpay
-        const itemsTotal = orderItems.reduce((sum: number, item: any) => {
-          const localCart = JSON.parse(localStorage.getItem('uflix-cart') || '[]');
-          const cartItem = localCart.find((ci: any) => String(ci.id) === String(item.product));
-          if (cartItem) {
-            const price = parseFloat(cartItem.price.replace(/[^0-9.]/g, ''));
-            return sum + (price * item.quantity);
-          }
-          return sum;
-        }, 0);
-        const tax = itemsTotal * 0.18;
-        const shipping = itemsTotal > 5000 ? 0 : 200;
-        const totalPrice = itemsTotal + tax + shipping;
+        // Product prices are tax-inclusive; total = subtotal + shipping
+        const itemsTotal = checkoutItems.reduce((sum: number, item: any) => sum + (item.unitPrice * item.quantity), 0);
+        const shipping = checkoutItems.reduce((sum: number, item: any) => sum + (item.shippingFees || 0), 0);
+        const totalPrice = itemsTotal + shipping;
 
         try {
           await processRazorpayPayment(
@@ -309,25 +328,10 @@ export default function CheckoutPage() {
     );
   }
 
-  // Get cart items based on checkout mode
-  let cartItems: any[] = [];
-  let subtotal = 0;
-  
-  if (checkoutMode === 'guest') {
-    const localCart = JSON.parse(localStorage.getItem('uflix-cart') || '[]');
-    cartItems = localCart;
-    subtotal = localCart.reduce((sum: number, item: any) => {
-      const price = parseFloat(item.price.replace(/[^0-9.]/g, ''));
-      return sum + (price * item.quantity);
-    }, 0);
-  } else {
-    cartItems = cart?.items || [];
-    subtotal = cart?.totalPrice || 0;
-  }
-  
-  const tax = subtotal * 0.18;
-  const shipping = subtotal > 5000 ? 0 : 200;
-  const total = subtotal + tax + shipping;
+  const cartItems = getUnifiedCheckoutItems();
+  const subtotal = cartItems.reduce((sum: number, item: any) => sum + (item.unitPrice * item.quantity), 0);
+  const shippingTotal = cartItems.reduce((sum: number, item: any) => sum + (item.shippingFees || 0), 0);
+  const total = subtotal + shippingTotal;
 
   return (
     <div className="min-h-screen bg-background">
@@ -363,7 +367,10 @@ export default function CheckoutPage() {
                     type="tel"
                     placeholder="Phone Number *"
                     value={guestInfo.phone}
-                    onChange={(e) => setGuestInfo({ ...guestInfo, phone: e.target.value })}
+                    onChange={(e) => setGuestInfo({ ...guestInfo, phone: normalizePhone(e.target.value) })}
+                    maxLength={10}
+                    inputMode="numeric"
+                    pattern="[0-9]{10}"
                     className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
                     required
                   />
@@ -399,7 +406,10 @@ export default function CheckoutPage() {
                       type="tel"
                       placeholder="Phone Number"
                       value={newAddress.phone}
-                      onChange={(e) => setNewAddress({ ...newAddress, phone: e.target.value })}
+                      onChange={(e) => setNewAddress({ ...newAddress, phone: normalizePhone(e.target.value) })}
+                      maxLength={10}
+                      inputMode="numeric"
+                      pattern="[0-9]{10}"
                       className="col-span-2 px-4 py-2 border border-gray-300 rounded-md"
                     />
                     <input
@@ -439,6 +449,14 @@ export default function CheckoutPage() {
                     />
                     <button
                       onClick={() => {
+                        if (!newAddress.name || !newAddress.addressLine1 || !newAddress.city || !newAddress.state || !newAddress.pincode) {
+                          alert('Please fill all required address fields');
+                          return;
+                        }
+                        if (!isValidPhone(newAddress.phone)) {
+                          alert('Mobile number must be exactly 10 digits');
+                          return;
+                        }
                         setAddresses([...addresses, newAddress]);
                         setSelectedAddress(newAddress);
                         setShowAddressForm(false);
@@ -542,37 +560,23 @@ export default function CheckoutPage() {
 
               <div className="space-y-3 mb-6">
                 {cartItems.map((item: any, index: number) => (
-                  <div key={item._id || index} className="flex gap-3">
-                    <div className="w-16 h-16 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
-                      {checkoutMode === 'guest' ? (
-                        item.image && (
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            className="w-full h-full object-cover"
-                          />
-                        )
-                      ) : (
-                        item.product?.images && item.product.images[0] && (
-                          <img
-                            src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${item.product.images[0].url}`}
-                            alt={item.product.name}
-                            className="w-full h-full object-cover"
-                          />
-                        )
+                  <div key={item.id || index} className="flex gap-3">
+                    <div className="w-16 h-16 bg-gray-100 rounded-md overflow-hidden shrink-0">
+                      {item.image && (
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
                       )}
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-semibold line-clamp-2">
-                        {checkoutMode === 'guest' ? item.name : item.product?.name}
+                        {item.name}
                       </p>
                       <p className="text-sm text-neutral-dark">Qty: {item.quantity}</p>
                       <p className="text-sm font-semibold text-accent">
-                        {checkoutMode === 'guest' ? (
-                          item.price
-                        ) : (
-                          `₹${((item.discountPrice || item.price) * item.quantity).toLocaleString()}`
-                        )}
+                        ₹{(item.unitPrice * item.quantity).toLocaleString()}
                       </p>
                     </div>
                   </div>
@@ -585,13 +589,9 @@ export default function CheckoutPage() {
                   <span className="font-semibold">₹{subtotal.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-neutral-dark">Tax (18% GST)</span>
-                  <span className="font-semibold">₹{tax.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between text-sm">
                   <span className="text-neutral-dark">Shipping</span>
                   <span className="font-semibold">
-                    {shipping === 0 ? <span className="text-green-600">FREE</span> : `₹${shipping}`}
+                    {shippingTotal === 0 ? <span className="text-green-600">FREE</span> : `₹${shippingTotal}`}
                   </span>
                 </div>
               </div>

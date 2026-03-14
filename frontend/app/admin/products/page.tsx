@@ -14,6 +14,7 @@ export default function AdminProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [dataLoading, setDataLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -38,10 +39,6 @@ export default function AdminProductsPage() {
       return;
     }
 
-    // User is authenticated and is admin - fetch products
-    if (status === 'authenticated' && isAdmin) {
-      fetchProducts();
-    }
   }, [status, isAdmin, router]);
 
   useEffect(() => {
@@ -62,24 +59,30 @@ export default function AdminProductsPage() {
   }, [openMenuId]);
 
   useEffect(() => {
-    if (status === 'authenticated' && isAdmin) {
-      fetchProducts();
-    }
-  }, [page]);
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm.trim());
+    }, 350);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   useEffect(() => {
     if (status === 'authenticated' && isAdmin) {
-      setPage(1);
+      const hasFilters = Boolean(debouncedSearchTerm || filterCategory);
+      if (hasFilters && page !== 1) {
+        setPage(1);
+        return;
+      }
       fetchProducts();
     }
-  }, [searchTerm, filterCategory]);
+  }, [page, debouncedSearchTerm, filterCategory, status, isAdmin]);
 
   const fetchProducts = async () => {
     setDataLoading(true);
     try {
       const params: any = { page, limit: ITEMS_PER_PAGE };
-      if (searchTerm) {
-        params.search = searchTerm;
+      if (debouncedSearchTerm) {
+        params.search = debouncedSearchTerm;
       }
       if (filterCategory) {
         params.category = filterCategory;
@@ -202,7 +205,7 @@ export default function AdminProductsPage() {
                   <tr key={product._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="h-12 w-12 flex-shrink-0">
+                        <div className="h-12 w-12 shrink-0">
                           {product.images && product.images[0] ? (
                             <img
                               src={product.images[0].url}

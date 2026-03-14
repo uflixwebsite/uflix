@@ -8,6 +8,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Breadcrumb from '@/components/Breadcrumb';
 import { getCart, updateCartItem, removeFromCart, clearCart } from '@/services/cartService';
+import { getProduct } from '@/services/productService';
 import { useAuthState } from '@/hooks/useAuthState';
 
 export default function CartPage() {
@@ -29,7 +30,10 @@ export default function CartPage() {
       // Always use localStorage for cart (simpler and works for both guest and logged-in users)
       const localCart = localStorage.getItem('uflix-cart');
       if (localCart) {
-        setCart(JSON.parse(localCart));
+        const parsedCart = JSON.parse(localCart);
+        const hydratedCart = await hydrateCartWithProductData(parsedCart);
+        localStorage.setItem('uflix-cart', JSON.stringify(hydratedCart));
+        setCart(hydratedCart);
       } else {
         setCart([]);
       }
@@ -43,6 +47,39 @@ export default function CartPage() {
 
   const parsePrice = (priceStr: string) => {
     return parseInt(priceStr.replace(/[^0-9]/g, ''));
+  };
+
+  const hydrateCartWithProductData = async (items: any[]) => {
+    if (!Array.isArray(items) || items.length === 0) return [];
+
+    const hydrated = await Promise.all(items.map(async (item: any) => {
+      const productId = item?.id || item?.product?._id || item?.product;
+      if (!productId) {
+        return { ...item, shippingFees: item?.shippingFees || 0 };
+      }
+
+      try {
+        const productResponse = await getProduct(String(productId));
+        const product = productResponse?.data;
+        if (!product) {
+          return { ...item, shippingFees: item?.shippingFees || 0 };
+        }
+
+        const effectivePrice = Number(product.discountPrice || product.price || 0);
+        return {
+          ...item,
+          id: String(product._id || productId),
+          name: product.name || item.name,
+          image: product.images?.[0]?.url || item.image,
+          price: `₹${effectivePrice.toLocaleString()}`,
+          shippingFees: Number(product.shippingFees || 0),
+        };
+      } catch {
+        return { ...item, shippingFees: item?.shippingFees || 0 };
+      }
+    }));
+
+    return hydrated;
   };
 
   const updateQuantity = (productId: string | number, quantity: number) => {
@@ -82,7 +119,10 @@ export default function CartPage() {
   const subtotal = cart && cart.length > 0 
     ? cart.reduce((sum, item) => sum + (parsePrice(item.price) * item.quantity), 0)
     : 0;
-  const shipping = subtotal > 15000 ? 0 : 500;
+  // Calculate shipping from each product's shipping fees
+  const shipping = cart && cart.length > 0
+    ? cart.reduce((sum, item) => sum + (item.shippingFees || 0), 0)
+    : 0;
   const total = subtotal + shipping;
 
   return (
@@ -92,7 +132,7 @@ export default function CartPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Breadcrumb items={[{ label: 'Shopping Cart' }]} />
         
-        <h1 className="text-4xl font-bold mb-8">Shopping Cart</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold mb-8">Shopping Cart</h1>
 
         {cart.length === 0 ? (
           <div className="bg-white rounded-2xl p-12 text-center border border-gray-200">
@@ -115,24 +155,24 @@ export default function CartPage() {
                 
                 <div className="divide-y divide-gray-200">
                   {cart.map((item) => (
-                    <div key={item.id} className="p-6 flex gap-6">
-                      <div className="relative w-32 h-32 flex-shrink-0 bg-neutral-light rounded-lg overflow-hidden">
+                    <div key={item.id} className="p-4 sm:p-6 flex flex-col sm:flex-row gap-4 sm:gap-6">
+                      <div className="relative w-full h-44 sm:w-32 sm:h-32 shrink-0 bg-white rounded-lg overflow-hidden border border-gray-100">
                         <Image
                           src={item.image}
                           alt={item.name}
                           fill
-                          className="object-cover"
+                          className="object-contain p-2"
                         />
                       </div>
                       
                       <div className="flex-1">
-                        <div className="flex justify-between mb-2">
-                          <Link href={`/product/${item.id}`} className="text-lg font-semibold hover:text-accent transition-colors">
+                        <div className="flex items-start justify-between gap-3 mb-2">
+                          <Link href={`/products/${item.id}`} className="text-base sm:text-lg font-semibold hover:text-accent transition-colors leading-snug">
                             {item.name}
                           </Link>
                           <button
                             onClick={() => handleRemoveItem(item.id)}
-                            className="text-neutral-dark hover:text-red-600 transition-colors"
+                            className="text-neutral-dark hover:text-red-600 transition-colors shrink-0"
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -140,28 +180,35 @@ export default function CartPage() {
                           </button>
                         </div>
                         
-                        <p className="text-2xl font-bold text-accent mb-4">{item.price}</p>
+                        <p className="text-xl sm:text-2xl font-bold text-accent mb-3 sm:mb-4">{item.price}</p>
                         
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center border border-gray-300 rounded-lg">
+                        <div className="mb-4 text-sm">
+                          <span className="text-neutral-dark">Shipping: </span>
+                          <span className="font-semibold">
+                            {!item.shippingFees || item.shippingFees === 0 ? (
+                              <span className="text-green-600">FREE</span>
+                            ) : (
+                              `₹${item.shippingFees}`
+                            )}
+                          </span>
+                        </div>
+                        
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                          <div className="inline-flex w-fit self-start items-center border border-gray-300 rounded-lg overflow-hidden">
                             <button
                               onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                              className="px-3 py-1 hover:bg-gray-100"
+                              className="w-12 h-10 grid place-items-center hover:bg-gray-100"
                             >
                               -
                             </button>
-                            <span className="px-4 py-1 border-x border-gray-300">{item.quantity}</span>
+                            <span className="w-12 h-10 grid place-items-center border-x border-gray-300">{item.quantity}</span>
                             <button
                               onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                              className="px-3 py-1 hover:bg-gray-100"
+                              className="w-12 h-10 grid place-items-center hover:bg-gray-100"
                             >
                               +
                             </button>
                           </div>
-                          
-                          <span className="text-lg font-semibold">
-                            ₹{(parsePrice(item.price) * item.quantity).toLocaleString()}
-                          </span>
                         </div>
                       </div>
                     </div>
@@ -198,14 +245,6 @@ export default function CartPage() {
                       )}
                     </span>
                   </div>
-                  
-                  {subtotal < 15000 && (
-                    <div className="bg-accent/10 border border-accent/20 rounded-lg p-3 text-sm">
-                      <p className="text-accent">
-                        Add ₹{(15000 - subtotal).toLocaleString()} more to get FREE shipping!
-                      </p>
-                    </div>
-                  )}
                 </div>
                 
                 <div className="border-t border-gray-200 pt-4 mb-6">

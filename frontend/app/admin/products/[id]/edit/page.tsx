@@ -57,6 +57,7 @@ export default function EditProductPage() {
     description: '',
     price: '',
     discountPrice: '',
+    shippingFees: '',
     sku: '',
     material: '',
     dimensions: {
@@ -118,6 +119,7 @@ export default function EditProductPage() {
         description: String(product.description || ''),
         price: product.price?.toString() || '',
         discountPrice: product.discountPrice?.toString() || '',
+        shippingFees: product.shippingFees?.toString() || '',
         sku: String(product.sku || ''),
         material: String(product.material || ''),
         dimensions: {
@@ -322,6 +324,7 @@ export default function EditProductPage() {
         description: formData.description || undefined,
         price: formData.price ? parseFloat(formData.price) : 0,
         discountPrice: formData.discountPrice ? parseFloat(formData.discountPrice) : undefined,
+        shippingFees: formData.shippingFees ? parseFloat(formData.shippingFees) : 0,
         sku: formData.sku || null,
         categories: [...new Set((allCategoryNodes as any[]).map((n: any) => n.slug).filter(Boolean))],
         categoryRef: selectedCategoryIds[selectedCategoryIds.length - 1] || null,
@@ -604,6 +607,18 @@ export default function EditProductPage() {
                   step="0.01"
                   value={formData.discountPrice}
                   onChange={(e) => setFormData({ ...formData, discountPrice: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Shipping Fees (₹)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={formData.shippingFees}
+                  onChange={(e) => setFormData({ ...formData, shippingFees: e.target.value })}
+                  placeholder="0 for free shipping"
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
                 />
               </div>

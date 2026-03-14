@@ -60,7 +60,8 @@ router.post('/', protect, async (req, res) => {
           product: productId,
           quantity,
           price: product.price,
-          discountPrice: product.discountPrice
+          discountPrice: product.discountPrice,
+          shippingFees: product.shippingFees || 0
         }]
       });
     } else {
@@ -74,13 +75,15 @@ router.post('/', protect, async (req, res) => {
         cart.items[itemIndex].quantity += quantity;
         cart.items[itemIndex].price = product.price;
         cart.items[itemIndex].discountPrice = product.discountPrice;
+        cart.items[itemIndex].shippingFees = product.shippingFees || 0;
       } else {
         // Add new item
         cart.items.push({
           product: productId,
           quantity,
           price: product.price,
-          discountPrice: product.discountPrice
+          discountPrice: product.discountPrice,
+          shippingFees: product.shippingFees || 0
         });
       }
 
@@ -88,7 +91,7 @@ router.post('/', protect, async (req, res) => {
     }
 
     cart = await Cart.findOne({ user: req.user._id })
-      .populate('items.product', 'name price discountPrice images stock');
+      .populate('items.product', 'name price discountPrice shippingFees images stock');
 
     res.json({
       success: true,

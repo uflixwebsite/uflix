@@ -41,6 +41,9 @@ const normalizeSubcategory = (body) => {
   return null;
 };
 
+// Escape user input before building regex search filters
+const escapeRegex = (value = '') => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 // @route   GET /api/products
 // @desc    Get all products with filtering, sorting, pagination
 // @access  Public
@@ -106,9 +109,29 @@ router.get('/', async (req, res) => {
       if (req.query.maxPrice) query.price.$lte = parseFloat(req.query.maxPrice);
     }
 
-    // Search
+    // Search (partial, case-insensitive) for admin/product management UX
     if (req.query.search) {
-      query.$text = { $search: req.query.search };
+      const safeSearch = escapeRegex(String(req.query.search).trim());
+      if (safeSearch) {
+        const searchRegex = new RegExp(safeSearch, 'i');
+        const searchFilter = {
+          $or: [
+            { name: searchRegex },
+            { description: searchRegex },
+            { sku: searchRegex },
+            { categories: { $elemMatch: { $regex: searchRegex } } },
+            { 'subcategory.name': searchRegex },
+            { tags: { $elemMatch: { $regex: searchRegex } } },
+          ],
+        };
+
+        if (query.$or) {
+          query.$and = [{ $or: query.$or }, searchFilter];
+          delete query.$or;
+        } else {
+          query.$and = [...(query.$and || []), searchFilter];
+        }
+      }
     }
 
     // Tags filter

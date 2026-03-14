@@ -11,6 +11,7 @@ export interface CartItem {
   quantity: number;
   originalPrice?: string;
   discount?: string;
+  shippingFees?: number;
 }
 
 interface CartContextType {

@@ -27,6 +27,11 @@ const productSchema = new mongoose.Schema({
     type: Number,
     min: 0
   },
+  shippingFees: {
+    type: Number,
+    min: 0,
+    default: 0
+  },
   categories: [{
     type: String,
     trim: true

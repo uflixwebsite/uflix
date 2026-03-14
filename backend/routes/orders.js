@@ -53,9 +53,13 @@ router.post('/', optionalProtect, async (req, res) => {
       });
     }
 
-    // Calculate tax and shipping
-    const taxPrice = itemsPrice * 0.18; // 18% GST
-    const shippingPrice = itemsPrice > 5000 ? 0 : 200;
+    // Product prices are tax-inclusive, so only calculate shipping separately
+    const taxPrice = 0;
+    let shippingPrice = 0;
+    for (const item of items) {
+      const product = await Product.findById(item.product);
+      shippingPrice += (product.shippingFees || 0);
+    }
     const totalPrice = itemsPrice + taxPrice + shippingPrice;
 
     // Validate guest customer info if guest order
