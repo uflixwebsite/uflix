@@ -637,15 +637,14 @@ export default function ShopFittingsPage() {
     }
   };
 
-  // Look up a section by id — returns undefined if not found (falls back to static defaults)
+  // Look up a section by id — returns undefined if not found.
   const getSection = (id: string) => sections.find(s => s.sectionId === id);
 
-  // Fixed render order. CMS data is merged in where available; static defaults used otherwise.
-  // Sections hidden via the admin toggle are suppressed.
-  const isHidden = (id: string) => {
-    const s = getSection(id);
-    return s !== undefined && s.isVisible === false;
-  };
+  // Public API currently returns only visible sections.
+  // Once CMS sections exist, render only the section IDs returned by CMS.
+  // If CMS has no sections yet, fall back to static defaults for first-time setup.
+  const hasCmsSections = sections.length > 0;
+  const shouldRender = (id: string) => !hasCmsSections || sections.some(s => s.sectionId === id);
 
   return (
     <div className="min-h-screen bg-black">
@@ -655,13 +654,13 @@ export default function ShopFittingsPage() {
           <div className="min-h-screen" style={{ background: '#000' }} />
         ) : (
           <>
-            {!isHidden('hero')       && <ShopFittingsHero section={getSection('hero')} />}
-            {!isHidden('intro')      && <IntroSection section={getSection('intro')} />}
-            {!isHidden('solutions')  && <SolutionsImageGrid section={getSection('solutions')} />}
-            {!isHidden('gallery')    && <EditorialGallery section={getSection('gallery')} />}
-            {!isHidden('products')   && <ProductScrollStrip products={products} loading={loading} section={getSection('products')} />}
-            {!isHidden('industries') && <IndustriesSection section={getSection('industries')} />}
-            {!isHidden('process')    && <ProcessAndCTA processSection={getSection('process')} whyCtaSection={getSection('why-cta')} />}
+            {shouldRender('hero')       && <ShopFittingsHero section={getSection('hero')} />}
+            {shouldRender('intro')      && <IntroSection section={getSection('intro')} />}
+            {shouldRender('solutions')  && <SolutionsImageGrid section={getSection('solutions')} />}
+            {shouldRender('gallery')    && <EditorialGallery section={getSection('gallery')} />}
+            {shouldRender('products')   && <ProductScrollStrip products={products} loading={loading} section={getSection('products')} />}
+            {shouldRender('industries') && <IndustriesSection section={getSection('industries')} />}
+            {shouldRender('process')    && <ProcessAndCTA processSection={getSection('process')} whyCtaSection={getSection('why-cta')} />}
           </>
         )}
       </main>

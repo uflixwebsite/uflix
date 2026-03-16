@@ -1,8 +1,7 @@
 {
-  "/admin/products/[id]/edit/page": "app/admin/products/[id]/edit/page.js",
-  "/product/[id]/page": "app/product/[id]/page.js",
-  "/cart/page": "app/cart/page.js",
   "/page": "app/page.js",
-  "/checkout/page": "app/checkout/page.js",
-  "/order-confirmation/[id]/page": "app/order-confirmation/[id]/page.js"
+  "/admin/pages/[slug]/edit/page": "app/admin/pages/[slug]/edit/page.js",
+  "/shop-fittings/page": "app/shop-fittings/page.js",
+  "/admin/page": "app/admin/page.js",
+  "/admin/pages/page": "app/admin/pages/page.js"
 }
