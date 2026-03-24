@@ -4,6 +4,8 @@ const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const Order = require('../models/Order');
 const { protect, optionalProtect } = require('../middleware/auth');
+const { generateAndUploadInvoice } = require('../utils/invoiceGenerator');
+const { sendOrderPlacedNotifications } = require('../utils/emailService');
 
 // Initialize Razorpay
 const razorpay = new Razorpay({
@@ -44,18 +46,37 @@ router.post('/create-order', optionalProtect, async (req, res) => {
 // @access  Public/Private
 router.post('/verify', optionalProtect, async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, orderId } = req.body;
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      razorpayOrderId,
+      razorpayPaymentId,
+      razorpaySignature,
+      orderId,
+    } = req.body;
+
+    const finalRazorpayOrderId = razorpay_order_id || razorpayOrderId;
+    const finalRazorpayPaymentId = razorpay_payment_id || razorpayPaymentId;
+    const finalRazorpaySignature = razorpay_signature || razorpaySignature;
+
+    if (!finalRazorpayOrderId || !finalRazorpayPaymentId || !finalRazorpaySignature || !orderId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing payment verification data'
+      });
+    }
 
     // Verify signature
-    const sign = razorpay_order_id + '|' + razorpay_payment_id;
+    const sign = finalRazorpayOrderId + '|' + finalRazorpayPaymentId;
     const expectedSign = crypto
       .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
       .update(sign.toString())
       .digest('hex');
 
-    if (razorpay_signature === expectedSign) {
+    if (finalRazorpaySignature === expectedSign) {
       // Update order payment status
-      const order = await Order.findById(orderId);
+      const order = await Order.findById(orderId).populate('user', 'name email phone');
       
       if (!order) {
         return res.status(404).json({
@@ -65,9 +86,9 @@ router.post('/verify', optionalProtect, async (req, res) => {
       }
 
       order.paymentInfo = {
-        razorpayOrderId: razorpay_order_id,
-        razorpayPaymentId: razorpay_payment_id,
-        razorpaySignature: razorpay_signature,
+        razorpayOrderId: finalRazorpayOrderId,
+        razorpayPaymentId: finalRazorpayPaymentId,
+        razorpaySignature: finalRazorpaySignature,
         status: 'completed',
         paidAt: Date.now()
       };
@@ -79,6 +100,38 @@ router.post('/verify', optionalProtect, async (req, res) => {
       });
 
       await order.save();
+
+      let invoiceInfo = null;
+      const customerInfo = order.isGuestOrder
+        ? {
+            name: order.guestCustomer?.name,
+            email: order.guestCustomer?.email,
+            phone: order.guestCustomer?.phone,
+          }
+        : {
+            name: order.user?.name,
+            email: order.user?.email,
+            phone: order.user?.phone,
+          };
+
+      try {
+        invoiceInfo = await generateAndUploadInvoice(order, customerInfo);
+        order.invoiceUrl = invoiceInfo.url;
+        order.invoicePublicId = invoiceInfo.publicId;
+        await order.save();
+      } catch (invoiceError) {
+        console.error('Invoice generation failed after payment verification:', invoiceError);
+      }
+
+      try {
+        await sendOrderPlacedNotifications({
+          order,
+          customer: customerInfo,
+          invoice: invoiceInfo,
+        });
+      } catch (emailError) {
+        console.error('Order email notifications failed after payment verification:', emailError);
+      }
 
       res.json({
         success: true,

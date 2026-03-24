@@ -1,4 +1,4 @@
-const PDFDocument = require('pdfkit');
+const puppeteer = require('puppeteer');
 const cloudinary = require('cloudinary').v2;
 
 // Configure Cloudinary
@@ -8,114 +8,107 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-const generateInvoice = (order, user) => {
-  return new Promise((resolve, reject) => {
-    try {
-      const doc = new PDFDocument({ margin: 50 });
-      const chunks = [];
+const currency = (value = 0) => `Rs ${Number(value || 0).toLocaleString('en-IN')}`;
 
-      // Collect PDF data
-      doc.on('data', chunk => chunks.push(chunk));
-      doc.on('end', () => {
-        const pdfBuffer = Buffer.concat(chunks);
-        resolve(pdfBuffer);
-      });
-      doc.on('error', reject);
+const invoiceHtml = (order, customer) => {
+  const rows = (order.items || [])
+    .map((item) => {
+      const unit = Number(item.discountPrice || item.price || 0);
+      return `<tr>
+        <td>${item.name}</td>
+        <td style="text-align:center;">${item.quantity}</td>
+        <td style="text-align:right;">${currency(unit)}</td>
+        <td style="text-align:right;">${currency(unit * item.quantity)}</td>
+      </tr>`;
+    })
+    .join('');
 
-      // Header
-      doc.fontSize(20).text('UFLIX', 50, 50);
-      doc.fontSize(10).text('Premium Furniture & Metal Fabrication', 50, 75);
-      doc.text('Phone: +91 120 491 1871 | +91 730 383 6300', 50, 90);
-      doc.text('Email: ebusiness@uflix.co.in', 50, 105);
+  return `
+  <!doctype html>
+  <html>
+    <head>
+      <meta charset="utf-8" />
+      <style>
+        body { font-family: Arial, sans-serif; color: #1f2937; padding: 24px; }
+        h1, h2, h3, p { margin: 0; }
+        .row { display: flex; justify-content: space-between; margin-bottom: 16px; }
+        .muted { color: #6b7280; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        th, td { border-bottom: 1px solid #e5e7eb; padding: 10px 8px; font-size: 13px; }
+        th { text-align: left; background: #f9fafb; }
+        .totals { margin-top: 16px; width: 320px; margin-left: auto; }
+        .totals .line { display:flex; justify-content: space-between; padding: 6px 0; }
+        .grand { font-weight: 700; font-size: 16px; border-top: 1px solid #d1d5db; margin-top: 8px; padding-top: 8px; }
+      </style>
+    </head>
+    <body>
+      <div class="row">
+        <div>
+          <h2>UFLIX</h2>
+          <p class="muted">Premium Furniture & Metal Fabrication</p>
+          <p class="muted">ebusiness@uflix.co.in | +91 730 383 6300</p>
+        </div>
+        <div style="text-align:right;">
+          <h1>INVOICE</h1>
+          <p class="muted">Invoice #: ${order.orderNumber}</p>
+          <p class="muted">Date: ${new Date(order.createdAt).toLocaleDateString('en-IN')}</p>
+        </div>
+      </div>
 
-      // Invoice Title
-      doc.fontSize(20).text('INVOICE', 400, 50);
-      doc.fontSize(10).text(`Invoice #: ${order.orderNumber}`, 400, 75);
-      doc.text(`Date: ${new Date(order.createdAt).toLocaleDateString()}`, 400, 90);
-      doc.text(`Status: ${order.orderStatus.toUpperCase()}`, 400, 105);
+      <div class="row" style="margin-top: 18px;">
+        <div>
+          <h3>Bill To</h3>
+          <p>${order.shippingAddress?.name || customer?.name || ''}</p>
+          <p class="muted">${order.shippingAddress?.phone || customer?.phone || ''}</p>
+          <p class="muted">${order.shippingAddress?.addressLine1 || ''} ${order.shippingAddress?.addressLine2 || ''}</p>
+          <p class="muted">${order.shippingAddress?.city || ''}, ${order.shippingAddress?.state || ''} - ${order.shippingAddress?.pincode || ''}</p>
+        </div>
+        <div style="text-align:right;">
+          <h3>Payment</h3>
+          <p class="muted">Method: ${(order.paymentMethod || '').toUpperCase()}</p>
+          <p class="muted">Status: ${order.paymentInfo?.status || 'pending'}</p>
+        </div>
+      </div>
 
-      // Line
-      doc.moveTo(50, 130).lineTo(550, 130).stroke();
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th style="text-align:center;">Qty</th>
+            <th style="text-align:right;">Unit Price</th>
+            <th style="text-align:right;">Line Total</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
 
-      // Bill To
-      doc.fontSize(12).text('Bill To:', 50, 150);
-      doc.fontSize(10).text(order.shippingAddress.name, 50, 170);
-      doc.text(order.shippingAddress.phone, 50, 185);
-      doc.text(order.shippingAddress.addressLine1, 50, 200);
-      if (order.shippingAddress.addressLine2) {
-        doc.text(order.shippingAddress.addressLine2, 50, 215);
-      }
-      doc.text(`${order.shippingAddress.city}, ${order.shippingAddress.state} - ${order.shippingAddress.pincode}`, 50, 230);
+      <div class="totals">
+        <div class="line"><span>Subtotal</span><span>${currency(order.itemsPrice)}</span></div>
+        <div class="line"><span>Shipping</span><span>${order.shippingPrice > 0 ? currency(order.shippingPrice) : 'FREE'}</span></div>
+        <div class="line grand"><span>Total</span><span>${currency(order.totalPrice)}</span></div>
+      </div>
+      <p class="muted" style="margin-top: 28px; text-align:center;">Thank you for your business.</p>
+    </body>
+  </html>`;
+};
 
-      // Payment Info
-      doc.fontSize(12).text('Payment Details:', 350, 150);
-      doc.fontSize(10).text(`Method: ${order.paymentMethod.toUpperCase()}`, 350, 170);
-      doc.text(`Status: ${order.paymentInfo?.status || 'Pending'}`, 350, 185);
-      if (order.paymentInfo?.paidAt) {
-        doc.text(`Paid On: ${new Date(order.paymentInfo.paidAt).toLocaleDateString()}`, 350, 200);
-      }
-
-      // Items Table Header
-      let yPosition = 270;
-      doc.fontSize(10).text('Item', 50, yPosition);
-      doc.text('Qty', 300, yPosition);
-      doc.text('Price', 370, yPosition);
-      doc.text('Total', 470, yPosition);
-      
-      doc.moveTo(50, yPosition + 15).lineTo(550, yPosition + 15).stroke();
-      yPosition += 25;
-
-      // Items
-      order.items.forEach(item => {
-        const itemPrice = item.discountPrice || item.price;
-        const itemTotal = itemPrice * item.quantity;
-
-        doc.fontSize(9).text(item.name, 50, yPosition, { width: 240 });
-        doc.text(item.quantity.toString(), 300, yPosition);
-        doc.text(`₹${itemPrice.toLocaleString()}`, 370, yPosition);
-        doc.text(`₹${itemTotal.toLocaleString()}`, 470, yPosition);
-        
-        yPosition += 30;
-      });
-
-      // Line before totals
-      doc.moveTo(50, yPosition).lineTo(550, yPosition).stroke();
-      yPosition += 15;
-
-      // Totals
-      doc.fontSize(10).text('Subtotal:', 370, yPosition);
-      doc.text(`₹${order.itemsPrice.toLocaleString()}`, 470, yPosition);
-      yPosition += 20;
-
-      doc.text('Tax (GST 18%):', 370, yPosition);
-      doc.text(`₹${order.taxPrice.toLocaleString()}`, 470, yPosition);
-      yPosition += 20;
-
-      doc.text('Shipping:', 370, yPosition);
-      doc.text(`₹${order.shippingPrice.toLocaleString()}`, 470, yPosition);
-      yPosition += 20;
-
-      if (order.discountAmount > 0) {
-        doc.text('Discount:', 370, yPosition);
-        doc.text(`-₹${order.discountAmount.toLocaleString()}`, 470, yPosition);
-        yPosition += 20;
-      }
-
-      // Grand Total
-      doc.fontSize(12).text('Grand Total:', 370, yPosition);
-      doc.text(`₹${order.totalPrice.toLocaleString()}`, 470, yPosition);
-
-      // Footer
-      yPosition = 700;
-      doc.fontSize(8).text('Thank you for your business!', 50, yPosition, { align: 'center', width: 500 });
-      doc.text('For any queries, please contact us at ebusiness@uflix.co.in', 50, yPosition + 15, { align: 'center', width: 500 });
-
-      // Finalize PDF
-      doc.end();
-    } catch (error) {
-      reject(error);
-    }
+const generateInvoice = async (order, customer) => {
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
   });
+
+  try {
+    const page = await browser.newPage();
+    await page.setContent(invoiceHtml(order, customer), { waitUntil: 'networkidle0' });
+    return await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: { top: '20px', right: '20px', bottom: '20px', left: '20px' },
+    });
+  } finally {
+    await browser.close();
+  }
 };
 
 const uploadInvoiceToCloudinary = async (pdfBuffer, orderNumber) => {
@@ -136,17 +129,18 @@ const uploadInvoiceToCloudinary = async (pdfBuffer, orderNumber) => {
   });
 };
 
-exports.generateAndUploadInvoice = async (order, user) => {
+exports.generateAndUploadInvoice = async (order, customer) => {
   try {
-    // Generate PDF
-    const pdfBuffer = await generateInvoice(order, user);
+    const pdfBuffer = await generateInvoice(order, customer);
     
     // Upload to Cloudinary
     const result = await uploadInvoiceToCloudinary(pdfBuffer, order.orderNumber);
     
     return {
       url: result.secure_url,
-      publicId: result.public_id
+      publicId: result.public_id,
+      pdfBuffer,
+      filename: `invoice-${order.orderNumber}.pdf`,
     };
   } catch (error) {
     console.error('Error generating invoice:', error);

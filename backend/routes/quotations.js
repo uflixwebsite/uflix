@@ -2,16 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Quotation = require('../models/Quotation');
 const { protect, admin } = require('../middleware/auth');
-const nodemailer = require('nodemailer');
-
-// Configure email transporter
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD
-  }
-});
+const { sendQuotationNotifications } = require('../utils/emailService');
 
 // @route   POST /api/quotations
 // @desc    Create new quotation request
@@ -35,35 +26,9 @@ router.post('/', async (req, res) => {
       message
     });
 
-    // Send email notification to admin
+    // Send email notifications to admin and requester
     try {
-      const productList = products.map(p => 
-        `- ${p.productName} (Quantity: ${p.quantity})`
-      ).join('\n');
-
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: process.env.ADMIN_EMAIL || process.env.EMAIL_USER,
-        subject: `New Quotation Request from ${name}`,
-        html: `
-          <h2>New Quotation Request</h2>
-          <p><strong>Customer Details:</strong></p>
-          <ul>
-            <li>Name: ${name}</li>
-            <li>Email: ${email}</li>
-            <li>Mobile: ${mobile}</li>
-          </ul>
-          <p><strong>Products Requested:</strong></p>
-          <pre>${productList}</pre>
-          ${message ? `<p><strong>Message:</strong><br>${message}</p>` : ''}
-          <p><strong>Request ID:</strong> ${quotation._id}</p>
-          <p><strong>Submitted:</strong> ${new Date().toLocaleString()}</p>
-          <hr>
-          <p>Please log in to the admin panel to view and respond to this quotation request.</p>
-        `
-      };
-
-      await transporter.sendMail(mailOptions);
+      await sendQuotationNotifications(quotation);
     } catch (emailError) {
       console.error('Error sending email notification:', emailError);
       // Don't fail the request if email fails

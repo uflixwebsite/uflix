@@ -82,6 +82,7 @@ app.use('/api/reviews', require('./routes/reviews'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/upload', require('./routes/upload'));
 app.use('/api/quotations', require('./routes/quotations'));
+app.use('/api/contact', require('./routes/contact'));
 app.use('/api/pages', require('./routes/pages'));
 app.use('/api/footer', require('./routes/footer'));
 app.use('/api/home', require('./routes/home'));

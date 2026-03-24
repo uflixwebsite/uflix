@@ -4,6 +4,8 @@ const Order = require('../models/Order');
 const Cart = require('../models/Cart');
 const Product = require('../models/Product');
 const { protect, admin, optionalProtect } = require('../middleware/auth');
+const { generateAndUploadInvoice } = require('../utils/invoiceGenerator');
+const { sendOrderPlacedNotifications } = require('../utils/emailService');
 
 // @route   POST /api/orders
 // @desc    Create new order (supports guest checkout)
@@ -100,6 +102,44 @@ router.post('/', optionalProtect, async (req, res) => {
     }
 
     const order = await Order.create(orderData);
+
+    const customerInfo = req.isGuest
+      ? {
+          name: guestCustomer?.name,
+          email: guestCustomer?.email,
+          phone: guestCustomer?.phone,
+        }
+      : {
+          name: req.user?.name,
+          email: req.user?.email,
+          phone: req.user?.phone,
+        };
+
+    let invoiceInfo = null;
+    try {
+      invoiceInfo = await generateAndUploadInvoice(order, customerInfo);
+      order.invoiceUrl = invoiceInfo.url;
+      order.invoicePublicId = invoiceInfo.publicId;
+      await order.save();
+    } catch (invoiceError) {
+      console.error('Invoice generation failed:', invoiceError);
+    }
+
+    const shouldSendOrderNotifications =
+      paymentMethod === 'cod' ||
+      paymentInfo?.status === 'completed';
+
+    if (shouldSendOrderNotifications) {
+      try {
+        await sendOrderPlacedNotifications({
+          order,
+          customer: customerInfo,
+          invoice: invoiceInfo,
+        });
+      } catch (emailError) {
+        console.error('Order email notifications failed:', emailError);
+      }
+    }
 
     // Update product stock and sold count
     for (const item of orderItems) {

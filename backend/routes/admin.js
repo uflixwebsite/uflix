@@ -175,9 +175,17 @@ router.put('/orders/:id/status', protect, admin, async (req, res) => {
 
     await order.save();
 
-    // Send email notification
+    // Send email notification (registered user or guest customer)
     try {
-      await sendOrderStatusUpdate(order, order.user, status);
+      const recipient = order.user?.email
+        ? { name: order.user.name, email: order.user.email }
+        : (order.guestCustomer?.email
+          ? { name: order.guestCustomer.name, email: order.guestCustomer.email }
+          : null);
+
+      if (recipient) {
+        await sendOrderStatusUpdate(order, recipient, status);
+      }
     } catch (emailError) {
       console.error('Email sending failed:', emailError);
     }

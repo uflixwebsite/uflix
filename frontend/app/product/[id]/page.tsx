@@ -93,7 +93,7 @@ export default function ProductDetailPage() {
     
     for (let i = 0; i < quantity; i++) {
       addToCart({
-        id: parseInt(product._id),
+        id: String(product._id),
         name: product.name,
         price: `₹${product.discountPrice || product.price}`,
         image: product.images[0]?.url,
@@ -105,7 +105,7 @@ export default function ProductDetailPage() {
   const handleWishlistToggle = () => {
     if (!product) return;
     
-    const productId = parseInt(product._id);
+    const productId = String(product._id);
     if (isInWishlist(productId)) {
       removeFromWishlist(productId);
     } else {

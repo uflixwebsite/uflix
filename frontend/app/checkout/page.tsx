@@ -7,9 +7,11 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { getCart } from '@/services/cartService';
 import { createOrder } from '@/services/orderService';
-import { processRazorpayPayment } from '@/services/paymentService';
+import { processRazorpayPayment, verifyPayment } from '@/services/paymentService';
 import { getCurrentUser } from '@/services/authService';
 import { useAuthState } from '@/hooks/useAuthState';
+
+const isValidMongoObjectId = (value: unknown) => typeof value === 'string' && /^[a-fA-F0-9]{24}$/.test(value);
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -88,20 +90,8 @@ export default function CheckoutPage() {
   };
 
   const getUnifiedCheckoutItems = () => {
-    const localCart = JSON.parse(localStorage.getItem('uflix-cart') || '[]');
-    if (Array.isArray(localCart) && localCart.length > 0) {
-      return localCart.map((item: any) => ({
-        id: String(item.id),
-        product: String(item.id),
-        name: item.name,
-        image: item.image,
-        quantity: Number(item.quantity || 1),
-        unitPrice: Number(String(item.price || '0').replace(/[^0-9.]/g, '')),
-        shippingFees: Number(item.shippingFees || 0),
-      }));
-    }
-
-    if (cart?.items?.length) {
+    // For authenticated users, prefer server cart data first.
+    if (status === 'authenticated' && cart?.items?.length) {
       return cart.items.map((item: any) => ({
         id: String(item.product?._id || item.product),
         product: String(item.product?._id || item.product),
@@ -110,6 +100,19 @@ export default function CheckoutPage() {
         quantity: Number(item.quantity || 1),
         unitPrice: Number(item.discountPrice || item.price || item.product?.discountPrice || item.product?.price || 0),
         shippingFees: Number(item.shippingFees || item.product?.shippingFees || 0),
+      }));
+    }
+
+    const localCart = JSON.parse(localStorage.getItem('uflix-cart') || '[]');
+    if (Array.isArray(localCart) && localCart.length > 0) {
+      return localCart.map((item: any) => ({
+        id: String(item.id || item.product || ''),
+        product: String(item.id || item.product || ''),
+        name: item.name,
+        image: item.image,
+        quantity: Number(item.quantity || 1),
+        unitPrice: Number(String(item.price || '0').replace(/[^0-9.]/g, '')),
+        shippingFees: Number(item.shippingFees || 0),
       }));
     }
 
@@ -145,6 +148,20 @@ export default function CheckoutPage() {
       return;
     }
 
+    const invalidItems = checkoutItems.filter((item: any) => !isValidMongoObjectId(String(item.product || '')));
+    if (invalidItems.length > 0) {
+      const localCart = JSON.parse(localStorage.getItem('uflix-cart') || '[]');
+      if (Array.isArray(localCart) && localCart.length > 0) {
+        const sanitizedLocalCart = localCart.filter((item: any) => {
+          const productId = String(item?.id || item?.product || '');
+          return isValidMongoObjectId(productId);
+        });
+        localStorage.setItem('uflix-cart', JSON.stringify(sanitizedLocalCart));
+      }
+      alert('Some outdated cart items were removed automatically. Please review your cart and place the order again.');
+      return;
+    }
+
     const orderItems = checkoutItems.map((item: any) => ({
       product: item.product,
       quantity: item.quantity,
@@ -170,7 +187,10 @@ export default function CheckoutPage() {
       console.log('Full order data:', orderData);
 
       if (paymentMethod === 'razorpay') {
-        console.log('Processing Razorpay payment first...');
+        console.log('Creating pending order before Razorpay payment...');
+
+        const pendingOrderResponse = await createOrder(orderData);
+        const pendingOrder = pendingOrderResponse.data;
         
         // Product prices are tax-inclusive; total = subtotal + shipping
         const itemsTotal = checkoutItems.reduce((sum: number, item: any) => sum + (item.unitPrice * item.quantity), 0);
@@ -181,32 +201,25 @@ export default function CheckoutPage() {
           await processRazorpayPayment(
             {
               totalPrice: totalPrice,
-              orderId: null, // No order ID yet
+              orderId: pendingOrder._id,
               shippingAddress: selectedAddress,
               userEmail: checkoutMode === 'guest' ? guestInfo.email : '',
             },
             async (successData: any) => {
-              console.log('Payment successful, now creating order...');
-              
-              // Add payment info to order data
-              orderData.paymentInfo = {
+              console.log('Payment successful, verifying with backend...');
+
+              await verifyPayment({
                 razorpayOrderId: successData.razorpay_order_id,
                 razorpayPaymentId: successData.razorpay_payment_id,
                 razorpaySignature: successData.razorpay_signature,
-                status: 'completed',
-                paidAt: new Date()
-              };
-              
-              // Now create the order in DB after successful payment
-              const orderResponse = await createOrder(orderData);
-              console.log('Order created after payment:', orderResponse);
-              const order = orderResponse.data;
+                orderId: pendingOrder._id,
+              });
               
               // Clear cart for all users (guest and logged-in)
               localStorage.removeItem('uflix-cart');
               console.log('Cart cleared after successful order');
               
-              router.push(`/order-confirmation/${order._id}`);
+              router.push(`/order-confirmation/${pendingOrder._id}`);
             },
             (error: any) => {
               console.error('Payment error:', error);
