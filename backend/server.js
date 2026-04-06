@@ -5,7 +5,6 @@ const dotenv = require('dotenv');
 const morgan = require('morgan');
 const helmet = require('helmet');
 const hpp = require('hpp');
-const mongoSanitize = require('express-mongo-sanitize');
 const path = require('path');
 const { ClerkExpressWithAuth } = require('@clerk/clerk-sdk-node');
 const {
@@ -19,43 +18,6 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-
-const parseAllowedOrigins = () => {
-  const configured = String(process.env.ALLOWED_ORIGINS || '')
-    .split(',')
-    .map((origin) => origin.trim())
-    .filter(Boolean);
-
-  if (configured.length > 0) {
-    return configured;
-  }
-
-  return [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    'http://localhost:3001',
-    'http://127.0.0.1:3001',
-  ];
-};
-
-const allowedOrigins = parseAllowedOrigins();
-
-const corsOptions = {
-  origin: (origin, callback) => {
-    if (!origin) {
-      callback(null, true);
-      return;
-    }
-
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-      return;
-    }
-
-    callback(new Error('Not allowed by CORS'));
-  },
-  credentials: true,
-};
 
 /* ======================================================
    HEALTH CHECK (MUST BE FIRST)
@@ -78,7 +40,6 @@ app.get('/health', (req, res) => {
 ====================================================== */
 app.use(helmet());
 app.use(hpp());
-app.use(mongoSanitize());
 app.use(morgan('dev'));
 
 // Raw body parser for webhook signature verification
@@ -90,7 +51,7 @@ app.use('/api/webhooks', express.raw({ type: 'application/json' }), (req, res, n
 app.use(express.json({ limit: '200kb' }));
 app.use(express.urlencoded({ extended: true, limit: '200kb' }));
 
-app.use(cors(corsOptions));
+app.use(cors({ origin: true, credentials: true }));
 
 app.use('/api', globalApiLimiter);
 app.use('/api/contact', contactLimiter);
