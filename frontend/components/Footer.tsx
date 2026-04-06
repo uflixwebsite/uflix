@@ -186,7 +186,16 @@ function renderContactValue(item: ContactItem) {
       </>
     );
   }
-  return <span className="leading-snug" dangerouslySetInnerHTML={{ __html: item.value.replace(/\n/g, '<br />') }} />;
+  return (
+    <span className="leading-snug">
+      {lines.map((line, i) => (
+        <span key={i}>
+          {line}
+          {i < lines.length - 1 ? <br /> : null}
+        </span>
+      ))}
+    </span>
+  );
 }
 
 export default function Footer() {

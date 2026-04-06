@@ -19,6 +19,22 @@ const orderSchema = new mongoose.Schema({
     email: String,
     phone: String
   },
+  guestAccessTokenHash: {
+    type: String,
+    default: null,
+  },
+  guestAccessTokenExpiresAt: {
+    type: Date,
+    default: null,
+  },
+  isBusinessPurchase: {
+    type: Boolean,
+    default: false,
+  },
+  businessDetails: {
+    companyName: String,
+    gstNumber: String,
+  },
   items: [{
     product: {
       type: mongoose.Schema.Types.ObjectId,

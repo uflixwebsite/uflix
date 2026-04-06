@@ -9,6 +9,25 @@ import { getNavbarConfig } from '@/services/navbarService';
 import { getAllMegaMenus, saveMegaMenu } from '@/services/megaMenuV2Service';
 import { uploadSingleImage } from '@/services/uploadService';
 
+const createUniqueId = (prefix: 'cat' | 'item') =>
+  `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+const normalizeCategories = (categoryList: any[] = []) =>
+  categoryList.map((category, index) => ({
+    ...category,
+    id: String(category?.id || createUniqueId('cat')),
+    order: Number.isFinite(category?.order) ? category.order : index + 1,
+    enabled: category?.enabled !== false,
+  }));
+
+const normalizeItems = (itemList: any[] = []) =>
+  itemList.map((item, index) => ({
+    ...item,
+    id: String(item?.id || createUniqueId('item')),
+    order: Number.isFinite(item?.order) ? item.order : index + 1,
+    enabled: item?.enabled !== false,
+  }));
+
 export default function MegaMenuPage() {
   const { status, isAdmin } = useAuthState();
   
@@ -63,10 +82,13 @@ export default function MegaMenuPage() {
       );
       
       if (megaMenu) {
-        setCategories(megaMenu.categories || []);
-        setItems(megaMenu.items || []);
-        if (megaMenu.categories?.length > 0) {
-          setSelectedCategoryId(megaMenu.categories[0].id);
+        const normalizedCategories = normalizeCategories(megaMenu.categories || []);
+        const normalizedItems = normalizeItems(megaMenu.items || []);
+
+        setCategories(normalizedCategories);
+        setItems(normalizedItems);
+        if (normalizedCategories.length > 0) {
+          setSelectedCategoryId(normalizedCategories[0].id);
         }
       } else {
         setCategories([]);
@@ -96,7 +118,7 @@ export default function MegaMenuPage() {
 
   const addCategory = () => {
     const newCategory = {
-      id: `cat-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      id: createUniqueId('cat'),
       name: 'New Category',
       order: categories.length + 1,
       enabled: true
@@ -130,7 +152,7 @@ export default function MegaMenuPage() {
     }
     
     const newItem = {
-      id: `item-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      id: createUniqueId('item'),
       categoryId: selectedCategoryId,
       title: 'New Item',
       url: '/shop',
@@ -188,8 +210,8 @@ export default function MegaMenuPage() {
         pagePath: selectedPage,
         navbarLinkUrl: editingLink.url,
         navbarLinkLabel: editingLink.label,
-        categories,
-        items,
+        categories: normalizeCategories(categories),
+        items: normalizeItems(items),
         enabled: true
       });
       

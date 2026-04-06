@@ -3,6 +3,8 @@ const router = express.Router();
 const MegaMenu = require('../models/MegaMenu');
 const { protect, admin } = require('../middleware/auth');
 
+const createUniqueId = (prefix) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
 // @route   GET /api/mega-menu-v2?pagePath=*&navbarLinkUrl=/shop
 // @desc    Get mega menu for a specific navbar link on a specific page
 // @access  Public
@@ -84,14 +86,28 @@ router.post('/', protect, admin, async (req, res) => {
   try {
     const { pagePath, navbarLinkUrl, navbarLinkLabel, categories, items, enabled } = req.body;
 
+    const normalizedCategories = (Array.isArray(categories) ? categories : []).map((category, index) => ({
+      ...category,
+      id: String(category?.id || createUniqueId('cat')),
+      order: Number.isFinite(category?.order) ? category.order : index + 1,
+      enabled: category?.enabled !== false
+    }));
+
+    const normalizedItems = (Array.isArray(items) ? items : []).map((item, index) => ({
+      ...item,
+      id: String(item?.id || createUniqueId('item')),
+      order: Number.isFinite(item?.order) ? item.order : index + 1,
+      enabled: item?.enabled !== false
+    }));
+
     // Check if mega menu already exists
     let megaMenu = await MegaMenu.findOne({ pagePath, navbarLinkUrl });
 
     if (megaMenu) {
       // Update existing
       megaMenu.navbarLinkLabel = navbarLinkLabel;
-      megaMenu.categories = categories;
-      megaMenu.items = items;
+      megaMenu.categories = normalizedCategories;
+      megaMenu.items = normalizedItems;
       megaMenu.enabled = enabled !== undefined ? enabled : true;
       await megaMenu.save();
     } else {
@@ -100,8 +116,8 @@ router.post('/', protect, admin, async (req, res) => {
         pagePath,
         navbarLinkUrl,
         navbarLinkLabel,
-        categories,
-        items,
+        categories: normalizedCategories,
+        items: normalizedItems,
         enabled: enabled !== undefined ? enabled : true
       });
     }

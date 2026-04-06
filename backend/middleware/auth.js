@@ -8,12 +8,7 @@ exports.protect = async (req, res, next) => {
     if (!req.auth || !req.auth.userId) {
       return res.status(401).json({
         success: false,
-        message: 'Not authorized to access this route',
-        debug: {
-          hasAuth: !!req.auth,
-          hasUserId: !!req.auth?.userId,
-          authKeys: req.auth ? Object.keys(req.auth) : []
-        }
+        message: 'Not authorized to access this route'
       });
     }
 
@@ -36,10 +31,10 @@ exports.protect = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
+    console.error('Authentication failed:', error);
     return res.status(401).json({
       success: false,
-      message: 'Authentication failed',
-      error: error.message
+      message: 'Authentication failed'
     });
   }
 };
@@ -107,10 +102,10 @@ exports.optionalProtect = async (req, res, next) => {
     
     next();
   } catch (error) {
+    console.error('Optional auth check failed:', error);
     return res.status(500).json({
       success: false,
-      message: 'Authentication check failed',
-      error: error.message
+      message: 'Authentication check failed'
     });
   }
 };

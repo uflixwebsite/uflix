@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const crypto = require('crypto');
 const Order = require('../models/Order');
 const Cart = require('../models/Cart');
 const Product = require('../models/Product');
@@ -7,12 +8,44 @@ const { protect, admin, optionalProtect } = require('../middleware/auth');
 const { generateAndUploadInvoice } = require('../utils/invoiceGenerator');
 const { sendOrderPlacedNotifications } = require('../utils/emailService');
 
+const createGuestAccessToken = () => crypto.randomBytes(24).toString('hex');
+const hashGuestAccessToken = (token) =>
+  crypto.createHash('sha256').update(String(token || '')).digest('hex');
+
+const isGuestTokenValidForOrder = (order, providedToken) => {
+  if (!order?.isGuestOrder) {
+    return false;
+  }
+
+  if (!providedToken || !order.guestAccessTokenHash || !order.guestAccessTokenExpiresAt) {
+    return false;
+  }
+
+  if (new Date(order.guestAccessTokenExpiresAt).getTime() < Date.now()) {
+    return false;
+  }
+
+  return hashGuestAccessToken(providedToken) === order.guestAccessTokenHash;
+};
+
 // @route   POST /api/orders
 // @desc    Create new order (supports guest checkout)
 // @access  Public/Private
 router.post('/', optionalProtect, async (req, res) => {
   try {
-    const { items, shippingAddress, billingAddress, paymentMethod, paymentInfo, guestCustomer } = req.body;
+    const {
+      items,
+      shippingAddress,
+      billingAddress,
+      paymentMethod,
+      paymentInfo,
+      guestCustomer,
+      isBusinessPurchase,
+      businessDetails,
+    } = req.body;
+
+    const gstPattern = /^[0-9A-Z]{15}$/;
+    const isB2BPurchase = isBusinessPurchase === true || isBusinessPurchase === 'true';
 
     if (!items || items.length === 0) {
       return res.status(400).json({
@@ -74,6 +107,18 @@ router.post('/', optionalProtect, async (req, res) => {
       }
     }
 
+    if (isB2BPurchase) {
+      const companyName = String(businessDetails?.companyName || '').trim();
+      const gstNumber = String(businessDetails?.gstNumber || '').trim().toUpperCase();
+
+      if (!companyName || !gstPattern.test(gstNumber)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Valid company name and 15-character GST number are required for business purchase'
+        });
+      }
+    }
+
     // Create order
     const orderData = {
       items: orderItems,
@@ -85,17 +130,29 @@ router.post('/', optionalProtect, async (req, res) => {
       taxPrice,
       shippingPrice,
       totalPrice,
+      isBusinessPurchase: isB2BPurchase,
+      businessDetails: isB2BPurchase
+        ? {
+            companyName: String(businessDetails?.companyName || '').trim(),
+            gstNumber: String(businessDetails?.gstNumber || '').trim().toUpperCase(),
+          }
+        : undefined,
       orderStatus: paymentMethod === 'cod' ? 'confirmed' : 'pending'
     };
 
+    let guestAccessToken = null;
+
     // Add user or guest customer info
     if (req.isGuest) {
+      guestAccessToken = createGuestAccessToken();
       orderData.isGuestOrder = true;
       orderData.guestCustomer = {
         name: guestCustomer.name,
         email: guestCustomer.email,
         phone: guestCustomer.phone
       };
+      orderData.guestAccessTokenHash = hashGuestAccessToken(guestAccessToken);
+      orderData.guestAccessTokenExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
     } else {
       orderData.user = req.user._id;
       orderData.isGuestOrder = false;
@@ -161,7 +218,8 @@ router.post('/', optionalProtect, async (req, res) => {
 
     res.status(201).json({
       success: true,
-      data: populatedOrder
+      data: populatedOrder,
+      guestAccessToken,
     });
   } catch (error) {
     res.status(500).json({
@@ -208,7 +266,7 @@ router.get('/', protect, async (req, res) => {
 
 // @route   GET /api/orders/:id
 // @desc    Get order by ID
-// @access  Public/Private (supports guest orders)
+// @access  Private or tokenized guest access
 router.get('/:id', optionalProtect, async (req, res) => {
   try {
     const order = await Order.findById(req.params.id)
@@ -222,16 +280,31 @@ router.get('/:id', optionalProtect, async (req, res) => {
       });
     }
 
-    // For logged-in users, check if they own this order or are admin
-    if (!req.isGuest && req.user) {
+    const orderAccessToken = String(
+      req.query.token || req.headers['x-order-access-token'] || ''
+    );
+
+    // Logged-in user can access only own order or admin override
+    if (req.user) {
+      if (order.isGuestOrder && req.user.role !== 'admin' && !isGuestTokenValidForOrder(order, orderAccessToken)) {
+        return res.status(403).json({
+          success: false,
+          message: 'Not authorized to access this order'
+        });
+      }
+
       if (order.user && order.user._id.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
         return res.status(403).json({
           success: false,
           message: 'Not authorized to access this order'
         });
       }
+    } else if (!isGuestTokenValidForOrder(order, orderAccessToken)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to access this order'
+      });
     }
-    // Guest orders are accessible by anyone with the order ID (like a receipt)
 
     res.json({
       success: true,
@@ -305,17 +378,42 @@ router.put('/:id/cancel', protect, async (req, res) => {
 
 // @route   GET /api/orders/:id/track
 // @desc    Track order
-// @access  Public (with order number)
-router.get('/:id/track', async (req, res) => {
+// @access  Private or tokenized guest access
+router.get('/:id/track', optionalProtect, async (req, res) => {
   try {
     const order = await Order.findById(req.params.id)
-      .select('orderNumber orderStatus statusHistory trackingInfo createdAt deliveredAt')
+      .select('user isGuestOrder guestAccessTokenHash guestAccessTokenExpiresAt orderNumber orderStatus statusHistory trackingInfo createdAt deliveredAt')
       .populate('items.product', 'name images');
 
     if (!order) {
       return res.status(404).json({
         success: false,
         message: 'Order not found'
+      });
+    }
+
+    const orderAccessToken = String(
+      req.query.token || req.headers['x-order-access-token'] || ''
+    );
+
+    if (req.user) {
+      if (order.isGuestOrder && req.user.role !== 'admin' && !isGuestTokenValidForOrder(order, orderAccessToken)) {
+        return res.status(403).json({
+          success: false,
+          message: 'Not authorized to track this order'
+        });
+      }
+
+      if (order.user && order.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+        return res.status(403).json({
+          success: false,
+          message: 'Not authorized to track this order'
+        });
+      }
+    } else if (!isGuestTokenValidForOrder(order, orderAccessToken)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to track this order'
       });
     }
 

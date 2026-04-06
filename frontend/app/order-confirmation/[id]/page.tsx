@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -9,7 +9,9 @@ import { getOrder } from '@/services/orderService';
 
 export default function OrderConfirmationPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const orderId = params.id as string;
+  const token = searchParams.get('token') || '';
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -17,7 +19,7 @@ export default function OrderConfirmationPage() {
   useEffect(() => {
     const fetchOrder = async () => {
       try {
-        const response = await getOrder(orderId);
+        const response = await getOrder(orderId, token || undefined);
         setOrder(response.data);
       } catch (err: any) {
         setError(err.response?.data?.message || 'Failed to load order details');
@@ -29,7 +31,7 @@ export default function OrderConfirmationPage() {
     if (orderId) {
       fetchOrder();
     }
-  }, [orderId]);
+  }, [orderId, token]);
 
   if (loading) {
     return (

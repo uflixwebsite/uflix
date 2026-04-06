@@ -13,8 +13,10 @@ export const getOrders = async (params = {}) => {
 };
 
 // Get single order
-export const getOrder = async (id) => {
-  const response = await api.get(`/orders/${id}`);
+export const getOrder = async (id, token) => {
+  const response = await api.get(`/orders/${id}`, {
+    params: token ? { token } : undefined,
+  });
   return response.data;
 };
 
@@ -25,8 +27,10 @@ export const cancelOrder = async (id, reason) => {
 };
 
 // Track order
-export const trackOrder = async (id) => {
-  const response = await api.get(`/orders/${id}/track`);
+export const trackOrder = async (id, token) => {
+  const response = await api.get(`/orders/${id}/track`, {
+    params: token ? { token } : undefined,
+  });
   return response.data;
 };
 

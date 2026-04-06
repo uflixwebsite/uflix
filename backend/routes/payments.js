@@ -3,7 +3,7 @@ const router = express.Router();
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const Order = require('../models/Order');
-const { protect, optionalProtect } = require('../middleware/auth');
+const { protect, optionalProtect, admin } = require('../middleware/auth');
 const { generateAndUploadInvoice } = require('../utils/invoiceGenerator');
 const { sendOrderPlacedNotifications } = require('../utils/emailService');
 
@@ -18,16 +18,63 @@ const razorpay = new Razorpay({
 // @access  Public/Private
 router.post('/create-order', optionalProtect, async (req, res) => {
   try {
-    const { amount, currency = 'INR', receipt } = req.body;
+    const { amount, currency = 'INR', receipt, orderId } = req.body;
+    const parsedAmount = Number(amount);
+
+    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid payment amount'
+      });
+    }
+
+    let order = null;
+    if (orderId) {
+      order = await Order.findById(orderId);
+      if (!order) {
+        return res.status(404).json({
+          success: false,
+          message: 'Order not found'
+        });
+      }
+
+      if (!req.isGuest && req.user) {
+        if (order.user && order.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+          return res.status(403).json({
+            success: false,
+            message: 'Not authorized to create payment for this order'
+          });
+        }
+      } else if (!order.isGuestOrder) {
+        return res.status(403).json({
+          success: false,
+          message: 'Authentication required for this order'
+        });
+      }
+    }
 
     const options = {
-      amount: amount * 100, // amount in smallest currency unit (paise)
+      amount: Math.round(parsedAmount * 100), // amount in smallest currency unit (paise)
       currency,
       receipt: receipt || `receipt_${Date.now()}`,
+      notes: orderId
+        ? {
+            internalOrderId: String(orderId)
+          }
+        : undefined,
       payment_capture: 1
     };
 
     const razorpayOrder = await razorpay.orders.create(options);
+
+    if (order) {
+      order.paymentInfo = {
+        ...(order.paymentInfo || {}),
+        razorpayOrderId: razorpayOrder.id,
+        status: 'pending'
+      };
+      await order.save();
+    }
 
     res.json({
       success: true,
@@ -82,6 +129,58 @@ router.post('/verify', optionalProtect, async (req, res) => {
         return res.status(404).json({
           success: false,
           message: 'Order not found'
+        });
+      }
+
+      if (!req.isGuest && req.user) {
+        if (order.user && order.user._id.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+          return res.status(403).json({
+            success: false,
+            message: 'Not authorized to verify payment for this order'
+          });
+        }
+      } else if (!order.isGuestOrder) {
+        return res.status(403).json({
+          success: false,
+          message: 'Authentication required for this order'
+        });
+      }
+
+      if (!order.paymentInfo?.razorpayOrderId || order.paymentInfo.razorpayOrderId !== finalRazorpayOrderId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Razorpay order does not match this order'
+        });
+      }
+
+      const razorpayPayment = await razorpay.payments.fetch(finalRazorpayPaymentId);
+
+      if (razorpayPayment.order_id !== finalRazorpayOrderId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Payment does not belong to this Razorpay order'
+        });
+      }
+
+      if (String(razorpayPayment.currency || '').toUpperCase() !== 'INR') {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid payment currency'
+        });
+      }
+
+      const expectedAmountInPaise = Math.round(Number(order.totalPrice || 0) * 100);
+      if (Number(razorpayPayment.amount) !== expectedAmountInPaise) {
+        return res.status(400).json({
+          success: false,
+          message: 'Payment amount mismatch'
+        });
+      }
+
+      if (!['captured', 'authorized'].includes(String(razorpayPayment.status || '').toLowerCase())) {
+        return res.status(400).json({
+          success: false,
+          message: 'Payment is not completed'
         });
       }
 
@@ -142,7 +241,10 @@ router.post('/verify', optionalProtect, async (req, res) => {
       // Payment verification failed
       const order = await Order.findById(orderId);
       if (order) {
-        order.paymentInfo.status = 'failed';
+        order.paymentInfo = {
+          ...(order.paymentInfo || {}),
+          status: 'failed'
+        };
         await order.save();
       }
 
@@ -162,7 +264,7 @@ router.post('/verify', optionalProtect, async (req, res) => {
 // @route   POST /api/payments/refund
 // @desc    Process refund
 // @access  Private/Admin
-router.post('/refund', protect, async (req, res) => {
+router.post('/refund', protect, admin, async (req, res) => {
   try {
     const { paymentId, amount, orderId } = req.body;
 

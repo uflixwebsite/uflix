@@ -31,6 +31,7 @@ const megaMenuSchema = new mongoose.Schema({
   }],
   // Right column - Items for each category
   items: [{
+    id: String,
     categoryId: String, // Which left category this belongs to
     title: String,
     url: String,

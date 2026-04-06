@@ -1,11 +1,12 @@
 import api from './api';
 
 // Create Razorpay order
-export const createRazorpayOrder = async (amount, currency = 'INR', receipt) => {
+export const createRazorpayOrder = async (amount, currency = 'INR', receipt, orderId) => {
   const response = await api.post('/payments/create-order', {
     amount,
     currency,
-    receipt
+    receipt,
+    orderId
   });
   return response.data;
 };
@@ -46,7 +47,8 @@ export const processRazorpayPayment = async (orderData, onSuccess, onFailure) =>
   const razorpayOrderResponse = await createRazorpayOrder(
     orderData.totalPrice,
     'INR',
-    `order_${Date.now()}`
+    `order_${Date.now()}`,
+    orderData.orderId
   );
   
   console.log('Razorpay order response:', razorpayOrderResponse);

@@ -1,5 +1,7 @@
 const puppeteer = require('puppeteer');
 const cloudinary = require('cloudinary').v2;
+const fs = require('fs');
+const path = require('path');
 
 // Configure Cloudinary
 cloudinary.config({
@@ -9,8 +11,27 @@ cloudinary.config({
 });
 
 const currency = (value = 0) => `Rs ${Number(value || 0).toLocaleString('en-IN')}`;
+const LOCAL_LOGO_PATH = path.resolve(__dirname, '../../frontend/public/Logos/Uflix_Logo.png');
+const DEFAULT_LOGO_URL = process.env.INVOICE_LOGO_URL || process.env.EMAIL_LOGO_URL || 'https://uflixfurniture.in/Logos/Uflix_Logo.png';
+const COMPANY_GSTIN = process.env.COMPANY_GSTIN || '09AACCU6989R1Z1';
+
+const getInvoiceLogoSrc = () => {
+  try {
+    if (fs.existsSync(LOCAL_LOGO_PATH)) {
+      const fileBuffer = fs.readFileSync(LOCAL_LOGO_PATH);
+      return `data:image/png;base64,${fileBuffer.toString('base64')}`;
+    }
+  } catch (error) {
+    // Fallback to public URL when local logo is not accessible
+  }
+
+  return DEFAULT_LOGO_URL;
+};
 
 const invoiceHtml = (order, customer) => {
+  const logoSrc = getInvoiceLogoSrc();
+  const isBusinessInvoice = Boolean(order.isBusinessPurchase && order.businessDetails?.gstNumber);
+  const invoiceHeading = isBusinessInvoice ? 'TAX INVOICE (B2B)' : 'TAX INVOICE';
   const rows = (order.items || [])
     .map((item) => {
       const unit = Number(item.discountPrice || item.price || 0);
@@ -44,12 +65,14 @@ const invoiceHtml = (order, customer) => {
     <body>
       <div class="row">
         <div>
+          <img src="${logoSrc}" alt="UFLIX" style="display:block;width:130px;height:auto;margin-bottom:10px;" />
           <h2>UFLIX</h2>
           <p class="muted">Premium Furniture & Metal Fabrication</p>
           <p class="muted">ebusiness@uflix.co.in | +91 730 383 6300</p>
+          <p class="muted">Seller GSTIN: ${COMPANY_GSTIN}</p>
         </div>
         <div style="text-align:right;">
-          <h1>INVOICE</h1>
+          <h1>${invoiceHeading}</h1>
           <p class="muted">Invoice #: ${order.orderNumber}</p>
           <p class="muted">Date: ${new Date(order.createdAt).toLocaleDateString('en-IN')}</p>
         </div>
@@ -62,6 +85,8 @@ const invoiceHtml = (order, customer) => {
           <p class="muted">${order.shippingAddress?.phone || customer?.phone || ''}</p>
           <p class="muted">${order.shippingAddress?.addressLine1 || ''} ${order.shippingAddress?.addressLine2 || ''}</p>
           <p class="muted">${order.shippingAddress?.city || ''}, ${order.shippingAddress?.state || ''} - ${order.shippingAddress?.pincode || ''}</p>
+          ${isBusinessInvoice ? `<p class="muted" style="margin-top:6px;">Company: ${order.businessDetails?.companyName || ''}</p>` : ''}
+          ${isBusinessInvoice ? `<p class="muted">Buyer GSTIN: ${order.businessDetails?.gstNumber || ''}</p>` : ''}
         </div>
         <div style="text-align:right;">
           <h3>Payment</h3>

@@ -3,13 +3,59 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const morgan = require('morgan');
+const helmet = require('helmet');
+const hpp = require('hpp');
+const mongoSanitize = require('express-mongo-sanitize');
 const path = require('path');
 const { ClerkExpressWithAuth } = require('@clerk/clerk-sdk-node');
+const {
+  globalApiLimiter,
+  contactLimiter,
+  paymentLimiter,
+  uploadLimiter,
+} = require('./middleware/rateLimiter');
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+const parseAllowedOrigins = () => {
+  const configured = String(process.env.ALLOWED_ORIGINS || '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  if (configured.length > 0) {
+    return configured;
+  }
+
+  return [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost:3001',
+    'http://127.0.0.1:3001',
+  ];
+};
+
+const allowedOrigins = parseAllowedOrigins();
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) {
+      callback(null, true);
+      return;
+    }
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+};
 
 /* ======================================================
    HEALTH CHECK (MUST BE FIRST)
@@ -30,23 +76,26 @@ app.get('/health', (req, res) => {
 /* ======================================================
    GLOBAL MIDDLEWARE
 ====================================================== */
+app.use(helmet());
+app.use(hpp());
+app.use(mongoSanitize());
+app.use(morgan('dev'));
+
 // Raw body parser for webhook signature verification
 app.use('/api/webhooks', express.raw({ type: 'application/json' }), (req, res, next) => {
   req.rawBody = req.body.toString('utf8');
   next();
 });
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '200kb' }));
+app.use(express.urlencoded({ extended: true, limit: '200kb' }));
 
-app.use(
-  cors({
-    origin: true,
-    credentials: true,
-  })
-);
+app.use(cors(corsOptions));
 
-app.use(morgan('dev'));
+app.use('/api', globalApiLimiter);
+app.use('/api/contact', contactLimiter);
+app.use('/api/payments', paymentLimiter);
+app.use('/api/upload', uploadLimiter);
 
 /* ======================================================
    AUTH MIDDLEWARE (AFTER /health)

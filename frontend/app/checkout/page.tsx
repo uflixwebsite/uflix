@@ -24,6 +24,11 @@ export default function CheckoutPage() {
   const [selectedAddress, setSelectedAddress] = useState<any>(null);
   const [paymentMethod, setPaymentMethod] = useState('razorpay');
   const [showAddressForm, setShowAddressForm] = useState(false);
+  const [purchaseAsBusiness, setPurchaseAsBusiness] = useState(false);
+  const [businessDetails, setBusinessDetails] = useState({
+    companyName: '',
+    gstNumber: '',
+  });
   const [guestInfo, setGuestInfo] = useState({
     name: '',
     email: '',
@@ -42,6 +47,10 @@ export default function CheckoutPage() {
 
   const normalizePhone = (value: string) => value.replace(/\D/g, '').slice(0, 10);
   const isValidPhone = (value: string) => /^\d{10}$/.test(normalizePhone(value));
+  const normalizePincode = (value: string) => value.replace(/\D/g, '').slice(0, 6);
+  const isValidPincode = (value: string) => /^\d{6}$/.test(normalizePincode(value));
+  const normalizeGst = (value: string) => value.toUpperCase().replace(/[^0-9A-Z]/g, '').slice(0, 15);
+  const isValidGst = (value: string) => /^[0-9A-Z]{15}$/.test(normalizeGst(value));
 
   useEffect(() => {
     // Wait for auth to finish loading
@@ -142,6 +151,23 @@ export default function CheckoutPage() {
       return;
     }
 
+    if (!isValidPincode(selectedAddress.pincode || '')) {
+      alert('Delivery pincode must be exactly 6 digits');
+      return;
+    }
+
+    if (purchaseAsBusiness) {
+      if (!businessDetails.companyName.trim()) {
+        alert('Company/organization name is required for business purchase');
+        return;
+      }
+
+      if (!isValidGst(businessDetails.gstNumber)) {
+        alert('GST number must be exactly 15 alphanumeric characters');
+        return;
+      }
+    }
+
     const checkoutItems = getUnifiedCheckoutItems();
     if (!checkoutItems.length) {
       alert('Your cart is empty');
@@ -170,11 +196,26 @@ export default function CheckoutPage() {
     setProcessing(true);
 
     try {
+      const buildOrderConfirmationUrl = (createdOrderId: string, guestAccessToken?: string) => {
+        if (checkoutMode === 'guest' && guestAccessToken) {
+          return `/order-confirmation/${createdOrderId}?token=${encodeURIComponent(guestAccessToken)}`;
+        }
+        return `/order-confirmation/${createdOrderId}`;
+      };
+
       const orderData: any = {
         items: orderItems,
         shippingAddress: selectedAddress,
         paymentMethod,
+        isBusinessPurchase: purchaseAsBusiness,
       };
+
+      if (purchaseAsBusiness) {
+        orderData.businessDetails = {
+          companyName: businessDetails.companyName.trim(),
+          gstNumber: normalizeGst(businessDetails.gstNumber),
+        };
+      }
 
       // Add guest customer info if guest checkout
       if (checkoutMode === 'guest') {
@@ -191,6 +232,7 @@ export default function CheckoutPage() {
 
         const pendingOrderResponse = await createOrder(orderData);
         const pendingOrder = pendingOrderResponse.data;
+        const guestAccessToken = pendingOrderResponse.guestAccessToken;
         
         // Product prices are tax-inclusive; total = subtotal + shipping
         const itemsTotal = checkoutItems.reduce((sum: number, item: any) => sum + (item.unitPrice * item.quantity), 0);
@@ -219,7 +261,7 @@ export default function CheckoutPage() {
               localStorage.removeItem('uflix-cart');
               console.log('Cart cleared after successful order');
               
-              router.push(`/order-confirmation/${pendingOrder._id}`);
+              router.push(buildOrderConfirmationUrl(pendingOrder._id, guestAccessToken));
             },
             (error: any) => {
               console.error('Payment error:', error);
@@ -238,12 +280,13 @@ export default function CheckoutPage() {
         const orderResponse = await createOrder(orderData);
         console.log('Order created:', orderResponse);
         const order = orderResponse.data;
+        const guestAccessToken = orderResponse.guestAccessToken;
         
         // Clear cart for all users
         localStorage.removeItem('uflix-cart');
         console.log('Cart cleared after successful order');
         
-        router.push(`/order-confirmation/${order._id}`);
+        router.push(buildOrderConfirmationUrl(order._id, guestAccessToken));
       }
     } catch (error: any) {
       console.error('Order creation error:', error);
@@ -457,7 +500,10 @@ export default function CheckoutPage() {
                       type="text"
                       placeholder="Pincode"
                       value={newAddress.pincode}
-                      onChange={(e) => setNewAddress({ ...newAddress, pincode: e.target.value })}
+                      onChange={(e) => setNewAddress({ ...newAddress, pincode: normalizePincode(e.target.value) })}
+                      maxLength={6}
+                      inputMode="numeric"
+                      pattern="[0-9]{6}"
                       className="px-4 py-2 border border-gray-300 rounded-md"
                     />
                     <button
@@ -468,6 +514,10 @@ export default function CheckoutPage() {
                         }
                         if (!isValidPhone(newAddress.phone)) {
                           alert('Mobile number must be exactly 10 digits');
+                          return;
+                        }
+                        if (!isValidPincode(newAddress.pincode)) {
+                          alert('Pincode must be exactly 6 digits');
                           return;
                         }
                         setAddresses([...addresses, newAddress]);
@@ -513,6 +563,42 @@ export default function CheckoutPage() {
 
             {/* Payment Method */}
             <div className="bg-white rounded-lg border border-border p-6">
+              <h2 className="text-xl font-bold mb-4">Purchase Type</h2>
+              <div className="mb-6 p-4 border border-gray-200 rounded-lg">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={purchaseAsBusiness}
+                    onChange={(e) => setPurchaseAsBusiness(e.target.checked)}
+                    className="h-4 w-4 text-accent"
+                  />
+                  <span className="font-semibold">Purchase as a business</span>
+                </label>
+                <p className="text-xs text-neutral-dark mt-2">Enable this to add company details and GST number for business invoice.</p>
+
+                {purchaseAsBusiness && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                    <input
+                      type="text"
+                      placeholder="Company/Organization Name *"
+                      value={businessDetails.companyName}
+                      onChange={(e) => setBusinessDetails({ ...businessDetails, companyName: e.target.value })}
+                      className="sm:col-span-2 px-4 py-2 border border-gray-300 rounded-md"
+                      required
+                    />
+                    <input
+                      type="text"
+                      placeholder="GST Number (15 characters) *"
+                      value={businessDetails.gstNumber}
+                      onChange={(e) => setBusinessDetails({ ...businessDetails, gstNumber: normalizeGst(e.target.value) })}
+                      maxLength={15}
+                      className="sm:col-span-2 px-4 py-2 border border-gray-300 rounded-md uppercase"
+                      required
+                    />
+                  </div>
+                )}
+              </div>
+
               <h2 className="text-xl font-bold mb-4">Payment Method</h2>
               <div className="space-y-3">
                 <div
