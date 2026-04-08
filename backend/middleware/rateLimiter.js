@@ -1,9 +1,14 @@
 const rateLimit = require('express-rate-limit');
 
-const createLimiter = ({ windowMs, max, message }) =>
+const createLimiter = ({ windowMs, max, message, skip }) =>
   rateLimit({
     windowMs,
     max,
+    skip: (req) => {
+      if (req.path === '/health') return true;
+      if (typeof skip === 'function') return skip(req);
+      return false;
+    },
     standardHeaders: true,
     legacyHeaders: false,
     message: {
@@ -14,8 +19,9 @@ const createLimiter = ({ windowMs, max, message }) =>
 
 const globalApiLimiter = createLimiter({
   windowMs: 15 * 60 * 1000,
-  max: 500,
+  max: 2000,
   message: 'Too many requests. Please try again later.',
+  skip: (req) => req.originalUrl.startsWith('/api/admin'),
 });
 
 const contactLimiter = createLimiter({

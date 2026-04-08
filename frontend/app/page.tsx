@@ -18,15 +18,60 @@ import { TestimonialsSection } from '@/components/TestimonialsSection';
 import Footer from '@/components/Footer';
 import { getHomeSettings } from '@/services/homeSettingsService';
 
+const HOME_SETTINGS_CACHE_KEY = 'uflix_home_settings_cache_v1';
+const HOME_SETTINGS_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+
+const readHomeSettingsCache = () => {
+  if (typeof window === 'undefined') return null;
+
+  try {
+    const raw = window.localStorage.getItem(HOME_SETTINGS_CACHE_KEY);
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw);
+    if (!parsed?.data || !parsed?.savedAt) return null;
+
+    const isExpired = Date.now() - parsed.savedAt > HOME_SETTINGS_CACHE_TTL_MS;
+    if (isExpired) {
+      window.localStorage.removeItem(HOME_SETTINGS_CACHE_KEY);
+      return null;
+    }
+
+    return parsed.data;
+  } catch {
+    return null;
+  }
+};
+
+const writeHomeSettingsCache = (data: any) => {
+  if (typeof window === 'undefined') return;
+
+  try {
+    window.localStorage.setItem(
+      HOME_SETTINGS_CACHE_KEY,
+      JSON.stringify({ data, savedAt: Date.now() })
+    );
+  } catch {
+    // Ignore storage quota and serialization errors.
+  }
+};
+
 export default function Home() {
   const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const cachedSettings = readHomeSettingsCache();
+    if (cachedSettings) {
+      setSettings(cachedSettings);
+      setLoading(false);
+    }
+
     const fetchSettings = async () => {
       try {
         const res = await getHomeSettings();
         setSettings(res.data);
+        writeHomeSettingsCache(res.data);
       } catch (error) {
         console.error('Error fetching home settings:', error);
       } finally {
