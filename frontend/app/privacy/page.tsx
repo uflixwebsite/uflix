@@ -10,81 +10,83 @@ export default function PrivacyPage() {
       <Header />
       
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h1 className="text-4xl font-bold mb-4">Privacy Policy</h1>
-        <p className="text-sm text-neutral-dark mb-8">Last Updated: 15-01-2026</p>
+        <h1 className="text-4xl font-bold text-black mb-4">Privacy Policy - UFLIX Interio Private Limited</h1>
+        <p className="text-sm text-neutral-dark mb-8">Last Updated: 18-04-2026</p>
         
-        <div className="prose prose-lg max-w-none">
+        <div className="max-w-none text-[16px] leading-7 text-neutral-800">
           <p className="mb-6">
-            At UFLIX, we value your privacy and are committed to protecting your personal information. This Privacy Policy explains how we collect, use, and safeguard your data.
+            At UFLIX, we value your privacy and are committed to protecting your personal information.
           </p>
 
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-bold mb-4">Information We Collect</h2>
-              <p className="mb-4">We collect basic information such as:</p>
+              <h2 className="text-2xl font-bold text-black mb-4">1. Information We Collect</h2>
               <ul className="list-disc pl-6 space-y-2">
-                <li>Name</li>
-                <li>Email address</li>
-                <li>Phone number</li>
-                <li>Delivery address</li>
+                <li><span className="font-bold text-black">Name, phone number, and email address</span></li>
+                <li><span className="font-bold text-black">Shipping and billing address</span></li>
+                <li><span className="font-bold text-black">Payment details</span> (secured via third-party payment gateways)</li>
+                <li><span className="font-bold text-black">Business details</span> (for B2B clients)</li>
               </ul>
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold mb-4">Payment Security</h2>
+              <h2 className="text-2xl font-bold text-black mb-4">2. How We Use Your Information</h2>
               <ul className="list-disc pl-6 space-y-2">
-                <li>Payments are securely handled by Razorpay.</li>
-                <li><strong>UFLIX does not store card or bank details.</strong></li>
-                <li>All payment transactions are encrypted and secure.</li>
+                <li>Order processing and delivery</li>
+                <li>Customer support</li>
+                <li>Improving website and services</li>
+                <li>Marketing and promotional communication <span className="font-bold text-black">only with consent</span></li>
               </ul>
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold mb-4">How We Use Your Information</h2>
-              <p className="mb-4">Your information is used only to:</p>
+              <h2 className="text-2xl font-bold text-black mb-4">3. Data Protection</h2>
+              <p>
+                We implement <span className="font-bold text-black">industry-standard security measures</span> to protect your data. However,
+                no online transmission is 100% secure.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-black mb-4">4. Sharing of Information</h2>
+              <p className="mb-3">We do not sell your data. Information may be shared with:</p>
               <ul className="list-disc pl-6 space-y-2">
-                <li>Process and deliver orders</li>
-                <li>Communicate order updates</li>
-                <li>Improve our services</li>
-                <li>Provide customer support</li>
+                <li>Logistics partners</li>
+                <li>Payment gateways</li>
+                <li>Government authorities (if required)</li>
               </ul>
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold mb-4">Data Protection</h2>
+              <h2 className="text-2xl font-bold text-black mb-4">5. Cookies</h2>
+              <p>Our website uses cookies to enhance user experience and analyze traffic.</p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-black mb-4">6. Your Rights</h2>
               <ul className="list-disc pl-6 space-y-2">
-                <li>We do not sell or misuse your personal data.</li>
-                <li>Information is shared only with payment and delivery partners when required.</li>
-                <li>We take reasonable measures to protect your personal information.</li>
-                <li>Your data is stored securely and accessed only by authorized personnel.</li>
+                <li>You can request <span className="font-bold text-black">access</span> to your personal data</li>
+                <li>You can request <span className="font-bold text-black">correction</span> of your personal data</li>
+                <li>You can request <span className="font-bold text-black">deletion</span> of your personal data</li>
               </ul>
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold mb-4">Your Rights</h2>
-              <ul className="list-disc pl-6 space-y-2">
-                <li>You have the right to access your personal information.</li>
-                <li>You can request correction or deletion of your data.</li>
-                <li>You can opt out of marketing communications at any time.</li>
-              </ul>
-            </div>
-
-            <div>
-              <h2 className="text-2xl font-bold mb-4">Contact Us</h2>
-              <p className="mb-4">If you have any questions about our Privacy Policy, please contact us:</p>
+              <h2 className="text-2xl font-bold text-black mb-4">7. Contact Us</h2>
+              <p className="mb-4">If you have questions about this policy, contact:</p>
               <div className="space-y-2">
-                <p><strong>📧 Email:</strong> ebusiness@uflix.co.in</p>
-                <p><strong>📞 Office:</strong> 0120 491 1871</p>
-                <p><strong>📱 Mobile:</strong> +91 730 383 6300</p>
-                <p><strong>📍 Address:</strong> B-71, Sector - 80, Gautam Budh Nagar, 201306, India</p>
+                <p><span className="font-bold text-black">UFLIX Interio Private Limited</span></p>
+                <p><span className="font-bold text-black">Email:</span> ebusiness@uflix.co.in</p>
+                <p><span className="font-bold text-black">Phone:</span> 8448448966</p>
               </div>
             </div>
           </div>
 
           <div className="mt-8 p-4 bg-gray-100 rounded-lg">
             <p className="text-sm">
-              For complete terms and conditions, please visit our{' '}
-              <Link href="/terms" className="text-accent hover:underline">Terms & Conditions</Link> page.
+              For complete legal details, please review our{' '}
+              <Link href="/terms" className="text-accent hover:underline">Terms and Conditions</Link> and{' '}
+              <Link href="/refund" className="text-accent hover:underline">Return and Refund Policy</Link>.
             </p>
           </div>
         </div>

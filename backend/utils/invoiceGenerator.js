@@ -2,6 +2,7 @@ const puppeteer = require('puppeteer');
 const cloudinary = require('cloudinary').v2;
 const fs = require('fs');
 const path = require('path');
+const FooterSettings = require('../models/FooterSettings');
 
 // Configure Cloudinary
 cloudinary.config({
@@ -13,7 +14,7 @@ cloudinary.config({
 const currency = (value = 0) => `Rs ${Number(value || 0).toLocaleString('en-IN')}`;
 const LOCAL_LOGO_PATH = path.resolve(__dirname, '../../frontend/public/Logos/Uflix_Logo.png');
 const DEFAULT_LOGO_URL = process.env.INVOICE_LOGO_URL || process.env.EMAIL_LOGO_URL || 'https://uflixfurniture.in/Logos/Uflix_Logo.png';
-const COMPANY_GSTIN = process.env.COMPANY_GSTIN || '09AACCU6989R1Z1';
+const GST_RATE = 0.18;
 
 const escapeHtml = (value = '') =>
   String(value)
@@ -23,48 +24,44 @@ const escapeHtml = (value = '') =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
-const INDIAN_STATE_CODES = {
-  andamanandnicobarislands: '35',
-  andhrapradesh: '37',
-  arunachalpradesh: '12',
-  assam: '18',
-  bihar: '10',
-  chandigarh: '04',
-  chhattisgarh: '22',
-  dadraandnagarhavelianddamananddiu: '26',
-  delhi: '07',
-  goa: '30',
-  gujarat: '24',
-  haryana: '06',
-  himachalpradesh: '02',
-  jammuandkashmir: '01',
-  jharkhand: '20',
-  karnataka: '29',
-  kerala: '32',
-  ladakh: '38',
-  lakshadweep: '31',
-  madhyapradesh: '23',
-  maharashtra: '27',
-  manipur: '14',
-  meghalaya: '17',
-  mizoram: '15',
-  nagaland: '13',
-  odisha: '21',
-  puducherry: '34',
-  punjab: '03',
-  rajasthan: '08',
-  sikkim: '11',
-  tamilnadu: '33',
-  telangana: '36',
-  tripura: '16',
-  uttarpradesh: '09',
-  uttarakhand: '05',
-  westbengal: '19',
-};
+const getSellerProfile = async () => {
+  try {
+    const footerSettings = await FooterSettings.findOne({ isActive: true }).lean();
+    const contactItems = Array.isArray(footerSettings?.contactItems)
+      ? footerSettings.contactItems.filter((item) => item?.enabled !== false)
+      : [];
 
-const getStateCode = (state = '') => {
-  const normalized = String(state).toLowerCase().replace(/[^a-z]/g, '');
-  return INDIAN_STATE_CODES[normalized] || '--';
+    const addressValues = contactItems
+      .filter((item) => item?.type === 'address' && item?.value)
+      .map((item) => String(item.value).trim())
+      .filter(Boolean);
+
+    const splitAddressLines = addressValues
+      .flatMap((value) => value.split(/\r?\n|\|/).map((line) => line.trim()))
+      .filter(Boolean);
+
+    const sellerAddressLine1 =
+      splitAddressLines[0] ||
+      process.env.COMPANY_ADDRESS_LINE1 ||
+      'UFLIX Interio';
+
+    const sellerAddressLine2 =
+      splitAddressLines[1] ||
+      process.env.COMPANY_ADDRESS_LINE2 ||
+      '';
+
+    return {
+      sellerName: footerSettings?.brandName || process.env.COMPANY_NAME || 'UFLIX Interio',
+      sellerAddressLine1,
+      sellerAddressLine2,
+    };
+  } catch (error) {
+    return {
+      sellerName: process.env.COMPANY_NAME || 'UFLIX Interio',
+      sellerAddressLine1: process.env.COMPANY_ADDRESS_LINE1 || 'UFLIX Interio',
+      sellerAddressLine2: process.env.COMPANY_ADDRESS_LINE2 || '',
+    };
+  }
 };
 
 const numberToWords = (num) => {
@@ -116,40 +113,53 @@ const getInvoiceLogoSrc = () => {
   return DEFAULT_LOGO_URL;
 };
 
-const invoiceHtml = (order, customer) => {
+const invoiceHtml = (order, customer, sellerProfile) => {
   const logoSrc = getInvoiceLogoSrc();
   const billedTo = order.billingAddress || order.shippingAddress || {};
   const shippedTo = order.shippingAddress || order.billingAddress || {};
   const placeOfSupply = shippedTo.state || billedTo.state || '';
-  const stateCode = getStateCode(placeOfSupply);
   const invoiceId = `UFL-${String(order.orderNumber || order._id || '').slice(-8)}`;
   const invoiceDate = new Date(order.createdAt || Date.now());
-  const taxAmount = Number(order.taxPrice || 0);
-  const netAmount = Number(order.itemsPrice || 0);
-  const unitPrice = Number(order.items?.[0]?.discountPrice || order.items?.[0]?.price || 0);
-  const quantity = Number(order.items?.[0]?.quantity || 1);
-  const taxRate = netAmount > 0 ? ((taxAmount / netAmount) * 100).toFixed(0) : '0';
-  const totalAmount = Number(order.totalPrice || 0);
+  const shippingAmount = Number(order.shippingPrice || 0);
+
+  const itemBreakdown = (order.items || []).map((item) => {
+    const qty = Number(item.quantity || 0);
+    const paidUnitPrice = Number(item.discountPrice || item.price || 0);
+    const linePaid = paidUnitPrice * qty;
+    const lineNet = linePaid / (1 + GST_RATE);
+    const lineTax = linePaid - lineNet;
+
+    return {
+      name: item.name || 'Product',
+      qty,
+      paidUnitPrice,
+      unitBeforeGst: paidUnitPrice / (1 + GST_RATE),
+      lineNet,
+      lineTax,
+      linePaid,
+    };
+  });
+
+  const itemsNetAmount = itemBreakdown.reduce((sum, row) => sum + row.lineNet, 0);
+  const itemsTaxAmount = itemBreakdown.reduce((sum, row) => sum + row.lineTax, 0);
+  const itemsPaidAmount = itemBreakdown.reduce((sum, row) => sum + row.linePaid, 0);
+  const totalAmount = Number(order.totalPrice || itemsPaidAmount + shippingAmount || 0);
   const amountInWords = `${numberToWords(Math.round(totalAmount))} only`;
 
-  const itemRows = (order.items || [])
-    .map((item, index) => {
-      const qty = Number(item.quantity || 0);
-      const itemUnitPrice = Number(item.discountPrice || item.price || 0);
-      const lineNet = itemUnitPrice * qty;
-      const lineTax = netAmount > 0 ? (lineNet / netAmount) * taxAmount : 0;
-      const lineTotal = lineNet + lineTax;
+  const itemRows = itemBreakdown
+    .map((row, index) => {
+      const taxRate = `${Math.round(GST_RATE * 100)}%`;
 
       return `<tr>
         <td class="center">${index + 1}</td>
-        <td>${escapeHtml(item.name || 'Product')}</td>
-        <td class="right">${itemUnitPrice.toFixed(2)}</td>
-        <td class="center">${qty}</td>
-        <td class="right">${lineNet.toFixed(2)}</td>
+        <td>${escapeHtml(row.name)}</td>
+        <td class="right">${row.unitBeforeGst.toFixed(2)}</td>
+        <td class="center">${row.qty}</td>
+        <td class="right">${row.lineNet.toFixed(2)}</td>
         <td class="center">${taxRate}%</td>
         <td class="center">IGST</td>
-        <td class="right">${lineTax.toFixed(2)}</td>
-        <td class="right">${lineTotal.toFixed(2)}</td>
+        <td class="right">${row.lineTax.toFixed(2)}</td>
+        <td class="right">${row.linePaid.toFixed(2)}</td>
       </tr>`;
     })
     .join('');
@@ -170,8 +180,8 @@ const invoiceHtml = (order, customer) => {
         .titleMain { font-size: 34px; font-weight: 700; letter-spacing: 0.3px; }
         .titleSub { font-size: 18px; font-weight: 700; }
         .subtitle { font-size: 16px; font-weight: 700; }
-        .spaceLg { height: 14px; }
-        .twoCol { display: flex; justify-content: space-between; gap: 24px; margin-top: 10px; }
+        .spaceLg { height: 4px; }
+        .twoCol { display: flex; justify-content: space-between; gap: 20px; margin-top: 6px; }
         .block { width: 48%; font-size: 15px; line-height: 1.2; }
         .block.right { text-align: right; }
         .blockTitle { font-weight: 700; margin-bottom: 2px; }
@@ -207,14 +217,16 @@ const invoiceHtml = (order, customer) => {
           <div class="twoCol">
             <div class="block">
               <div class="blockTitle">Sold By :</div>
-              <div>UFLIX Interio</div>
+              <div>${escapeHtml(sellerProfile?.sellerName || 'UFLIX Interio')}</div>
               <div>*</div>
-              <div>${escapeHtml(process.env.COMPANY_ADDRESS_LINE1 || '472, A-1, Sultan Puri, New Delhi')}</div>
-              <div>${escapeHtml(process.env.COMPANY_ADDRESS_LINE2 || 'North West Delhi, DELHI, 110086')}</div>
+              <div>${escapeHtml(sellerProfile?.sellerAddressLine1 || '')}</div>
+              ${sellerProfile?.sellerAddressLine2 ? `<div>${escapeHtml(sellerProfile.sellerAddressLine2)}</div>` : ''}
               <div>IN</div>
 
               <div class="meta">
-                <div><span class="strong">GST Registration No:</span>${escapeHtml(COMPANY_GSTIN)}</div>
+                <div><span class="strong">GST Registration No:</span></div>
+                <div style="margin-top:6px;"><span class="strong">Order Number:</span>${escapeHtml(order.orderNumber || '')}</div>
+                <div><span class="strong">Order Date:</span>${invoiceDate.toLocaleDateString('en-GB').replace(/\//g, '.')}</div>
               </div>
             </div>
 
@@ -225,7 +237,6 @@ const invoiceHtml = (order, customer) => {
               ${billedTo.addressLine2 ? `<div>${escapeHtml(billedTo.addressLine2)}</div>` : ''}
               <div>${escapeHtml(`${billedTo.city || ''}, ${billedTo.state || ''}, ${billedTo.pincode || ''}`)}</div>
               <div>IN</div>
-              <div class="strong">State/UT Code:${escapeHtml(getStateCode(billedTo.state || ''))}</div>
 
               <div class="spaceLg"></div>
 
@@ -235,16 +246,6 @@ const invoiceHtml = (order, customer) => {
               ${shippedTo.addressLine2 ? `<div>${escapeHtml(shippedTo.addressLine2)}</div>` : ''}
               <div>${escapeHtml(`${shippedTo.city || ''}, ${shippedTo.state || ''}, ${shippedTo.pincode || ''}`)}</div>
               <div>IN</div>
-              <div class="strong">State/UT Code:${escapeHtml(getStateCode(shippedTo.state || ''))}</div>
-            </div>
-          </div>
-
-          <div class="twoCol" style="margin-top:8px;">
-            <div class="block">
-              <div><span class="strong">Order Number:</span>${escapeHtml(order.orderNumber || '')}</div>
-              <div><span class="strong">Order Date:</span>${invoiceDate.toLocaleDateString('en-GB').replace(/\//g, '.')}</div>
-            </div>
-            <div class="block right">
               <div><span class="strong">Place of supply:</span>${escapeHtml(placeOfSupply).toUpperCase()}</div>
               <div><span class="strong">Place of delivery:</span>${escapeHtml(placeOfSupply).toUpperCase()}</div>
               <div><span class="strong">Invoice Number :</span>IN-${escapeHtml(invoiceId)}</div>
@@ -269,29 +270,45 @@ const invoiceHtml = (order, customer) => {
                 <tr>
                   <th>Sl. No</th>
                   <th>Description</th>
-                  <th>Unit Price</th>
+                  <th>Unit Price (Before GST)</th>
                   <th>Qty</th>
-                  <th>Net Amount</th>
+                  <th>Net Amount (Before GST)</th>
                   <th>Tax Rate</th>
                   <th>Tax Type</th>
                   <th>Tax Amount</th>
-                  <th>Total Amount</th>
+                  <th>Total Paid</th>
                 </tr>
               </thead>
               <tbody>
                 ${itemRows || `<tr>
                   <td class="center">1</td>
                   <td class="desc">${escapeHtml(order.items?.[0]?.name || 'Product')}</td>
-                  <td class="right">${unitPrice.toFixed(2)}</td>
-                  <td class="center">${quantity}</td>
-                  <td class="right">${netAmount.toFixed(2)}</td>
-                  <td class="center">${taxRate}%</td>
+                  <td class="right">0.00</td>
+                  <td class="center">1</td>
+                  <td class="right">0.00</td>
+                  <td class="center">18%</td>
                   <td class="center">IGST</td>
-                  <td class="right">${taxAmount.toFixed(2)}</td>
-                  <td class="right">${totalAmount.toFixed(2)}</td>
+                  <td class="right">0.00</td>
+                  <td class="right">0.00</td>
                 </tr>`}
                 <tr class="totals">
                   <td colspan="8" class="right">TOTAL:</td>
+                  <td class="right">${itemsPaidAmount.toFixed(2)}</td>
+                </tr>
+                <tr class="totals">
+                  <td colspan="8" class="right">Total Amount (Before GST):</td>
+                  <td class="right">${itemsNetAmount.toFixed(2)}</td>
+                </tr>
+                <tr class="totals">
+                  <td colspan="8" class="right">Total GST (18%):</td>
+                  <td class="right">${itemsTaxAmount.toFixed(2)}</td>
+                </tr>
+                <tr class="totals">
+                  <td colspan="8" class="right">Shipping:</td>
+                  <td class="right">${shippingAmount.toFixed(2)}</td>
+                </tr>
+                <tr class="totals">
+                  <td colspan="8" class="right">Grand Total (Amount Paid):</td>
                   <td class="right">${totalAmount.toFixed(2)}</td>
                 </tr>
                 <tr>
@@ -315,8 +332,9 @@ const generateInvoice = async (order, customer) => {
   });
 
   try {
+    const sellerProfile = await getSellerProfile();
     const page = await browser.newPage();
-    await page.setContent(invoiceHtml(order, customer), { waitUntil: 'networkidle0' });
+    await page.setContent(invoiceHtml(order, customer, sellerProfile), { waitUntil: 'networkidle0' });
     return await page.pdf({
       format: 'A4',
       printBackground: true,

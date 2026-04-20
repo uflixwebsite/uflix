@@ -28,6 +28,33 @@ const isGuestTokenValidForOrder = (order, providedToken) => {
   return hashGuestAccessToken(providedToken) === order.guestAccessTokenHash;
 };
 
+const normalizeExternalUrl = (url) => {
+  const value = String(url || '').trim();
+  if (!value) return '';
+  if (/^https?:\/\//i.test(value)) return value;
+  return `https://${value.replace(/^\/+/, '')}`;
+};
+
+const canAccessOrder = (req, order) => {
+  const orderAccessToken = String(
+    req.query.token || req.headers['x-order-access-token'] || ''
+  );
+
+  if (req.user) {
+    if (order.isGuestOrder && req.user.role !== 'admin' && !isGuestTokenValidForOrder(order, orderAccessToken)) {
+      return false;
+    }
+
+    if (order.user && order.user._id.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      return false;
+    }
+
+    return true;
+  }
+
+  return isGuestTokenValidForOrder(order, orderAccessToken);
+};
+
 // @route   POST /api/orders
 // @desc    Create new order (supports guest checkout)
 // @access  Public/Private
@@ -280,26 +307,7 @@ router.get('/:id', optionalProtect, async (req, res) => {
       });
     }
 
-    const orderAccessToken = String(
-      req.query.token || req.headers['x-order-access-token'] || ''
-    );
-
-    // Logged-in user can access only own order or admin override
-    if (req.user) {
-      if (order.isGuestOrder && req.user.role !== 'admin' && !isGuestTokenValidForOrder(order, orderAccessToken)) {
-        return res.status(403).json({
-          success: false,
-          message: 'Not authorized to access this order'
-        });
-      }
-
-      if (order.user && order.user._id.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
-        return res.status(403).json({
-          success: false,
-          message: 'Not authorized to access this order'
-        });
-      }
-    } else if (!isGuestTokenValidForOrder(order, orderAccessToken)) {
+    if (!canAccessOrder(req, order)) {
       return res.status(403).json({
         success: false,
         message: 'Not authorized to access this order'
@@ -314,6 +322,48 @@ router.get('/:id', optionalProtect, async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message
+    });
+  }
+});
+
+// @route   GET /api/orders/:id/invoice
+// @desc    Redirect to invoice URL for this order
+// @access  Private or tokenized guest access
+router.get('/:id/invoice', optionalProtect, async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id)
+      .populate('user', 'name email phone');
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    if (!canAccessOrder(req, order)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to access this order'
+      });
+    }
+
+    const preferredUrl = normalizeExternalUrl(order.invoiceUrl);
+    const fallbackUrl = normalizeExternalUrl(order.invoiceInfo?.invoiceUrl);
+    const invoiceRedirectUrl = preferredUrl || fallbackUrl;
+
+    if (!invoiceRedirectUrl) {
+      return res.status(404).json({
+        success: false,
+        message: 'Invoice not available for this order yet'
+      });
+    }
+
+    return res.redirect(302, invoiceRedirectUrl);
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
     });
   }
 });

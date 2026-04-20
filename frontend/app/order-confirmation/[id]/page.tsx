@@ -7,6 +7,8 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { getOrder } from '@/services/orderService';
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+
 export default function OrderConfirmationPage() {
   const params = useParams();
   const searchParams = useSearchParams();
@@ -83,6 +85,10 @@ export default function OrderConfirmationPage() {
     };
     return colors[status] || 'bg-gray-100 text-gray-800';
   };
+
+  const invoiceDownloadUrl = order?._id
+    ? `${API_BASE}/orders/${order._id}/invoice${token ? `?token=${encodeURIComponent(token)}` : ''}`
+    : '';
 
   return (
     <div className="min-h-screen bg-background">
@@ -228,10 +234,10 @@ export default function OrderConfirmationPage() {
             </div>
 
             {/* Invoice Download */}
-            {order.invoiceUrl && (
+            {(order.invoiceUrl || order.invoiceInfo?.invoiceUrl) && invoiceDownloadUrl && (
               <div className="mt-6 pt-6 border-t">
                 <a 
-                  href={order.invoiceUrl} 
+                  href={invoiceDownloadUrl}
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-900 px-4 py-2 rounded-lg transition-colors"

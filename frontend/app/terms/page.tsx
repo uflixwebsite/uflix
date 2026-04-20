@@ -9,78 +9,103 @@ export default function TermsPage() {
       <Header />
       
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h1 className="text-4xl font-bold mb-4">Terms & Conditions</h1>
-        <p className="text-sm text-neutral-dark mb-8">Last Updated: 15-01-2026</p>
+        <h1 className="text-4xl font-bold text-black mb-4">Terms and Conditions - UFLIX</h1>
+        <p className="text-sm text-neutral-dark mb-8">Last Updated: 18-04-2026</p>
         
-        <div className="prose prose-lg max-w-none">
+        <div className="max-w-none text-[16px] leading-7 text-neutral-800">
           <p className="mb-6">
-            Welcome to UFLIX. By using our website and purchasing products from us, you agree to the policies mentioned below.
+            By using our website, you agree to the terms and policies below.
           </p>
 
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-bold mb-4">1. Terms & Conditions</h2>
+              <h2 className="text-2xl font-bold text-black mb-4">1. General</h2>
               <ul className="list-disc pl-6 space-y-2">
-                <li>UFLIX sells products through its official website.</li>
-                <li>Users must be 13 years or older.</li>
-                <li className="ml-6">If under 18 years, purchases must be made with parent or guardian consent.</li>
-                <li>All prices are displayed in INR and may include applicable taxes.</li>
-                <li>Payments are processed securely through Razorpay.</li>
-                <li>Orders are confirmed only after successful payment.</li>
-                <li>UFLIX may cancel or refuse orders due to stock issues, pricing errors, or misuse.</li>
-                <li>All content, images, logos, and materials on this website belong to UFLIX and cannot be copied or used without permission.</li>
-                <li>Continued use of the website means you accept any updates to this policy.</li>
+                <li>By using our website, you agree to follow our terms and policies.</li>
               </ul>
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold mb-4">2. Privacy Policy</h2>
+              <h2 className="text-2xl font-bold text-black mb-4">2. Product Information</h2>
               <ul className="list-disc pl-6 space-y-2">
-                <li>We collect basic information such as name, email, phone number, and delivery address to process orders.</li>
-                <li>Payments are securely handled by Razorpay.</li>
-                <li className="ml-6">UFLIX does not store card or bank details.</li>
-                <li>Your information is used only to:
-                  <ul className="list-circle pl-6 mt-2">
-                    <li>Process and deliver orders</li>
-                    <li>Communicate order updates</li>
-                    <li>Improve our services</li>
-                  </ul>
-                </li>
-                <li>We do not sell or misuse your personal data.</li>
-                <li>Information is shared only with payment and delivery partners when required.</li>
-                <li>We take reasonable measures to protect your personal information.</li>
+                <li>We try to display accurate product details.</li>
+                <li>Slight variations may occur due to lighting or screen differences.</li>
               </ul>
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold mb-4">3. Return & Refund Policy</h2>
+              <h2 className="text-2xl font-bold text-black mb-4">3. Pricing</h2>
               <ul className="list-disc pl-6 space-y-2">
-                <li>Returns are accepted only if the product is damaged, defective, or incorrect.</li>
-                <li>Return requests must be raised within 7 days of delivery.</li>
-                <li>Products must be unused, in original condition, and with original packaging.</li>
-              </ul>
-
-              <h3 className="text-xl font-semibold mt-4 mb-2">Refunds</h3>
-              <ul className="list-disc pl-6 space-y-2">
-                <li>Once approved, refunds will be processed to the original payment method via Razorpay.</li>
-                <li>Refunds are usually completed within 5–7 business days.</li>
-              </ul>
-
-              <h3 className="text-xl font-semibold mt-4 mb-2">Non-Returnable Items</h3>
-              <ul className="list-disc pl-6 space-y-2">
-                <li>Products damaged due to misuse</li>
-                <li>Items returned after 7 days</li>
-                <li>Products marked as non-returnable</li>
+                <li>Prices are subject to change without notice.</li>
+                <li>GST and shipping charges may apply.</li>
               </ul>
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold mb-4">4. Contact Information</h2>
+              <h2 className="text-2xl font-bold text-black mb-4">4. Orders</h2>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>UFLIX reserves the right to cancel any order.</li>
+                <li>Bulk (B2B) orders may have separate agreements.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-black mb-4">5. Payment</h2>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>We accept secure payments via trusted payment gateways.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-black mb-4">6. Intellectual Property</h2>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>All content on the website (images, text, design) belongs to UFLIX.</li>
+                <li>Content cannot be reused without permission.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-black mb-4">7. Liability</h2>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>UFLIX is not responsible for delays caused by logistics or external factors.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-black mb-4">8. B2B Specific Terms</h2>
+              <h3 className="text-xl font-bold text-black mt-2 mb-2">Bulk Orders</h3>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>Pricing may vary based on quantity.</li>
+                <li>Custom manufacturing timelines apply.</li>
+              </ul>
+
+              <h3 className="text-xl font-bold text-black mt-4 mb-2">Payment Terms</h3>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>Advance payment is required.</li>
+                <li>Credit terms are available only for approved partners.</li>
+              </ul>
+
+              <h3 className="text-xl font-bold text-black mt-4 mb-2">Cancellation</h3>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>Once production starts, the order cannot be canceled.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-black mb-4">9. Shipping Policy</h2>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>Delivery time: <span className="font-bold text-black">5-10 working days</span>.</li>
+                <li>Delays may occur due to location or unforeseen issues.</li>
+                <li>Tracking details are shared after dispatch.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-black mb-4">Contact Information</h2>
               <div className="space-y-2">
-                <p><strong>📧 Email:</strong> ebusiness@uflix.co.in</p>
-                <p><strong>📞 Office:</strong> 0120 491 1871</p>
-                <p><strong>📱 Mobile:</strong> +91 730 383 6300</p>
-                <p><strong>📍 Address:</strong> B-71, Sector - 80, Gautam Budh Nagar, 201306, India</p>
+                <p><span className="font-bold text-black">UFLIX Interio Private Limited</span></p>
+                <p><span className="font-bold text-black">Email:</span> ebusiness@uflix.co.in</p>
+                <p><span className="font-bold text-black">Phone:</span> 8448448966</p>
               </div>
             </div>
           </div>
