@@ -1,9 +1,11 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getFooterSettings } from '@/services/footerService';
+import { Instagram, Facebook, Twitter, Linkedin, Youtube, MapPin, Phone, Mail, ArrowRight } from 'lucide-react';
 
 interface SocialLink {
   _id?: string;
@@ -54,43 +56,38 @@ interface FooterData {
 }
 
 const socialIcons: Record<string, JSX.Element> = {
-  instagram: (
-    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1112.324 0 6.162 6.162 0 01-12.324 0zM12 16a4 4 0 110-8 4 4 0 010 8zm4.965-10.405a1.44 1.44 0 112.881.001 1.44 1.44 0 01-2.881-.001z"/>
+  instagram: <Instagram className="w-5 h-5" strokeWidth={1.5} />,
+  facebook: <Facebook className="w-5 h-5" strokeWidth={1.5} />,
+  twitter: <Twitter className="w-5 h-5" strokeWidth={1.5} />,
+  linkedin: <Linkedin className="w-5 h-5" strokeWidth={1.5} />,
+  youtube: <Youtube className="w-5 h-5" strokeWidth={1.5} />,
+  pinterest: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 2C6.48 2 2 6.48 2 12c0 4.24 2.63 7.85 6.35 9.31-.09-.79-.17-2.01.04-2.87.18-.78 1.17-5.01 1.17-5.01s-.3-.6-.3-1.49c0-1.4.81-2.45 1.82-2.45.86 0 1.27.64 1.27 1.41 0 .86-.55 2.15-.83 3.34-.24.99.5 1.8 1.48 1.8 1.78 0 3.15-1.88 3.15-4.59 0-2.4-1.72-4.08-4.2-4.08-2.86 0-4.54 2.15-4.54 4.36 0 .86.33 1.78.75 2.28a.3.3 0 01.07.29l-.28 1.14c-.04.18-.14.22-.33.13-1.25-.58-2.03-2.41-2.03-3.88 0-3.17 2.3-6.08 6.64-6.08 3.48 0 6.19 2.48 6.19 5.8 0 3.46-2.18 6.24-5.21 6.24-1.02 0-1.98-.53-2.31-1.16l-.63 2.38c-.23.87-.84 1.96-1.25 2.63A9.97 9.97 0 0012 22a10 10 0 100-20z" />
     </svg>
   ),
-  facebook: (
-    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-  ),
-  twitter: (
-    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
-  ),
-  linkedin: (
-    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-  ),
-  youtube: (
-    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-  ),
-  pinterest: (
-    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 01.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12.017 24c6.624 0 11.99-5.367 11.99-11.988C24.007 5.367 18.641 0 12.017 0z"/></svg>
-  ),
   tiktok: (
-    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12a4 4 0 100 8 4 4 0 000-8z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M13 2v8a4 4 0 004 4v-3a1 1 0 01-1-1V2h-3z" />
+    </svg>
   ),
   whatsapp: (
-    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" />
+    </svg>
   )
 };
 
-const socialHoverColors: Record<string, string> = {
-  instagram: 'hover:text-pink-500',
-  facebook: 'hover:text-blue-600',
-  twitter: 'hover:text-sky-500',
-  linkedin: 'hover:text-blue-700',
-  youtube: 'hover:text-red-600',
-  pinterest: 'hover:text-red-700',
-  tiktok: 'hover:text-gray-100',
-  whatsapp: 'hover:text-green-500'
+const socialBrandColors: Record<string, string> = {
+  instagram: 'text-pink-600 hover:text-pink-500',
+  facebook: 'text-blue-600 hover:text-blue-500',
+  twitter: 'text-sky-500 hover:text-sky-400',
+  linkedin: 'text-blue-700 hover:text-blue-600',
+  youtube: 'text-red-600 hover:text-red-500',
+  pinterest: 'text-red-700 hover:text-red-600',
+  tiktok: 'text-stone-900 hover:text-stone-700',
+  whatsapp: 'text-green-600 hover:text-green-500'
 };
 
 // Default fallback data
@@ -139,67 +136,79 @@ const defaultFooter: FooterData = {
   ]
 };
 
-// ─── Contact icon helpers ─────────────────────────────────────────────────────
-
 const contactIcons: Record<string, JSX.Element> = {
-  address: (
-    <svg className="w-4 h-4 flex-none mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-    </svg>
-  ),
-  phone: (
-    <svg className="w-4 h-4 flex-none mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-    </svg>
-  ),
-  email: (
-    <svg className="w-4 h-4 flex-none mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-    </svg>
-  ),
+  address: <MapPin className="w-5 h-5 flex-none" strokeWidth={1.5} />,
+  phone: <Phone className="w-5 h-5 flex-none" strokeWidth={1.5} />,
+  email: <Mail className="w-5 h-5 flex-none" strokeWidth={1.5} />,
 };
 
 function renderContactValue(item: ContactItem) {
-  const lines = item.value.split('\n');
+  const lines = item.value.split(/\\n|\n/);
   if (item.type === 'phone') {
     return (
-      <>
+      <div className="flex flex-col space-y-0.5">
         {lines.map((line, i) => (
           <a key={i} href={`tel:${line.replace(/\s/g, '')}`}
-            className="block hover:text-accent transition-colors leading-snug">
+            className="block hover:text-orange-500 hover:translate-x-1 transition-all duration-300 leading-snug">
             {line}
           </a>
         ))}
-      </>
+      </div>
     );
   }
   if (item.type === 'email') {
     return (
-      <>
+      <div className="flex flex-col space-y-0.5">
         {lines.map((line, i) => (
           <a key={i} href={`mailto:${line}`}
-            className="block hover:text-accent transition-colors leading-snug break-all">
+            className="block hover:text-orange-500 hover:translate-x-1 transition-all duration-300 leading-snug break-all">
             {line}
           </a>
         ))}
-      </>
+      </div>
     );
   }
   return (
-    <span className="leading-snug">
+    <span className="leading-snug w-full flex flex-col space-y-0.5">
       {lines.map((line, i) => (
-        <span key={i}>
+        <span key={i} className="block">
           {line}
-          {i < lines.length - 1 ? <br /> : null}
         </span>
       ))}
     </span>
   );
 }
 
+const trustItems = [
+  {
+    icon: (
+      <svg className="w-5 h-5 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
+      </svg>
+    ),
+    text: "Custom Solutions"
+  },
+  {
+    icon: (
+      <svg className="w-5 h-5 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+      </svg>
+    ),
+    text: "Pan India Delivery"
+  },
+  {
+    icon: (
+      <svg className="w-5 h-5 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg>
+    ),
+    text: "10,000+ Clients"
+  }
+];
+
 export default function Footer() {
   const [data, setData] = useState<FooterData>(defaultFooter);
+  const [emailFocus, setEmailFocus] = useState(false);
 
   useEffect(() => {
     const fetchFooter = async () => {
@@ -230,73 +239,112 @@ export default function Footer() {
   const enabledBottom = data.bottomLinks.filter(b => b.enabled);
 
   return (
-    <footer style={{ backgroundColor: '#0f0f0f' }} className="text-white">
+    <footer className="bg-gradient-to-br from-[#FAFAF9] to-[#F3F2F0] text-stone-800 font-sans border-t border-stone-200 relative overflow-hidden">
+      {/* Decorative subtle background accents */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500 rounded-full mix-blend-multiply filter blur-[100px] opacity-[0.03] pointer-events-none transform translate-x-1/2 -translate-y-1/2"></div>
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-stone-300 rounded-full mix-blend-multiply filter blur-[100px] opacity-[0.1] pointer-events-none transform -translate-x-1/2 translate-y-1/2"></div>
 
-      {/* ── Top brand strip ───────────────────────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-10">
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-          {/* Brand name + tagline */}
-          <div>
-            <Link href="/">
-              <Image
-                src="/Logos/Uflix_Logo.png"
-                alt={data.brandName}
-                width={140}
-                height={48}
-                className="h-12 w-auto object-contain"
-              />
-            </Link>
-            <p className="text-gray-400 text-sm mt-3 max-w-sm leading-relaxed">
-              {data.brandDescription}
-            </p>
+      {/* ── Trust Strip ───────────────────────────────────────────────── */}
+      <div className="border-b border-stone-200 overflow-hidden">
+        
+        {/* Desktop View */}
+        <div className="hidden sm:block max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+          <div className="flex flex-row items-center justify-center gap-8 text-sm text-stone-600 font-medium tracking-wide">
+            {trustItems.map((item, i) => (
+              <div key={i} className="flex items-center gap-8">
+                <div className="flex items-center gap-2">
+                  {item.icon}
+                  {item.text}
+                </div>
+                {i < trustItems.length - 1 && <span className="text-stone-300">|</span>}
+              </div>
+            ))}
           </div>
+        </div>
 
-          {/* Social icons */}
-          {enabledSocial.length > 0 && (
-            <div className="flex gap-2.5 flex-wrap">
-              {enabledSocial.map((link, i) => (
-                <a
-                  key={i}
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`w-9 h-9 flex items-center justify-center rounded-full border border-white/10 bg-white/5 text-gray-400 transition-all hover:border-white/30 hover:bg-white/10 ${socialHoverColors[link.platform] || 'hover:text-accent'}`}
-                  aria-label={link.platform}
-                >
-                  <span className="[&>svg]:w-4 [&>svg]:h-4">
-                    {socialIcons[link.platform] || (
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                      </svg>
-                    )}
-                  </span>
-                </a>
-              ))}
-            </div>
-          )}
+        {/* Mobile View (Carousel) */}
+        <div className="flex sm:hidden relative py-4 w-full bg-[#FAFAF9]">
+          <style dangerouslySetInnerHTML={{__html: `
+            @keyframes marquee {
+              0% { transform: translateX(0%); }
+              100% { transform: translateX(-50%); }
+            }
+            .animate-marquee {
+              animation: marquee 15s linear infinite;
+              display: flex;
+              width: max-content;
+            }
+          `}} />
+          <div className="animate-marquee items-center gap-8 text-sm text-stone-600 font-medium tracking-wide pl-8">
+            {/* We duplicate the array 4 times just to be absolutely sure the scrolling window is wide enough on mobile displays */}
+            {[...trustItems, ...trustItems, ...trustItems, ...trustItems].map((item, i) => (
+              <div key={i} className="flex items-center gap-8">
+                <div className="flex items-center gap-2 whitespace-nowrap">
+                  {item.icon}
+                  {item.text}
+                </div>
+                <span className="text-stone-300">|</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* ── Divider ───────────────────────────────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="h-px bg-white/8" />
-      </div>
+      {/* ── Main Footer Content ───────────────────────────────────────── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
+          
+          {/* Brand Section */}
+          <div className="flex flex-col relative z-10 w-full sm:max-w-md">
+            <Link href="/" className="mb-8 inline-block transition-transform duration-500 hover:scale-105 origin-left">
+              <Image
+                src="/Logos/Uflix_Logo.png"
+                alt={data.brandName}
+                width={260}
+                height={80}
+                className="h-16 md:h-20 w-auto object-contain drop-shadow-sm"
+              />
+            </Link>
+            <p className="text-stone-600 text-sm leading-relaxed mb-6 font-medium">
+              {data.brandDescription}
+            </p>
+            <div className="relative pl-4 border-l-2 border-orange-400/60 mb-8 max-w-sm">
+              <p className="text-stone-500 text-sm font-medium italic font-serif">
+                "Crafted with precision. Built for lasting spaces."
+              </p>
+            </div>
+            
+            {/* Minimal Newsletter */}
+            <div className="mt-auto">
+              <h4 className="text-stone-900 text-sm font-semibold mb-3">Subscribe</h4>
+              <div className={`flex items-center border-b ${emailFocus ? 'border-orange-500' : 'border-stone-300'} transition-colors duration-300 pb-2`}>
+                <input 
+                  type="email" 
+                  placeholder="Email address" 
+                  className="bg-transparent border-none outline-none w-full text-sm text-stone-800 placeholder-stone-400"
+                  onFocus={() => setEmailFocus(true)}
+                  onBlur={() => setEmailFocus(false)}
+                />
+                <button className="text-stone-400 hover:text-orange-500 transition-colors ml-2" aria-label="Subscribe">
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
 
-      {/* ── Link columns + contact ────────────────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-10">
-
+          {/* Dynamic Link Columns */}
           {enabledColumns.map((column, ci) => (
-            <div key={ci}>
-              <h4 className="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-5">
-                {column.title}
-              </h4>
-              <ul className="space-y-3">
+             <div key={ci} className="lg:pl-8 relative z-10">
+               <h4 className="text-stone-900 text-sm font-bold uppercase tracking-widest mb-6 flex items-center gap-2">
+                 <span className="w-1.5 h-1.5 bg-orange-400 rounded-full inline-block"></span>
+                 {column.title}
+               </h4>
+              <ul className="space-y-4">
                 {column.links.filter(l => l.enabled).map((link, li) => (
                   <li key={li}>
                     <Link
                       href={link.url}
-                      className="text-sm text-gray-300 hover:text-white transition-colors"
+                      className="text-sm text-stone-500 hover:text-orange-500 hover:underline hover:underline-offset-4 decoration-orange-500/30 transition-all duration-300"
                     >
                       {link.label}
                     </Link>
@@ -306,39 +354,61 @@ export default function Footer() {
             </div>
           ))}
 
-          {enabledContact.length > 0 && (
-            <div className="col-span-2 md:col-span-1">
-              <h4 className="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-5">
+          {/* Contact Section */}
+          {(enabledContact.length > 0 || enabledSocial.length > 0) && (
+            <div className="lg:pl-4 relative z-10">
+              <h4 className="text-stone-900 text-sm font-bold uppercase tracking-widest mb-6 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 bg-orange-400 rounded-full inline-block"></span>
                 {data.contactTitle}
               </h4>
-              <ul className="space-y-4">
+              
+              <ul className="space-y-5 mb-8">
                 {enabledContact.map((item, i) => (
-                  <li key={i} className="flex gap-2.5 text-gray-400 text-sm">
-                    <span className="text-gray-600 pt-0.5">
-                      {contactIcons[item.type] || null}
+                  <li key={i} className="flex items-start gap-4 text-stone-500 text-sm group">
+                    <span className="text-stone-400 group-hover:text-orange-500 transition-colors duration-300 transform -translate-y-0.5">
+                      {contactIcons[item.type] || <MapPin className="w-5 h-5 flex-none" strokeWidth={1.5} />}
                     </span>
-                    <div>
+                    <div className="flex flex-col w-full text-stone-500">
                       {renderContactValue(item)}
                     </div>
                   </li>
                 ))}
               </ul>
+
+              {/* Social Icons */}
+              {enabledSocial.length > 0 && (
+                <div className="flex gap-4 flex-wrap items-center mt-6">
+                  {enabledSocial.map((link, i) => (
+                    <a
+                      key={i}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`hover:scale-110 transition-transform duration-300 ${socialBrandColors[link.platform] || 'text-stone-500 hover:text-orange-500'}`}
+                      aria-label={link.platform}
+                    >
+                        {socialIcons[link.platform] || <Instagram className="w-5 h-5" strokeWidth={1.5} />}
+                    </a>
+                  ))}
+                </div>
+              )}
             </div>
           )}
+
         </div>
       </div>
 
-      {/* ── Bottom bar ────────────────────────────────────────────────── */}
-      <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-gray-600">{data.copyrightText}</p>
+      {/* ── Bottom Bar ────────────────────────────────────────────────── */}
+      <div className="border-t border-stone-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-stone-500">{data.copyrightText}</p>
           {enabledBottom.length > 0 && (
-            <div className="flex gap-5 flex-wrap justify-center">
+            <div className="flex gap-6 flex-wrap justify-center">
               {enabledBottom.map((link, i) => (
                 <Link
                   key={i}
                   href={link.url}
-                  className="text-xs text-gray-600 hover:text-gray-300 transition-colors"
+                  className="text-xs text-stone-500 hover:text-orange-500 transition-colors duration-300"
                 >
                   {link.label}
                 </Link>
@@ -347,7 +417,6 @@ export default function Footer() {
           )}
         </div>
       </div>
-
     </footer>
   );
 }
