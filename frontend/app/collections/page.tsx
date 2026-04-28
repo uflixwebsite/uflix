@@ -9,7 +9,7 @@ import Breadcrumb from '@/components/Breadcrumb';
 import { getCollections } from '@/services/collectionService';
 
 export default function CollectionsPage() {
-  const [collections, setCollections] = useState([]);
+  const [collections, setCollections] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

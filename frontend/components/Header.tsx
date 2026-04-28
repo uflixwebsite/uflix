@@ -243,7 +243,7 @@ export default function Header() {
 
       {/* ═══ ROW 1: Dark Utility Top Bar ═══ */}
       <div className="hidden lg:block bg-[#1A1A1A]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-[44px]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-11">
           <div className="flex items-center gap-1 bg-white/10 rounded-full p-0.5">
             {[
               { label: 'For Homes', href: '/categories' },
@@ -253,29 +253,29 @@ export default function Header() {
               <Link key={tab.href} href={tab.href}
                 className={`px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-all duration-300 ${
                   pathname === tab.href
-                    ? 'bg-gradient-to-r from-accent to-secondary text-white shadow-lg shadow-accent/20'
+                    ? 'bg-linear-to-r from-accent to-secondary text-white shadow-lg shadow-accent/20'
                     : 'text-white/70 hover:text-white hover:bg-white/10'
                 }`}
               >{tab.label}</Link>
             ))}
           </div>
           <Link href="/contact?subject=become-dealer"
-            className="group flex items-center gap-2 px-5 py-1.5 rounded-full text-xs font-bold tracking-wide bg-gradient-to-r from-accent to-secondary text-white shadow-lg shadow-accent/25 hover:shadow-accent/40 hover:scale-105 transition-all duration-300"
+            className="group flex items-center gap-2 px-5 py-1.5 rounded-full text-xs font-bold tracking-wide bg-linear-to-r from-accent to-secondary text-white shadow-lg shadow-accent/25 hover:shadow-accent/40 hover:scale-105 transition-all duration-300"
           >
             Become a Dealer
             <svg className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
           </Link>
         </div>
-        <div className="h-[1px] bg-gradient-to-r from-transparent via-accent/40 to-transparent" />
+        <div className="h-px bg-linear-to-r from-transparent via-accent/40 to-transparent" />
       </div>
 
       {/* ═══ ROW 2: Main Navigation Bar ═══ */}
       <div className="border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-[80px]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-20">
 
           {/* Logo */}
-          <Link href="/" className="flex-shrink-0 transition-transform duration-300 hover:scale-105">
-            <img src="/Logos/Uflix_Logo.png" alt="UFLIX" className="h-14 lg:h-[72px] w-auto object-contain" />
+          <Link href="/" className="shrink-0 transition-transform duration-300 hover:scale-105">
+            <img src="/Logos/Uflix_Logo.png" alt="UFLIX" className="h-14 lg:h-18 w-auto object-contain" />
           </Link>
 
           {/* Center: Nav Links (desktop) */}
@@ -298,7 +298,7 @@ export default function Header() {
               className="flex flex-col items-center gap-0.5 transition-all duration-200 text-gray-700 hover:text-accent"
               aria-label="Search"
             >
-              <svg className="w-[22px] h-[22px]" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+              <svg className="w-5.5 h-5.5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
               <span className="text-[10px] font-medium leading-none">Search</span>
             </button>
 
@@ -306,11 +306,11 @@ export default function Header() {
             {isSignedIn ? (
               <div className="relative" onMouseEnter={handleUserMenuMouseEnter} onMouseLeave={handleUserMenuMouseLeave} data-user-menu-dropdown>
                 <button className="flex flex-col items-center gap-0.5 transition-all duration-200 text-gray-700 hover:text-accent" aria-label="Account">
-                  <svg className="w-[22px] h-[22px]" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                  <svg className="w-5.5 h-5.5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                   <span className="text-[10px] font-medium leading-none">Profile</span>
                 </button>
                 {isUserMenuOpen && (
-                  <div className="absolute top-full right-0 mt-3 w-52 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 z-[200] search-overlay-enter" onMouseEnter={handleUserMenuMouseEnter} onMouseLeave={handleUserMenuMouseLeave} data-user-menu-dropdown>
+                  <div className="absolute top-full right-0 mt-3 w-52 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 z-200 search-overlay-enter" onMouseEnter={handleUserMenuMouseEnter} onMouseLeave={handleUserMenuMouseLeave} data-user-menu-dropdown>
                     <div className="px-4 py-3 border-b border-gray-100">
                       <p className="text-sm font-bold text-gray-900">{user?.firstName || 'User'}</p>
                       <p className="text-xs text-gray-400 truncate">{user?.primaryEmailAddress?.emailAddress}</p>
@@ -327,7 +327,7 @@ export default function Header() {
               </div>
             ) : (
               <Link href="/sign-in" className="flex flex-col items-center gap-0.5 transition-all duration-200 text-gray-700 hover:text-accent" aria-label="Sign In">
-                <svg className="w-[22px] h-[22px]" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                  <svg className="w-5.5 h-5.5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                 <span className="text-[10px] font-medium leading-none">Profile</span>
               </Link>
             )}
@@ -335,9 +335,9 @@ export default function Header() {
             {/* Wishlist */}
             <Link href="/wishlist" className="relative flex flex-col items-center gap-0.5 transition-all duration-200 text-gray-700 hover:text-accent" aria-label="Wishlist">
               <span className="relative">
-                <svg className="w-[22px] h-[22px]" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                  <svg className="w-5.5 h-5.5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
                 {wishlistCount > 0 && (
-                  <span className="absolute -top-1.5 -right-2 bg-accent text-white text-[10px] rounded-full w-[18px] h-[18px] flex items-center justify-center font-bold badge-pulse">{wishlistCount}</span>
+                  <span className="absolute -top-1.5 -right-2 bg-accent text-white text-[10px] rounded-full w-4.5 h-4.5 flex items-center justify-center font-bold badge-pulse">{wishlistCount}</span>
                 )}
               </span>
               <span className="text-[10px] font-medium leading-none">Wishlist</span>
@@ -346,9 +346,9 @@ export default function Header() {
             {/* Cart */}
             <Link href="/cart" className="relative flex flex-col items-center gap-0.5 transition-all duration-200 text-gray-700 hover:text-accent" aria-label="Cart">
               <span className="relative">
-                <svg className="w-[22px] h-[22px]" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                <svg className="w-5.5 h-5.5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
                 {cartCount > 0 && (
-                  <span className="absolute -top-1.5 -right-2 bg-accent text-white text-[10px] rounded-full w-[18px] h-[18px] flex items-center justify-center font-bold badge-pulse">{cartCount}</span>
+                  <span className="absolute -top-1.5 -right-2 bg-accent text-white text-[10px] rounded-full w-4.5 h-4.5 flex items-center justify-center font-bold badge-pulse">{cartCount}</span>
                 )}
               </span>
               <span className="text-[10px] font-medium leading-none">Cart</span>
@@ -379,7 +379,7 @@ export default function Header() {
 
       {/* ═══ Full-width Mega Menu ═══ */}
       {hoveredLink && (
-        <div className="absolute left-0 right-0 w-full z-[200] shadow-2xl search-overlay-enter" style={{ top: '100%' }}>
+        <div className="absolute left-0 right-0 w-full z-200 shadow-2xl search-overlay-enter" style={{ top: '100%' }}>
           {loadingMegaMenu ? (
             <div className="bg-white border-t border-gray-100 flex items-center justify-center relative" style={{ height: '420px' }}>
               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-accent"></div>
@@ -392,7 +392,7 @@ export default function Header() {
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
 
-              <div className="flex-shrink-0 overflow-y-auto" style={{ width: '300px', backgroundColor: '#f8f5f1' }}>
+              <div className="shrink-0 overflow-y-auto" style={{ width: '300px', backgroundColor: '#f8f5f1' }}>
                 {megaMenuData.categories.filter((cat: any) => cat.enabled).sort((a: any, b: any) => (a.order || 0) - (b.order || 0)).map((category: any) => (
                   <button key={category.id} onMouseEnter={() => setActiveMegaCategory(category.id)}
                     className={`w-full text-left px-10 py-5 text-[15px] border-b border-gray-200/40 transition-all duration-200 ${
@@ -617,7 +617,7 @@ export default function Header() {
       {/* ═══ Search Overlay ═══ */}
       {isSearchOpen && (
         <div className="absolute left-1/2 -translate-x-1/2 z-50 search-overlay-enter" style={{ top: '100%', marginTop: '10px' }}>
-          <div className="bg-white/95 backdrop-blur-xl border border-gray-100 shadow-2xl rounded-2xl w-[90vw] sm:w-[500px]">
+          <div className="bg-white/95 backdrop-blur-xl border border-gray-100 shadow-2xl rounded-2xl w-[90vw] sm:w-125">
             <div className="p-4">
               <form onSubmit={handleSearchSubmit} className="relative">
                 <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
@@ -634,7 +634,7 @@ export default function Header() {
               </form>
 
               {searchQuery.trim().length > 0 && (
-                <div className="mt-2 bg-white rounded-xl border border-gray-100 max-h-[400px] overflow-y-auto shadow-lg">
+                <div className="mt-2 bg-white rounded-xl border border-gray-100 max-h-100 overflow-y-auto shadow-lg">
                   {isSearching ? (
                     <div className="flex items-center justify-center py-8">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-accent"></div>
@@ -646,7 +646,7 @@ export default function Header() {
                           className="w-full flex items-center gap-3 px-4 py-3 hover:bg-accent/5 transition-colors text-left"
                         >
                           <img src={product.images?.[0]?.url || product.images?.[0] || 'https://via.placeholder.com/150?text=No+Image'}
-                            alt={product.name} className="w-12 h-12 object-cover rounded-lg flex-shrink-0 bg-gray-100"
+                            alt={product.name} className="w-12 h-12 object-cover rounded-lg shrink-0 bg-gray-100"
                             onError={(e) => { const target = e.target as HTMLImageElement; target.src = 'https://via.placeholder.com/150?text=No+Image'; }}
                           />
                           <div className="flex-1 min-w-0">

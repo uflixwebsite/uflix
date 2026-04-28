@@ -23,19 +23,7 @@
   --site-btn-outline-hover-text: #FFFFFF;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-accent: var(--accent);
-  --color-accent-dark: var(--accent-dark);
-  --color-accent-light: var(--accent-light);
-  --color-secondary: var(--secondary);
-  --color-neutral-light: var(--neutral-light);
-  --color-neutral-dark: var(--neutral-dark);
-  --color-border: var(--border-color);
-  --font-heading: var(--font-playfair);
-  --font-body: var(--font-montserrat);
-}
+/* Theme variables moved into :root above. Removed @theme rule which is invalid CSS. */
 
 body {
   background: var(--background);

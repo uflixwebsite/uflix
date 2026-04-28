@@ -13,7 +13,7 @@ export default function CollectionDetailPage() {
   const params = useParams();
   const slug = params?.slug;
 
-  const [collection, setCollection] = useState(null);
+  const [collection, setCollection] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,7 +35,7 @@ export default function CollectionDetailPage() {
     fetchCollection();
   }, [slug]);
 
-  const products = useMemo(() => collection?.products || [], [collection]);
+  const products: any[] = useMemo(() => collection?.products || [], [collection]);
 
   return (
     <div className="min-h-screen bg-background">

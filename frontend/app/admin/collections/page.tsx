@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -14,7 +14,17 @@ import {
   updateCollection,
 } from '@/services/collectionService';
 
-const emptyForm = {
+type CollectionForm = {
+  name: string;
+  subtitle: string;
+  image: string;
+  showOnHome: boolean;
+  isActive: boolean;
+  sortOrder: number;
+  products: string[];
+};
+
+const emptyForm: CollectionForm = {
   name: '',
   subtitle: '',
   image: '',
@@ -28,10 +38,10 @@ export default function AdminCollectionsPage() {
   const router = useRouter();
   const { status, isAdmin } = useAuthState();
 
-  const [collections, setCollections] = useState([]);
-  const [products, setProducts] = useState([]);
+  const [collections, setCollections] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
   const [selectedCollectionId, setSelectedCollectionId] = useState('new');
-  const [form, setForm] = useState(emptyForm);
+  const [form, setForm] = useState<CollectionForm>(emptyForm);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -97,7 +107,7 @@ export default function AdminCollectionsPage() {
     );
   }, [products, search]);
 
-  const handleUploadImage = async (event) => {
+  const handleUploadImage = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -113,7 +123,7 @@ export default function AdminCollectionsPage() {
     }
   };
 
-  const toggleProduct = (productId) => {
+  const toggleProduct = (productId: string) => {
     setForm((prev) => {
       const exists = prev.products.includes(productId);
       return {
@@ -163,7 +173,7 @@ export default function AdminCollectionsPage() {
         await refreshCollections(created?.data?._id || 'new');
         alert('Collection created successfully');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to save collection', error);
       alert(error?.response?.data?.message || 'Failed to save collection');
     } finally {
@@ -181,7 +191,7 @@ export default function AdminCollectionsPage() {
       await deleteCollection(selectedCollection._id);
       await refreshCollections('new');
       alert('Collection deleted successfully');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to delete collection', error);
       alert(error?.response?.data?.message || 'Failed to delete collection');
     } finally {

@@ -231,9 +231,9 @@ export default function AdminHomePage() {
                 </button>
               </div>
               <span className="flex-1 font-medium">{SECTION_LABELS[section.type] || section.type}</span>
-              <label className="relative inline-flex items-center cursor-pointer">
+                <label className="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" checked={section.enabled} onChange={() => toggleSection(index)} className="sr-only peer" />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
               </label>
             </div>
           ))}
@@ -478,9 +478,9 @@ export default function AdminHomePage() {
         <div className="p-4 border border-gray-200 rounded-lg bg-white">
           <div className="flex items-center justify-between mb-3">
             <h4 className="font-semibold text-lg">Best Sellers</h4>
-            <label className="relative inline-flex items-center cursor-pointer">
+              <label className="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" checked={ps.bestSellers?.enabled ?? true} onChange={(e) => updatePS('bestSellers', { ...ps.bestSellers, enabled: e.target.checked })} className="sr-only peer" />
-              <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
+              <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
             </label>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -515,9 +515,9 @@ export default function AdminHomePage() {
         <div className="p-4 border border-gray-200 rounded-lg bg-white">
           <div className="flex items-center justify-between mb-3">
             <h4 className="font-semibold text-lg">New Arrivals</h4>
-            <label className="relative inline-flex items-center cursor-pointer">
+              <label className="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" checked={ps.newArrivals?.enabled ?? true} onChange={(e) => updatePS('newArrivals', { ...ps.newArrivals, enabled: e.target.checked })} className="sr-only peer" />
-              <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
+              <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
             </label>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -563,7 +563,7 @@ export default function AdminHomePage() {
                   <div className="flex items-center gap-3">
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" checked={cp.enabled ?? true} onChange={(e) => updateCategorySection(index, 'enabled', e.target.checked)} className="sr-only peer" />
-                      <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
+                      <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
                     </label>
                     <button onClick={() => removeCategorySection(index)} className="text-red-500 hover:text-red-700 text-sm">Remove</button>
                   </div>
