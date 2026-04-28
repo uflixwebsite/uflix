@@ -43,7 +43,6 @@ const TABS = [
   { id: 'hero', label: 'Hero Slides' },
   { id: 'clients', label: 'Client Logos' },
   { id: 'categorySlider', label: 'Category Slider' },
-  { id: 'collections', label: 'Collections' },
   { id: 'photoGrid', label: 'Photo Grid' },
   { id: 'promoCards', label: 'Promo Cards' },
   { id: 'siteButtons', label: 'Site Buttons' },
@@ -1104,7 +1103,6 @@ export default function AdminHomePage() {
       case 'hero': return renderHeroTab();
       case 'clients': return renderClientsTab();
       case 'categorySlider': return renderCategorySliderTab();
-      case 'collections': return renderCollectionsTab();
       case 'photoGrid': return renderPhotoGridTab();
       case 'promoCards': return renderPromoCardsTab();
       case 'siteButtons': return renderSiteButtonsTab();

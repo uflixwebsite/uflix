@@ -220,6 +220,21 @@ export default function AdminDashboardPage() {
           </Link>
 
           <Link
+            href="/admin/collections"
+            className="group bg-white rounded-lg border border-border p-6 hover:shadow-lg transition-all duration-200 hover:border-accent"
+          >
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-amber-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-amber-200 transition-colors">
+                <svg className="w-8 h-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h10" />
+                </svg>
+              </div>
+              <h3 className="font-semibold text-lg mb-2">Collections</h3>
+              <p className="text-sm text-neutral-dark">Create and manage collections</p>
+            </div>
+          </Link>
+
+          <Link
             href="/admin/categories"
             className="group bg-white rounded-lg border border-border p-6 hover:shadow-lg transition-all duration-200 hover:border-accent"
           >

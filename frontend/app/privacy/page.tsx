@@ -22,10 +22,10 @@ export default function PrivacyPage() {
             <div>
               <h2 className="text-2xl font-bold text-black mb-4">1. Information We Collect</h2>
               <ul className="list-disc pl-6 space-y-2">
-                <li><span className="font-bold text-black">Name, phone number, and email address</span></li>
-                <li><span className="font-bold text-black">Shipping and billing address</span></li>
-                <li><span className="font-bold text-black">Payment details</span> (secured via third-party payment gateways)</li>
-                <li><span className="font-bold text-black">Business details</span> (for B2B clients)</li>
+                <li>Name, phone number, and email address</li>
+                <li>Shipping and billing address</li>
+                <li>Payment details (secured via third-party payment gateways)</li>
+                <li>Business details (for B2B clients)</li>
               </ul>
             </div>
 
@@ -35,14 +35,14 @@ export default function PrivacyPage() {
                 <li>Order processing and delivery</li>
                 <li>Customer support</li>
                 <li>Improving website and services</li>
-                <li>Marketing and promotional communication <span className="font-bold text-black">only with consent</span></li>
+                <li>Marketing and promotional communication only with consent</li>
               </ul>
             </div>
 
             <div>
               <h2 className="text-2xl font-bold text-black mb-4">3. Data Protection</h2>
               <p>
-                We implement <span className="font-bold text-black">industry-standard security measures</span> to protect your data. However,
+                We implement industry-standard security measures to protect your data. However,
                 no online transmission is 100% secure.
               </p>
             </div>
@@ -65,9 +65,9 @@ export default function PrivacyPage() {
             <div>
               <h2 className="text-2xl font-bold text-black mb-4">6. Your Rights</h2>
               <ul className="list-disc pl-6 space-y-2">
-                <li>You can request <span className="font-bold text-black">access</span> to your personal data</li>
-                <li>You can request <span className="font-bold text-black">correction</span> of your personal data</li>
-                <li>You can request <span className="font-bold text-black">deletion</span> of your personal data</li>
+                <li>You can request access to your personal data</li>
+                <li>You can request correction of your personal data</li>
+                <li>You can request deletion of your personal data</li>
               </ul>
             </div>
 
@@ -75,9 +75,9 @@ export default function PrivacyPage() {
               <h2 className="text-2xl font-bold text-black mb-4">7. Contact Us</h2>
               <p className="mb-4">If you have questions about this policy, contact:</p>
               <div className="space-y-2">
-                <p><span className="font-bold text-black">UFLIX Interio Private Limited</span></p>
-                <p><span className="font-bold text-black">Email:</span> ebusiness@uflix.co.in</p>
-                <p><span className="font-bold text-black">Phone:</span> 8448448966</p>
+                <p>UFLIX Interio Private Limited</p>
+                <p>Email: ebusiness@uflix.co.in</p>
+                <p>Phone: 8448448966</p>
               </div>
             </div>
           </div>

@@ -30,11 +30,11 @@ export default function ClientCarousel({ title, logos }: ClientCarouselProps) {
           {title || 'Trusted by Leading Organizations'}
         </p>
         <div className="relative flex overflow-hidden">
-          <div className="flex animate-marquee gap-16">
+          <div className="flex animate-marquee-very-slow gap-16">
             {[...clients, ...clients, ...clients].map((client, index) => (
               <div
                 key={index}
-                className="flex items-center justify-center min-w-[240px] h-28"
+                className="flex items-center justify-center min-w-60 h-28"
               >
                 <img
                   src={client.image}

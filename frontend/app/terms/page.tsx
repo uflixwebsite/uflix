@@ -94,7 +94,7 @@ export default function TermsPage() {
             <div>
               <h2 className="text-2xl font-bold text-black mb-4">9. Shipping Policy</h2>
               <ul className="list-disc pl-6 space-y-2">
-                <li>Delivery time: <span className="font-bold text-black">5-10 working days</span>.</li>
+                <li>Delivery time: 5-10 working days.</li>
                 <li>Delays may occur due to location or unforeseen issues.</li>
                 <li>Tracking details are shared after dispatch.</li>
               </ul>
@@ -103,9 +103,9 @@ export default function TermsPage() {
             <div>
               <h2 className="text-2xl font-bold text-black mb-4">Contact Information</h2>
               <div className="space-y-2">
-                <p><span className="font-bold text-black">UFLIX Interio Private Limited</span></p>
-                <p><span className="font-bold text-black">Email:</span> ebusiness@uflix.co.in</p>
-                <p><span className="font-bold text-black">Phone:</span> 8448448966</p>
+                <p>UFLIX Interio Private Limited</p>
+                <p>Email: ebusiness@uflix.co.in</p>
+                <p>Phone: 8448448966</p>
               </div>
             </div>
           </div>

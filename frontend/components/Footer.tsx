@@ -182,7 +182,7 @@ function renderContactValue(item: ContactItem) {
 const trustItems = [
   {
     icon: (
-      <svg className="w-5 h-5 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+      <svg className="w-5 h-5 text-orange-500 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
       </svg>
     ),
@@ -190,7 +190,7 @@ const trustItems = [
   },
   {
     icon: (
-      <svg className="w-5 h-5 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+      <svg className="w-5 h-5 text-orange-500 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
       </svg>
     ),
@@ -198,7 +198,7 @@ const trustItems = [
   },
   {
     icon: (
-      <svg className="w-5 h-5 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+      <svg className="w-5 h-5 text-orange-500 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
       </svg>
     ),
@@ -239,7 +239,7 @@ export default function Footer() {
   const enabledBottom = data.bottomLinks.filter(b => b.enabled);
 
   return (
-    <footer className="bg-gradient-to-br from-[#FAFAF9] to-[#F3F2F0] text-stone-800 font-sans border-t border-stone-200 relative overflow-hidden">
+    <footer className="bg-linear-to-br from-[#FAFAF9] to-[#F3F2F0] text-stone-800 font-sans border-t border-stone-200 relative overflow-hidden">
       {/* Decorative subtle background accents */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500 rounded-full mix-blend-multiply filter blur-[100px] opacity-[0.03] pointer-events-none transform translate-x-1/2 -translate-y-1/2"></div>
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-stone-300 rounded-full mix-blend-multiply filter blur-[100px] opacity-[0.1] pointer-events-none transform -translate-x-1/2 translate-y-1/2"></div>
@@ -295,8 +295,8 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
           
           {/* Brand Section */}
-          <div className="flex flex-col relative z-10 w-full sm:max-w-md">
-            <Link href="/" className="mb-8 inline-block transition-transform duration-500 hover:scale-105 origin-left">
+          <div className="flex flex-col relative z-10 w-full sm:max-w-md lg:-mt-5">
+            <Link href="/" className="mb-6 inline-block transition-transform duration-500 hover:scale-105 origin-left">
               <Image
                 src="/Logos/Uflix_Logo.png"
                 alt={data.brandName}
@@ -305,7 +305,7 @@ export default function Footer() {
                 className="h-16 md:h-20 w-auto object-contain drop-shadow-sm"
               />
             </Link>
-            <p className="text-stone-600 text-sm leading-relaxed mb-6 font-medium">
+            <p className="text-stone-600 text-sm leading-relaxed mb-5 font-medium">
               {data.brandDescription}
             </p>
             <div className="relative pl-4 border-l-2 border-orange-400/60 mb-8 max-w-sm">
@@ -365,7 +365,7 @@ export default function Footer() {
               <ul className="space-y-5 mb-8">
                 {enabledContact.map((item, i) => (
                   <li key={i} className="flex items-start gap-4 text-stone-500 text-sm group">
-                    <span className="text-stone-400 group-hover:text-orange-500 transition-colors duration-300 transform -translate-y-0.5">
+                    <span className="mt-0.5 shrink-0 text-stone-400 group-hover:text-orange-500 transition-colors duration-300">
                       {contactIcons[item.type] || <MapPin className="w-5 h-5 flex-none" strokeWidth={1.5} />}
                     </span>
                     <div className="flex flex-col w-full text-stone-500">

@@ -16,6 +16,7 @@ function BusinessProductsContent() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalProducts, setTotalProducts] = useState(0);
+  const [scrollPct, setScrollPct] = useState(0);
 
   useEffect(() => {
     setPage(1);
@@ -64,6 +65,12 @@ function BusinessProductsContent() {
     }
   };
 
+  const handleMobileScroll = (event: React.UIEvent<HTMLDivElement>) => {
+    const element = event.currentTarget;
+    const maxScroll = element.scrollWidth - element.clientWidth;
+    setScrollPct(maxScroll > 0 ? element.scrollLeft / maxScroll : 0);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -87,15 +94,31 @@ function BusinessProductsContent() {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="animate-pulse">
-                <div className="bg-gray-200 h-64 rounded-lg mb-4"></div>
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          <>
+            <div className="lg:hidden -mx-4 px-4 overflow-x-auto snap-x snap-mandatory pb-4" onScroll={handleMobileScroll} style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+              <div className="flex gap-4 w-max">
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} className="animate-pulse shrink-0 snap-start w-[82vw] sm:w-[58vw] max-w-90">
+                    <div className="bg-gray-200 h-64 rounded-lg mb-4"></div>
+                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+            <div className="lg:hidden mt-4 h-0.5 bg-gray-300 rounded-full overflow-hidden">
+              <div className="h-full bg-accent rounded-full transition-all duration-200" style={{ width: `${Math.max(10, scrollPct * 100)}%` }} />
+            </div>
+            <div className="hidden lg:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="bg-gray-200 h-64 rounded-lg mb-4"></div>
+                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                </div>
+              ))}
+            </div>
+          </>
         ) : products.length === 0 ? (
           <div className="text-center py-16">
             <svg className="w-24 h-24 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -111,7 +134,19 @@ function BusinessProductsContent() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="lg:hidden -mx-4 px-4 overflow-x-auto snap-x snap-mandatory pb-4" onScroll={handleMobileScroll} style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+              <div className="flex gap-4 w-max">
+                {products.map((product) => (
+                  <div key={product._id} className="shrink-0 snap-start w-[82vw] sm:w-[58vw] max-w-90">
+                    <ProductCard {...product} />
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="lg:hidden mt-4 h-0.5 bg-gray-300 rounded-full overflow-hidden">
+              <div className="h-full bg-accent rounded-full transition-all duration-200" style={{ width: `${Math.max(10, scrollPct * 100)}%` }} />
+            </div>
+            <div className="hidden lg:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {products.map((product) => (
                 <ProductCard key={product._id} {...product} />
               ))}

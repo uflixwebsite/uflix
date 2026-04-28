@@ -21,6 +21,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ _id, name, price, discountPrice, images, category, availableOnQuotation }: ProductCardProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const isQuotationOnly = Boolean(availableOnQuotation) || Number(discountPrice || price || 0) <= 0;
   
   // Get the current image or use a placeholder
   const image = images?.[currentImageIndex]?.url || '/placeholder-image.jpg';
@@ -36,6 +37,7 @@ export default function ProductCard({ _id, name, price, discountPrice, images, c
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (isQuotationOnly) return;
     addToCart({ 
       id: _id, // Use original MongoDB _id string
       name, 
@@ -67,7 +69,7 @@ export default function ProductCard({ _id, name, price, discountPrice, images, c
 
   return (
     <Link href={`/product/${_id}`} className="group bg-white rounded-lg overflow-hidden border border-border hover:shadow-xl transition-all duration-300 flex flex-col h-full">
-      <div className="relative h-64 overflow-hidden bg-neutral-light flex-shrink-0">
+      <div className="relative h-64 overflow-hidden bg-neutral-light shrink-0">
         <div className="relative w-full h-full">
           <Image
             src={image}
@@ -114,14 +116,14 @@ export default function ProductCard({ _id, name, price, discountPrice, images, c
         </button>
       </div>
       
-      <div className="p-4 flex flex-col flex-grow">
+      <div className="p-4 flex grow flex-col">
         {category && (
           <p className="text-xs text-neutral-dark uppercase tracking-wide mb-2">{category}</p>
         )}
-        <h3 className="text-base font-semibold mb-2 text-foreground line-clamp-2 group-hover:text-accent transition-colors min-h-[3rem]">
+        <h3 className="text-base font-semibold mb-2 text-foreground line-clamp-2 group-hover:text-accent transition-colors min-h-12">
           {name}
         </h3>
-        {availableOnQuotation ? (
+        {isQuotationOnly ? (
           <>
             <div className="flex items-center gap-2 mb-3 mt-auto">
               <span className="text-sm font-semibold text-accent bg-accent/10 px-3 py-1 rounded-md">

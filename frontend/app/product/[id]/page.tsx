@@ -87,6 +87,7 @@ export default function ProductDetailPage() {
   const [isMobile, setIsMobile] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const isQuotationOnly = Boolean(product?.availableOnQuotation) || Number(product?.discountPrice || product?.price || 0) <= 0;
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -193,7 +194,7 @@ export default function ProductDetailPage() {
                 {product.images.map((image: any, index: number) => (
                   <div 
                     key={index} 
-                    className="flex-shrink-0 w-80 aspect-square cursor-pointer relative"
+                    className="shrink-0 w-80 aspect-square cursor-pointer relative"
                     onClick={() => {
                       setSelectedImageIndex(index);
                       setIsImageModalOpen(true);
@@ -254,7 +255,7 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
-            {product.availableOnQuotation ? (
+            {isQuotationOnly ? (
               <div className="bg-accent/10 border-2 border-accent rounded-lg p-4 mb-6">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-lg font-semibold text-accent">💬 Available on Quotation</span>
@@ -277,7 +278,7 @@ export default function ProductDetailPage() {
               <ul className="space-y-2">
                 {product.specifications?.map((spec: any, index: number) => (
                   <li key={index} className="flex items-start gap-2">
-                    <svg className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-accent shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                     <span className="text-sm">{spec.key === spec.value ? spec.value : `${spec.key}: ${spec.value}`}</span>
@@ -291,7 +292,7 @@ export default function ProductDetailPage() {
               <PincodeChecker />
             </div>
 
-            {!product.availableOnQuotation && (
+            {!isQuotationOnly && (
               <div className="flex items-center gap-4 mb-6">
                 <div className="flex items-center border border-gray-300 rounded-lg">
                   <button
@@ -312,7 +313,7 @@ export default function ProductDetailPage() {
             )}
 
             <div className="flex gap-4 mb-6">
-              {product.availableOnQuotation ? (
+              {isQuotationOnly ? (
                 <button
                   onClick={() => setIsQuotationDialogOpen(true)}
                   className="flex-1 btn-primary py-4 rounded-lg font-semibold transition-colors"
@@ -464,7 +465,7 @@ export default function ProductDetailPage() {
             onClick={(e) => e.stopPropagation()}
           >
             {product.images.map((image: any, index: number) => (
-              <div key={index} className="flex-shrink-0 w-[90vw] aspect-square relative bg-white rounded-2xl shadow-2xl overflow-hidden snap-center">
+              <div key={index} className="shrink-0 w-[90vw] aspect-square relative bg-white rounded-2xl shadow-2xl overflow-hidden snap-center">
                 <Image
                   src={image.url}
                   alt={`${product.name} ${index + 1}`}

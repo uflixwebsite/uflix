@@ -30,6 +30,7 @@ export default function ShopFittingsSubPage() {
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState<CategoryNode | null>(null);
   const [notFound, setNotFound] = useState(false);
+  const [scrollPct, setScrollPct] = useState(0);
 
   useEffect(() => {
     if (slug) fetchData();
@@ -86,6 +87,12 @@ export default function ShopFittingsSubPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleMobileScroll = (event: React.UIEvent<HTMLDivElement>) => {
+    const element = event.currentTarget;
+    const maxScroll = element.scrollWidth - element.clientWidth;
+    setScrollPct(maxScroll > 0 ? element.scrollLeft / maxScroll : 0);
   };
 
   const displayName = category?.name || toTitleCase(slug);
@@ -166,7 +173,19 @@ export default function ShopFittingsSubPage() {
                     ← All Shop Fittings
                   </Link>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="md:hidden -mx-4 px-4 overflow-x-auto snap-x snap-mandatory pb-4" onScroll={handleMobileScroll} style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                  <div className="flex gap-4 w-max">
+                    {products.map((product) => (
+                      <div key={product._id} className="shrink-0 snap-start w-[82vw] sm:w-[58vw] max-w-90">
+                        <ProductCard key={product._id} {...product} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="md:hidden mt-4 h-0.5 bg-gray-300 rounded-full overflow-hidden">
+                  <div className="h-full bg-accent rounded-full transition-all duration-200" style={{ width: `${Math.max(10, scrollPct * 100)}%` }} />
+                </div>
+                <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {products.map((product) => (
                     <ProductCard key={product._id} {...product} />
                   ))}

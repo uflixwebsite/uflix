@@ -47,11 +47,74 @@ body {
 
 /* Add top padding to main content areas to prevent navbar overlap */
 main:not(.homepage-main) {
-  padding-top: 140px; /* Top bar (80px) + Secondary nav (60px) */
+  padding-top: 150px;
 }
 
-main:not(.homepage-main) {
-  padding-top: 140px; /* Top bar (80px) + Secondary nav (60px) */
+/* Extra offset for auth pages so Clerk cards are clear of the fixed two-row header */
+main.auth-page-main {
+  padding-top: 170px;
+}
+
+/* ── Navbar: Glassmorphism ─────────────────────────────────────── */
+.navbar-glass {
+  background: rgba(255, 255, 255, 0.82) !important;
+  backdrop-filter: blur(18px) saturate(1.6);
+  -webkit-backdrop-filter: blur(18px) saturate(1.6);
+  box-shadow: 0 1px 24px rgba(0, 0, 0, 0.06), 0 1px 0 rgba(0, 0, 0, 0.04);
+}
+
+/* ── Navbar: Animated gradient underline for nav links ─────────── */
+.nav-link-fancy {
+  position: relative;
+  padding-bottom: 4px;
+}
+.nav-link-fancy::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  height: 2px;
+  width: 0;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--secondary));
+  transition: width 0.35s cubic-bezier(.4,0,.2,1), left 0.35s cubic-bezier(.4,0,.2,1);
+}
+.nav-link-fancy:hover::after,
+.nav-link-fancy.active::after {
+  width: 100%;
+  left: 0;
+}
+
+/* ── Navbar: Badge pulse ───────────────────────────────────────── */
+@keyframes badge-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.18); }
+}
+.badge-pulse {
+  animation: badge-pulse 2s ease-in-out infinite;
+}
+
+/* ── Navbar: Top bar slide-away on scroll ──────────────────────── */
+.topbar-visible {
+  max-height: 44px;
+  opacity: 1;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(.4,0,.2,1), opacity 0.3s ease;
+}
+.topbar-hidden {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(.4,0,.2,1), opacity 0.2s ease;
+}
+
+/* ── Navbar: Search overlay fade ───────────────────────────────── */
+.search-overlay-enter {
+  animation: search-slide-down 0.3s cubic-bezier(.4,0,.2,1) forwards;
+}
+@keyframes search-slide-down {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -74,6 +137,17 @@ h1, h2, h3, h4, h5, h6 {
 
 .animate-marquee {
   animation: marquee 40s linear infinite;
+}
+
+.animate-marquee-slow {
+  /* Explicit slow marquee animation to ensure override and visible slowdown */
+  animation: marquee 120s linear infinite;
+}
+
+/* Extra-slow option if you want an even slower marquee */
+.animate-marquee-very-slow {
+  /* Very slow marquee for logos */
+  animation: marquee 100s linear infinite;
 }
 
 /* Clerk modal z-index fix - ensure modals appear above navbar */
@@ -204,4 +278,10 @@ body:not([data-route^="/wishlist"]):not([data-route^="/cart"]):not([data-route^=
   background-color: var(--site-btn-outline-hover-bg) !important;
   color: var(--site-btn-outline-hover-text) !important;
   border-color: var(--site-btn-outline-hover-bg) !important;
+}
+
+/* Hide floating WhatsApp button while mobile sidebar/menu is open */
+body.menu-open .whatsapp-button {
+  display: none !important;
+  pointer-events: none !important;
 }

@@ -23,7 +23,7 @@ export default function RefundPage() {
                 <li>Wrong product delivered</li>
                 <li>Missing parts</li>
               </ul>
-              <p className="mt-3 font-bold text-black">Return request must be raised within 48 hours of delivery.</p>
+              <p className="mt-3">Return request must be raised within 48 hours of delivery.</p>
             </div>
 
             <div>
@@ -47,21 +47,21 @@ export default function RefundPage() {
             <div>
               <h2 className="text-2xl font-bold text-black mb-4">4. Refund Policy</h2>
               <ul className="list-disc pl-6 space-y-2">
-                <li>Refunds are processed within <span className="font-bold text-black">5-7 working days</span> after approval</li>
-                <li>Refund is credited to the <span className="font-bold text-black">original payment method</span></li>
+                <li>Refunds are processed within 5-7 working days after approval</li>
+                <li>Refund is credited to the original payment method</li>
               </ul>
             </div>
 
             <div>
               <h2 className="text-2xl font-bold text-black mb-4">5. Replacement</h2>
-              <p>Replacement is available based on <span className="font-bold text-black">stock availability</span>.</p>
+              <p>Replacement is available based on stock availability.</p>
             </div>
 
             <div>
               <h2 className="text-2xl font-bold text-black mb-4">Contact for Return and Refund Support</h2>
               <div className="space-y-2">
-                <p><span className="font-bold text-black">Email:</span> ebusiness@uflix.co.in</p>
-                <p><span className="font-bold text-black">Phone:</span> 8448448966</p>
+                <p>Email: ebusiness@uflix.co.in</p>
+                <p>Phone: 8448448966</p>
               </div>
             </div>
           </div>

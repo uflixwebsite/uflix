@@ -15,13 +15,13 @@ export default function ShippingPage() {
         <div className="max-w-none text-[16px] leading-7 text-neutral-800">
           <ul className="list-disc pl-6 space-y-3">
             <li>
-              <span className="font-bold text-black">Delivery time:</span> 5-10 working days.
+              Delivery time: 5-10 working days.
             </li>
             <li>
               Delays may occur due to delivery location, weather conditions, transport disruptions, or other unforeseen issues.
             </li>
             <li>
-              <span className="font-bold text-black">Tracking details</span> are shared after dispatch.
+              Tracking details are shared after dispatch.
             </li>
           </ul>
         </div>

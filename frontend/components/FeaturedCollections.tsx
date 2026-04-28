@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { getHomeCollections } from '@/services/collectionService';
 
 const defaultCollections: Array<{ title: string; description?: string; image: string; itemCount?: number; link?: string; buttonText?: string; primaryButtonBg?: string; primaryButtonTextColor?: string }> = [];
 
@@ -13,8 +14,38 @@ interface FeaturedCollectionsProps {
 }
 
 export default function FeaturedCollections({ title, subtitle, items }: FeaturedCollectionsProps) {
-  const collections = items && items.length > 0 ? items : defaultCollections;
+  const [collections, setCollections] = useState(defaultCollections);
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    const loadCollections = async () => {
+      try {
+        const response = await getHomeCollections();
+        const apiCollections = (response?.data || []).map((collection: any) => ({
+          title: collection.name,
+          description: collection.subtitle,
+          image: collection.image,
+          itemCount: collection.itemCount,
+          link: `/collections/${collection.slug}`,
+          buttonText: 'Explore Collection',
+          primaryButtonBg: '',
+          primaryButtonTextColor: '',
+        }));
+
+        if (apiCollections.length > 0) {
+          setCollections(apiCollections);
+          setCurrentSlide(0);
+          return;
+        }
+
+        setCollections(items && items.length > 0 ? items : defaultCollections);
+      } catch {
+        setCollections(items && items.length > 0 ? items : defaultCollections);
+      }
+    };
+
+    loadCollections();
+  }, [items]);
 
   const goTo = (index: number) => setCurrentSlide(index);
   const prev = () => setCurrentSlide((s) => (s - 1 + collections.length) % collections.length);
