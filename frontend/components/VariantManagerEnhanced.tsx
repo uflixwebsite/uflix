@@ -64,12 +64,14 @@ export default function VariantManagerEnhanced({
   baseDimensions,
   baseWeight
 }: VariantManagerEnhancedProps) {
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [showVariantModal, setShowVariantModal] = useState(false);
+  const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
+  const [editingVariantId, setEditingVariantId] = useState<string | null>(null);
   const [variantType, setVariantType] = useState<'color' | 'size' | ''>('');
   const [selectedBaseImageIndexes, setSelectedBaseImageIndexes] = useState<number[]>([]);
   const [variantImages, setVariantImages] = useState<File[]>([]);
   const [variantImagePreviews, setVariantImagePreviews] = useState<string[]>([]);
+  const [variantExistingImages, setVariantExistingImages] = useState<Array<{ url: string; alt?: string }>>([]);
   const [newVariant, setNewVariant] = useState({
     name: baseName || '',
     color: '',
@@ -94,6 +96,87 @@ export default function VariantManagerEnhanced({
   useEffect(() => {
     setSelectedBaseImageIndexes(baseImages.map((_, index) => index));
   }, [baseImages]);
+
+  const createEmptyVariantState = () => ({
+    name: baseName || '',
+    color: '',
+    size: '',
+    price: basePrice?.toString() || '',
+    discountPrice: baseDiscountPrice?.toString() || '',
+    stock: '0',
+    sku: '',
+    description: baseDescription || '',
+    dimensions: {
+      length: baseDimensions?.length?.toString() || '',
+      width: baseDimensions?.width?.toString() || '',
+      height: baseDimensions?.height?.toString() || '',
+      unit: baseDimensions?.unit || 'cm'
+    },
+    weight: {
+      value: baseWeight?.value?.toString() || '',
+      unit: baseWeight?.unit || 'kg'
+    }
+  });
+
+  const closeVariantModal = () => {
+    setShowVariantModal(false);
+    setModalMode('add');
+    setEditingVariantId(null);
+    setVariantType('');
+    setNewVariant(createEmptyVariantState());
+    setVariantImages([]);
+    setVariantImagePreviews([]);
+    setVariantExistingImages([]);
+    setSelectedBaseImageIndexes(baseImages.map((_, index) => index));
+  };
+
+  const openAddVariantModal = () => {
+    setModalMode('add');
+    setEditingVariantId(null);
+    setVariantType('');
+    setNewVariant(createEmptyVariantState());
+    setVariantImages([]);
+    setVariantImagePreviews([]);
+    setVariantExistingImages([]);
+    setSelectedBaseImageIndexes(baseImages.map((_, index) => index));
+    setShowVariantModal(true);
+  };
+
+  const openEditVariantModal = (variant: Variant) => {
+    setModalMode('edit');
+    setEditingVariantId(variant._id);
+    setVariantType(variant.color ? 'color' : 'size');
+    setNewVariant({
+      name: variant.name || baseName || '',
+      color: variant.color || '',
+      size: variant.size || '',
+      price: variant.price?.toString() || basePrice?.toString() || '',
+      discountPrice: variant.discountPrice?.toString() || baseDiscountPrice?.toString() || '',
+      stock: variant.stock?.quantity?.toString() || '0',
+      sku: variant.sku || '',
+      description: variant.description || baseDescription || '',
+      dimensions: {
+        length: variant.dimensions?.length?.toString() || baseDimensions?.length?.toString() || '',
+        width: variant.dimensions?.width?.toString() || baseDimensions?.width?.toString() || '',
+        height: variant.dimensions?.height?.toString() || baseDimensions?.height?.toString() || '',
+        unit: variant.dimensions?.unit || baseDimensions?.unit || 'cm'
+      },
+      weight: {
+        value: variant.weight?.value?.toString() || baseWeight?.value?.toString() || '',
+        unit: variant.weight?.unit || baseWeight?.unit || 'kg'
+      }
+    });
+    setSelectedBaseImageIndexes(
+      baseImages
+        .map((image, index) => ({ image, index }))
+        .filter(({ image }) => variant.images?.some((variantImage) => variantImage.url === image.url))
+        .map(({ index }) => index)
+    );
+    setVariantExistingImages(variant.images || []);
+    setVariantImages([]);
+    setVariantImagePreviews([]);
+    setShowVariantModal(true);
+  };
 
   const handleVariantImageSelect = (e: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -120,7 +203,7 @@ export default function VariantManagerEnhanced({
     setVariantImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleAddVariant = async () => {
+  const handleSaveVariant = async () => {
     if (!variantType) {
       alert('Please select a variant type (Color or Size)');
       return;
@@ -133,13 +216,13 @@ export default function VariantManagerEnhanced({
 
     try {
       const selectedBaseImages = selectedBaseImageIndexes.map((index) => baseImages[index]).filter(Boolean);
-      let imagePayload = [...selectedBaseImages];
+      let imagePayload = [...selectedBaseImages, ...variantExistingImages];
       if (variantImages.length > 0) {
         const uploadResponse = await uploadMultipleImages(variantImages, `${productFolder}/variants`);
         imagePayload = [...imagePayload, ...(uploadResponse.data || [])];
       }
 
-      const response = await api.post(`/products/${productId}/variants`, {
+      const payload = {
         name: newVariant.name || undefined,
         color: newVariant.color,
         size: newVariant.size,
@@ -159,54 +242,18 @@ export default function VariantManagerEnhanced({
           unit: newVariant.weight.unit || 'kg'
         },
         images: imagePayload,
-      });
+      };
+
+      const response = modalMode === 'edit' && editingVariantId
+        ? await api.put(`/products/${productId}/variants/${editingVariantId}`, payload)
+        : await api.post(`/products/${productId}/variants`, payload);
 
       const data = response.data;
       onVariantsChange(data.data.variants);
-      setNewVariant({
-        name: baseName || '',
-        color: '',
-        size: '',
-        price: basePrice?.toString() || '',
-        discountPrice: baseDiscountPrice?.toString() || '',
-        stock: '0',
-        sku: '',
-        description: baseDescription || '',
-        dimensions: {
-          length: baseDimensions?.length?.toString() || '',
-          width: baseDimensions?.width?.toString() || '',
-          height: baseDimensions?.height?.toString() || '',
-          unit: baseDimensions?.unit || 'cm'
-        },
-        weight: {
-          value: baseWeight?.value?.toString() || '',
-          unit: baseWeight?.unit || 'kg'
-        }
-      });
-      setVariantImages([]);
-      setVariantImagePreviews([]);
-      setSelectedBaseImageIndexes(baseImages.map((_, index) => index));
-      setVariantType('');
-      setShowAddModal(false);
+      closeVariantModal();
     } catch (error: any) {
-      console.error('Error adding variant:', error);
-      alert(error.message || 'Failed to add variant');
-    }
-  };
-
-  const handleUpdateVariant = async (variantId: string) => {
-    try {
-      const variant = variants.find((v) => v._id === variantId);
-      if (!variant) return;
-
-      const response = await api.put(`/products/${productId}/variants/${variantId}`, variant);
-
-      const data = response.data;
-      onVariantsChange(data.data.variants);
-      setEditingId(null);
-    } catch (error: any) {
-      console.error('Error updating variant:', error);
-      alert(error.message || 'Failed to update variant');
+      console.error('Error saving variant:', error);
+      alert(error.message || 'Failed to save variant');
     }
   };
 
@@ -285,179 +332,40 @@ export default function VariantManagerEnhanced({
             {variants.map((variant) => (
               <tr key={variant._id} className="border-b hover:bg-gray-50">
                 <td className="px-4 py-3">
-                  {editingId === variant._id ? (
-                    <div className="space-y-1">
-                      <input
-                        type="text"
-                        value={variant.color}
-                        onChange={(e) => handleVariantFieldChange(variant._id, 'color', e.target.value)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                        placeholder="Color"
-                      />
-                      <input
-                        type="text"
-                        value={variant.size}
-                        onChange={(e) => handleVariantFieldChange(variant._id, 'size', e.target.value)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                        placeholder="Size"
-                      />
-                    </div>
-                  ) : (
-                    <span className="text-sm font-medium">
-                      {variant.color && <span className="text-blue-600">{variant.color}</span>}
-                      {variant.size && <span className="text-purple-600">{variant.size}</span>}
-                    </span>
-                  )}
+                  <span className="text-sm font-medium">
+                    {variant.color && <span className="text-blue-600">{variant.color}</span>}
+                    {variant.color && variant.size && <span className="mx-1 text-gray-400">•</span>}
+                    {variant.size && <span className="text-purple-600">{variant.size}</span>}
+                  </span>
                 </td>
                 <td className="px-4 py-3">
-                  {editingId === variant._id ? (
-                    <input
-                      type="text"
-                      value={variant.name || ''}
-                      onChange={(e) => handleVariantFieldChange(variant._id, 'name', e.target.value)}
-                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                      placeholder="Variant name"
-                    />
-                  ) : (
-                    <span className="text-sm">{variant.name || '—'}</span>
-                  )}
+                  <span className="text-sm">{variant.name || '—'}</span>
                 </td>
                 <td className="px-4 py-3">
-                  {editingId === variant._id ? (
-                    <textarea
-                      value={variant.description || ''}
-                      onChange={(e) => handleVariantFieldChange(variant._id, 'description', e.target.value)}
-                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                      rows={2}
-                      placeholder="Variant description"
-                    />
-                  ) : (
-                    <span className="text-sm text-gray-600">{variant.description || '—'}</span>
-                  )}
+                  <span className="text-sm text-gray-600">{variant.description || '—'}</span>
                 </td>
                 <td className="px-4 py-3">
-                  {editingId === variant._id ? (
-                    <input
-                      type="text"
-                      value={variant.sku}
-                      onChange={(e) => handleVariantFieldChange(variant._id, 'sku', e.target.value)}
-                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                    />
-                  ) : (
-                    <span className="text-xs text-gray-600 font-mono">{variant.sku}</span>
-                  )}
+                  <span className="text-xs text-gray-600 font-mono">{variant.sku}</span>
                 </td>
                 <td className="px-4 py-3">
-                  {editingId === variant._id ? (
-                    <div className="space-y-1">
-                      <input
-                        type="number"
-                        placeholder="Price"
-                        value={variant.price ?? ''}
-                        onChange={(e) => handleVariantFieldChange(variant._id, 'price', e.target.value ? parseFloat(e.target.value) : undefined)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                      />
-                      <input
-                        type="number"
-                        placeholder="Discount"
-                        value={variant.discountPrice ?? ''}
-                        onChange={(e) => handleVariantFieldChange(variant._id, 'discountPrice', e.target.value ? parseFloat(e.target.value) : undefined)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                      />
-                    </div>
-                  ) : (
-                    <span className="text-sm">₹{variant.discountPrice ?? variant.price ?? 'Base'}</span>
-                  )}
+                  <span className="text-sm">₹{variant.discountPrice ?? variant.price ?? 'Base'}</span>
                 </td>
                 <td className="px-4 py-3">
-                  {editingId === variant._id ? (
-                    <div className="space-y-1">
-                      <div className="flex gap-1">
-                        <input
-                          type="number"
-                          step="0.01"
-                          placeholder="L"
-                          value={variant.dimensions?.length ?? ''}
-                          onChange={(e) => handleVariantFieldChange(variant._id, 'dimensions.length', e.target.value ? parseFloat(e.target.value) : undefined)}
-                          className="w-12 px-1 py-1 border border-gray-300 rounded text-xs"
-                        />
-                        <input
-                          type="number"
-                          step="0.01"
-                          placeholder="W"
-                          value={variant.dimensions?.width ?? ''}
-                          onChange={(e) => handleVariantFieldChange(variant._id, 'dimensions.width', e.target.value ? parseFloat(e.target.value) : undefined)}
-                          className="w-12 px-1 py-1 border border-gray-300 rounded text-xs"
-                        />
-                        <input
-                          type="number"
-                          step="0.01"
-                          placeholder="H"
-                          value={variant.dimensions?.height ?? ''}
-                          onChange={(e) => handleVariantFieldChange(variant._id, 'dimensions.height', e.target.value ? parseFloat(e.target.value) : undefined)}
-                          className="w-12 px-1 py-1 border border-gray-300 rounded text-xs"
-                        />
-                        <select
-                          value={variant.dimensions?.unit || 'cm'}
-                          onChange={(e) => handleVariantFieldChange(variant._id, 'dimensions.unit', e.target.value)}
-                          className="px-1 py-1 border border-gray-300 rounded text-xs"
-                        >
-                          <option value="cm">cm</option>
-                          <option value="mm">mm</option>
-                          <option value="in">in</option>
-                          <option value="ft">ft</option>
-                        </select>
-                      </div>
-                    </div>
-                  ) : (
-                    <span className="text-xs text-gray-600">
-                      {variant.dimensions?.length && variant.dimensions?.width && variant.dimensions?.height
-                        ? `${variant.dimensions.length}×${variant.dimensions.width}×${variant.dimensions.height} ${variant.dimensions.unit || 'cm'}`
-                        : '—'}
-                    </span>
-                  )}
+                  <span className="text-xs text-gray-600">
+                    {variant.dimensions?.length && variant.dimensions?.width && variant.dimensions?.height
+                      ? `${variant.dimensions.length}×${variant.dimensions.width}×${variant.dimensions.height} ${variant.dimensions.unit || 'cm'}`
+                      : '—'}
+                  </span>
                 </td>
                 <td className="px-4 py-3">
-                  {editingId === variant._id ? (
-                    <div className="flex gap-1">
-                      <input
-                        type="number"
-                        step="0.01"
-                        placeholder="Weight"
-                        value={variant.weight?.value ?? ''}
-                        onChange={(e) => handleVariantFieldChange(variant._id, 'weight.value', e.target.value ? parseFloat(e.target.value) : undefined)}
-                        className="w-16 px-1 py-1 border border-gray-300 rounded text-xs"
-                      />
-                      <select
-                        value={variant.weight?.unit || 'kg'}
-                        onChange={(e) => handleVariantFieldChange(variant._id, 'weight.unit', e.target.value)}
-                        className="px-1 py-1 border border-gray-300 rounded text-xs"
-                      >
-                        <option value="kg">kg</option>
-                        <option value="g">g</option>
-                        <option value="lb">lb</option>
-                        <option value="oz">oz</option>
-                      </select>
-                    </div>
-                  ) : (
-                    <span className="text-xs text-gray-600">
-                      {variant.weight?.value ? `${variant.weight.value} ${variant.weight.unit || 'kg'}` : '—'}
-                    </span>
-                  )}
+                  <span className="text-xs text-gray-600">
+                    {variant.weight?.value ? `${variant.weight.value} ${variant.weight.unit || 'kg'}` : '—'}
+                  </span>
                 </td>
                 <td className="px-4 py-3">
-                  {editingId === variant._id ? (
-                    <input
-                      type="number"
-                      value={variant.stock.quantity}
-                      onChange={(e) => handleVariantFieldChange(variant._id, 'stock.quantity', parseInt(e.target.value, 10) || 0)}
-                      className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
-                    />
-                  ) : (
-                    <span className={`text-sm font-semibold ${variant.stock.quantity > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {variant.stock.quantity}
-                    </span>
-                  )}
+                  <span className={`text-sm font-semibold ${variant.stock.quantity > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {variant.stock.quantity}
+                  </span>
                 </td>
                 <td className="px-4 py-3">
                   <label className="flex items-center cursor-pointer">
@@ -465,48 +373,27 @@ export default function VariantManagerEnhanced({
                       type="checkbox"
                       checked={variant.isActive}
                       onChange={(e) => handleVariantFieldChange(variant._id, 'isActive', e.target.checked)}
-                      disabled={editingId !== variant._id}
+                      disabled
                       className="rounded"
                     />
                     <span className="ml-2 text-xs text-gray-600">{variant.isActive ? 'Active' : 'Inactive'}</span>
                   </label>
                 </td>
                 <td className="px-4 py-3 space-x-2">
-                  {editingId === variant._id ? (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => handleUpdateVariant(variant._id)}
-                        className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
-                      >
-                        Save
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setEditingId(null)}
-                        className="px-2 py-1 text-xs bg-gray-400 text-white rounded hover:bg-gray-500"
-                      >
-                        Cancel
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => setEditingId(variant._id)}
-                        className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteVariant(variant._id)}
-                        className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
-                      >
-                        Delete
-                      </button>
-                    </>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => openEditVariantModal(variant)}
+                    className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteVariant(variant._id)}
+                    className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}
@@ -517,21 +404,21 @@ export default function VariantManagerEnhanced({
       <div className="border-t pt-6">
         <button
           type="button"
-          onClick={() => setShowAddModal(true)}
+          onClick={openAddVariantModal}
           className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-dark transition-colors"
         >
           + Add New Variant
         </button>
       </div>
 
-      {showAddModal && (
+      {showVariantModal && (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-semibold">Add New Variant</h3>
+              <h3 className="text-xl font-semibold">{modalMode === 'edit' ? 'Edit Variant' : 'Add New Variant'}</h3>
               <button
                 type="button"
-                onClick={() => setShowAddModal(false)}
+                onClick={closeVariantModal}
                 className="text-gray-500 hover:text-gray-700"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -807,14 +694,14 @@ export default function VariantManagerEnhanced({
               <div className="flex gap-2 pt-4">
                 <button
                   type="button"
-                  onClick={handleAddVariant}
+                  onClick={handleSaveVariant}
                   className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                 >
-                  Add Variant
+                  {modalMode === 'edit' ? 'Save Changes' : 'Add Variant'}
                 </button>
                 <button
                   type="button"
-                  onClick={() => setShowAddModal(false)}
+                  onClick={closeVariantModal}
                   className="flex-1 px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400"
                 >
                   Cancel

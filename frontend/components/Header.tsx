@@ -254,7 +254,7 @@ export default function Header() {
             {[
               { label: 'For Homes', href: '/categories' },
               { label: 'For Businesses', href: '/business' },
-              { label: 'Shop Fittings', href: '/shop-fittings' },
+              { label: 'Retail Shop Fitting', href: '/shop-fittings' },
             ].map((tab) => (
               <Link key={tab.href} href={tab.href}
                 className={`px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-all duration-300 ${

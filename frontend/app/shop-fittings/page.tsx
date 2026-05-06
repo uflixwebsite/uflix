@@ -198,8 +198,8 @@ function IntroSection({ section }: { section?: Section }) {
 function SolutionsImageGrid({ section }: { section?: Section }) {
   const heading = section?.title || 'Complete Retail Fitout Solutions';
   const items = (section?.items && section.items.length > 0)
-    ? (section.items as any[]).map((item) => ({ title: item.title || '', desc: item.description || '', img: item.image || '' }))
-    : SOLUTIONS;
+    ? (section.items as any[]).map((item) => ({ title: item.title || '', desc: item.description || '', img: item.image || '', link: item.link || '' }))
+    : SOLUTIONS.map((s) => ({ ...s, link: '' }));
   return (
     <section className="py-20 md:py-28 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -209,23 +209,37 @@ function SolutionsImageGrid({ section }: { section?: Section }) {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {items.map((sol, i) => (
-            <div key={sol.title + i} className="group relative h-72 rounded-2xl overflow-hidden">
-              {sol.img ? (
-                <Image src={sol.img} alt={sol.title} fill className="object-cover transition-transform duration-700 group-hover:scale-105" unoptimized />
-              ) : (
-                <div className="absolute inset-0 bg-gray-300" />
-              )}
-              <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/35 to-black/5" />
-              <span className="absolute top-5 right-5 text-white/20 font-bold text-5xl leading-none select-none pointer-events-none">
-                {String(i + 1).padStart(2, '0')}
-              </span>
-              <div className="absolute bottom-0 left-0 right-0 p-6">
-                <h3 className="text-white font-bold text-lg mb-2">{sol.title}</h3>
-                <p className="text-white/70 text-sm leading-relaxed overflow-hidden max-h-0 group-hover:max-h-24 transition-all duration-500">
-                  {sol.desc}
-                </p>
+            sol.link ? (
+              <Link key={sol.title + i} href={sol.link} className="group relative h-72 rounded-2xl overflow-hidden block">
+                {sol.img ? (
+                  <Image src={sol.img} alt={sol.title} fill className="object-cover transition-transform duration-700 group-hover:scale-105" unoptimized />
+                ) : (
+                  <div className="absolute inset-0 bg-gray-300" />
+                )}
+                <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/35 to-black/5" />
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <h3 className="text-white font-bold text-lg mb-2">{sol.title}</h3>
+                  <p className="text-white/70 text-sm leading-relaxed overflow-hidden max-h-0 group-hover:max-h-24 transition-all duration-500">
+                    {sol.desc}
+                  </p>
+                </div>
+              </Link>
+            ) : (
+              <div key={sol.title + i} className="group relative h-72 rounded-2xl overflow-hidden">
+                {sol.img ? (
+                  <Image src={sol.img} alt={sol.title} fill className="object-cover transition-transform duration-700 group-hover:scale-105" unoptimized />
+                ) : (
+                  <div className="absolute inset-0 bg-gray-300" />
+                )}
+                <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/35 to-black/5" />
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <h3 className="text-white font-bold text-lg mb-2">{sol.title}</h3>
+                  <p className="text-white/70 text-sm leading-relaxed overflow-hidden max-h-0 group-hover:max-h-24 transition-all duration-500">
+                    {sol.desc}
+                  </p>
+                </div>
               </div>
-            </div>
+            )
           ))}
         </div>
       </div>
@@ -453,8 +467,8 @@ function IndustriesSection({ section }: { section?: Section }) {
     { name: 'Corporate Offices', desc: 'Reception desks, storage solutions, and branded display systems for modern workspaces.', img: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80' },
   ];
   const industries = (section?.items && section.items.length > 0)
-    ? (section.items as any[]).map((item, i) => ({ name: item.title || '', desc: item.description || '', img: item.image || '', tag: String(i + 1).padStart(2, '0') }))
-    : defaultIndustries.map((d, i) => ({ ...d, tag: String(i + 1).padStart(2, '0') }));
+    ? (section.items as any[]).map((item, i) => ({ name: item.title || '', desc: item.description || '', img: item.image || '', link: item.link || '' }))
+    : defaultIndustries.map((d, i) => ({ ...d, link: '' }));
 
   return (
     <section className="py-20 md:py-28 bg-white">
@@ -466,27 +480,45 @@ function IndustriesSection({ section }: { section?: Section }) {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {industries.map((ind) => (
-            <div key={ind.name} className="group relative rounded-2xl overflow-hidden" style={{ height: '420px' }}>
-              {ind.img ? (
-                <Image src={ind.img} alt={ind.name} fill className="object-cover transition-transform duration-700 group-hover:scale-105" unoptimized />
-              ) : (
-                <div className="absolute inset-0 bg-gray-300" />
-              )}
-              {/* Base gradient */}
-              <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/30 to-black/10" />
-              {/* Hover darkener */}
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-500" />
-              <span className="absolute top-5 left-5 text-white/20 font-bold text-6xl leading-none select-none">
-                {ind.tag}
-              </span>
-              <div className="absolute bottom-0 left-0 right-0 p-6">
-                <h3 className="text-white font-bold text-xl mb-2">{ind.name}</h3>
-                <p className="text-white/60 text-sm leading-relaxed overflow-hidden max-h-0 group-hover:max-h-20 transition-all duration-500">
-                  {ind.desc}
-                </p>
-                <div className="mt-4 w-8 h-0.5 bg-accent scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500" />
+            ind.link ? (
+              <Link key={ind.name} href={ind.link} className="group relative rounded-2xl overflow-hidden block" style={{ height: '420px' }}>
+                {ind.img ? (
+                  <Image src={ind.img} alt={ind.name} fill className="object-cover transition-transform duration-700 group-hover:scale-105" unoptimized />
+                ) : (
+                  <div className="absolute inset-0 bg-gray-300" />
+                )}
+                {/* Base gradient */}
+                <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/30 to-black/10" />
+                {/* Hover darkener */}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-500" />
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <h3 className="text-white font-bold text-xl mb-2">{ind.name}</h3>
+                  <p className="text-white/60 text-sm leading-relaxed overflow-hidden max-h-0 group-hover:max-h-20 transition-all duration-500">
+                    {ind.desc}
+                  </p>
+                  <div className="mt-4 w-8 h-0.5 bg-accent scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500" />
+                </div>
+              </Link>
+            ) : (
+              <div key={ind.name} className="group relative rounded-2xl overflow-hidden" style={{ height: '420px' }}>
+                {ind.img ? (
+                  <Image src={ind.img} alt={ind.name} fill className="object-cover transition-transform duration-700 group-hover:scale-105" unoptimized />
+                ) : (
+                  <div className="absolute inset-0 bg-gray-300" />
+                )}
+                {/* Base gradient */}
+                <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/30 to-black/10" />
+                {/* Hover darkener */}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-500" />
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <h3 className="text-white font-bold text-xl mb-2">{ind.name}</h3>
+                  <p className="text-white/60 text-sm leading-relaxed overflow-hidden max-h-0 group-hover:max-h-20 transition-all duration-500">
+                    {ind.desc}
+                  </p>
+                  <div className="mt-4 w-8 h-0.5 bg-accent scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500" />
+                </div>
               </div>
-            </div>
+            )
           ))}
         </div>
       </div>
