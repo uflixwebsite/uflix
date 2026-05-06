@@ -49,6 +49,14 @@ export default function CartPage() {
     return parseInt(priceStr.replace(/[^0-9]/g, ''));
   };
 
+  // Generate a unique key for cart items that includes variant info
+  const getCartItemKey = (item: any) => {
+    if (item.variantId) {
+      return `${item.id}-${item.variantId}`;
+    }
+    return String(item.id);
+  };
+
   const hydrateCartWithProductData = async (items: any[]) => {
     if (!Array.isArray(items) || items.length === 0) return [];
 
@@ -82,13 +90,16 @@ export default function CartPage() {
     return hydrated;
   };
 
-  const updateQuantity = (productId: string | number, quantity: number) => {
+  const updateQuantity = (productId: string | number, quantity: number, variantId?: string) => {
     try {
       // Always update localStorage
       const localCart = JSON.parse(localStorage.getItem('uflix-cart') || '[]');
-      const updatedCart = localCart.map((item: any) => 
-        String(item.id) === String(productId) ? { ...item, quantity } : item
-      ).filter((item: any) => item.quantity > 0);
+      const updatedCart = localCart.map((item: any) => {
+        const itemMatch = variantId 
+          ? String(item.id) === String(productId) && item.variantId === variantId
+          : String(item.id) === String(productId) && !item.variantId;
+        return itemMatch ? { ...item, quantity } : item;
+      }).filter((item: any) => item.quantity > 0);
       localStorage.setItem('uflix-cart', JSON.stringify(updatedCart));
       setCart(updatedCart);
     } catch (error) {
@@ -96,11 +107,16 @@ export default function CartPage() {
     }
   };
 
-  const handleRemoveItem = (productId: string | number) => {
+  const handleRemoveItem = (productId: string | number, variantId?: string) => {
     try {
       // Always remove from localStorage
       const localCart = JSON.parse(localStorage.getItem('uflix-cart') || '[]');
-      const updatedCart = localCart.filter((item: any) => String(item.id) !== String(productId));
+      const updatedCart = localCart.filter((item: any) => {
+        const itemMatch = variantId 
+          ? String(item.id) === String(productId) && item.variantId === variantId
+          : String(item.id) === String(productId) && !item.variantId;
+        return !itemMatch;
+      });
       localStorage.setItem('uflix-cart', JSON.stringify(updatedCart));
       setCart(updatedCart);
     } catch (error) {
@@ -155,7 +171,7 @@ export default function CartPage() {
                 
                 <div className="divide-y divide-gray-200">
                   {cart.map((item) => (
-                    <div key={item.id} className="p-4 sm:p-6 flex flex-col sm:flex-row gap-4 sm:gap-6">
+                    <div key={getCartItemKey(item)} className="p-4 sm:p-6 flex flex-col sm:flex-row gap-4 sm:gap-6">
                       <div className="relative w-full h-44 sm:w-32 sm:h-32 shrink-0 bg-white rounded-lg overflow-hidden border border-gray-100">
                         <Image
                           src={item.image}
@@ -167,11 +183,20 @@ export default function CartPage() {
                       
                       <div className="flex-1">
                         <div className="flex items-start justify-between gap-3 mb-2">
-                          <Link href={`/products/${item.id}`} className="text-base sm:text-lg font-semibold hover:text-accent transition-colors leading-snug">
-                            {item.name}
-                          </Link>
+                          <div className="flex-1">
+                            <Link href={`/products/${item.id}`} className="text-base sm:text-lg font-semibold hover:text-accent transition-colors leading-snug">
+                              {item.name}
+                            </Link>
+                            {/* Display variant information if present */}
+                            {(item.color || item.size) && (
+                              <div className="text-xs sm:text-sm text-neutral-dark mt-1 space-y-0.5">
+                                {item.color && <div>Color: <span className="font-medium">{item.color}</span></div>}
+                                {item.size && <div>Size: <span className="font-medium">{item.size}</span></div>}
+                              </div>
+                            )}
+                          </div>
                           <button
-                            onClick={() => handleRemoveItem(item.id)}
+                            onClick={() => handleRemoveItem(item.id, item.variantId)}
                             className="text-neutral-dark hover:text-red-600 transition-colors shrink-0"
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -196,14 +221,14 @@ export default function CartPage() {
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                           <div className="inline-flex w-fit self-start items-center border border-gray-300 rounded-lg overflow-hidden">
                             <button
-                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                              onClick={() => updateQuantity(item.id, item.quantity - 1, item.variantId)}
                               className="w-12 h-10 grid place-items-center hover:bg-gray-100"
                             >
                               -
                             </button>
                             <span className="w-12 h-10 grid place-items-center border-x border-gray-300">{item.quantity}</span>
                             <button
-                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                              onClick={() => updateQuantity(item.id, item.quantity + 1, item.variantId)}
                               className="w-12 h-10 grid place-items-center hover:bg-gray-100"
                             >
                               +

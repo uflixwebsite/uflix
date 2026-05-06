@@ -109,6 +109,11 @@ export default function CheckoutPage() {
         quantity: Number(item.quantity || 1),
         unitPrice: Number(item.discountPrice || item.price || item.product?.discountPrice || item.product?.price || 0),
         shippingFees: Number(item.shippingFees || item.product?.shippingFees || 0),
+        // Include variant information if present
+        variantId: item.variant?._id,
+        color: item.color,
+        size: item.size,
+        sku: item.sku,
       }));
     }
 
@@ -122,6 +127,11 @@ export default function CheckoutPage() {
         quantity: Number(item.quantity || 1),
         unitPrice: Number(String(item.price || '0').replace(/[^0-9.]/g, '')),
         shippingFees: Number(item.shippingFees || 0),
+        // Include variant information if present
+        variantId: item.variantId,
+        color: item.color,
+        size: item.size,
+        sku: item.sku,
       }));
     }
 
@@ -188,10 +198,24 @@ export default function CheckoutPage() {
       return;
     }
 
-    const orderItems = checkoutItems.map((item: any) => ({
-      product: item.product,
-      quantity: item.quantity,
-    }));
+    const orderItems = checkoutItems.map((item: any) => {
+      const orderItem: any = {
+        product: item.product,
+        quantity: item.quantity,
+      };
+      
+      // Include variant information if present
+      if (item.variantId) {
+        orderItem.variant = {
+          _id: item.variantId,
+          color: item.color,
+          size: item.size,
+          sku: item.sku,
+        };
+      }
+      
+      return orderItem;
+    });
 
     setProcessing(true);
 

@@ -106,7 +106,7 @@ export default function FeaturedCollections({ title, subtitle, items }: Featured
               )}
               <Link
                 href={col.link || '/shop'}
-                className="inline-block bg-white text-foreground px-5 py-2 rounded-md font-semibold hover:bg-accent hover:text-white transition-colors text-xs sm:text-sm shadow-md"
+                className="inline-block bg-accent text-white px-5 py-2 rounded-md font-semibold text-xs sm:text-sm shadow-md"
                 style={{ backgroundColor: col.primaryButtonBg || undefined, color: col.primaryButtonTextColor || undefined }}
               >
                 {col.buttonText || 'Explore Collection'}

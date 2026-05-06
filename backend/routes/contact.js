@@ -7,7 +7,7 @@ const { sendContactFormNotifications } = require('../utils/emailService');
 // @access  Public
 router.post('/', async (req, res) => {
   try {
-    const { name, email, phone, subject, message } = req.body;
+    const { name, email, phone, subject, selectedProduct, message } = req.body;
 
     if (!name || !email || !phone || !subject || !message) {
       return res.status(400).json({
@@ -21,6 +21,7 @@ router.post('/', async (req, res) => {
       email,
       phone,
       subject,
+      selectedProduct,
       message,
     });
 

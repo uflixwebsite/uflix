@@ -55,7 +55,7 @@ const videoFilter = (req, file, cb) => {
 
 const uploadImage = multer({
   storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
   fileFilter: imageFilter
 });
 

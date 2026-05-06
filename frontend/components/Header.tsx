@@ -39,6 +39,12 @@ export default function Header() {
   const { isSignedIn, user } = useUser();
   const { status, userRole, isAdmin } = useAuthState();
 
+  const isTopTabActive = (href: string) => {
+    if (!pathname) return false;
+    if (href === '/') return pathname === '/';
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
+
   // Fetch mega menu data for hovered link
   const fetchMegaMenuForLink = async (linkUrl: string) => {
     try {
@@ -241,10 +247,10 @@ export default function Header() {
   return (
     <header ref={megaMenuContainerRef} className="fixed top-0 left-0 right-0 z-40 bg-white shadow-sm">
 
-      {/* ═══ ROW 1: Dark Utility Top Bar ═══ */}
-      <div className="hidden lg:block bg-[#1A1A1A]">
+      {/* ═══ ROW 1: Warm Utility Top Bar ═══ */}
+      <div className="hidden lg:block bg-linear-to-r from-white via-[#fffefc] to-[#f8f6f1] border-b border-[#ece6dc]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-11">
-          <div className="flex items-center gap-1 bg-white/10 rounded-full p-0.5">
+          <div className="flex items-center gap-1 bg-white/75 rounded-full p-0.5 border border-[#f0e8da] shadow-sm">
             {[
               { label: 'For Homes', href: '/categories' },
               { label: 'For Businesses', href: '/business' },
@@ -252,25 +258,25 @@ export default function Header() {
             ].map((tab) => (
               <Link key={tab.href} href={tab.href}
                 className={`px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-all duration-300 ${
-                  pathname === tab.href
+                  isTopTabActive(tab.href)
                     ? 'bg-linear-to-r from-accent to-secondary text-white shadow-lg shadow-accent/20'
-                    : 'text-white/70 hover:text-white hover:bg-white/10'
+                    : 'text-black hover:text-foreground hover:bg-accent'
                 }`}
               >{tab.label}</Link>
             ))}
           </div>
           <Link href="/contact?subject=become-dealer"
-            className="group flex items-center gap-2 px-5 py-1.5 rounded-full text-xs font-bold tracking-wide bg-linear-to-r from-accent to-secondary text-white shadow-lg shadow-accent/25 hover:shadow-accent/40 hover:scale-105 transition-all duration-300"
+            className="group flex items-center gap-2 px-5 py-1.5 rounded-full text-xs font-bold tracking-wide bg-linear-to-r from-accent to-secondary text-black shadow-lg shadow-[#c98d63]/18 hover:shadow-[#c98d63]/32 hover:scale-105 transition-all duration-300"
           >
             Become a Dealer
-            <svg className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
+            <svg className="w-3.5 h-3.5 text-black group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
           </Link>
         </div>
-        <div className="h-px bg-linear-to-r from-transparent via-accent/40 to-transparent" />
+        <div className="h-px bg-linear-to-r from-transparent via-[#e6ddd0]/60 to-transparent" />
       </div>
 
       {/* ═══ ROW 2: Main Navigation Bar ═══ */}
-      <div className="border-b border-gray-100">
+      <div className="border-b border-[#ece4d8] bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-20">
 
           {/* Logo */}

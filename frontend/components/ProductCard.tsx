@@ -101,7 +101,7 @@ export default function ProductCard({ _id, name, price, discountPrice, images, c
         </div>
         
         {discount && (
-          <span className="absolute top-3 left-3 bg-accent text-white px-3 py-1 rounded-md text-sm font-bold">
+          <span className="absolute top-3 left-3 bg-orange-500 text-white px-2.5 py-1 rounded-md text-xs sm:text-sm font-bold shadow-sm">
             {discount} Off
           </span>
         )}

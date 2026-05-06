@@ -519,7 +519,7 @@ function ProductPicker({ pinned, onAdd, onRemove }: { pinned: any[]; onAdd: (pro
   const pinnedIds = new Set(pinned.map((p) => p._ref));
   const toggle = (p: any) => {
     if (pinnedIds.has(p._id)) onRemove(p._id);
-    else onAdd({ _ref: p._id, title: p.name, image: p.images?.[0] || '', variant: p.variants?.[0]?.name || p.material || '' });
+    else onAdd({ _ref: p._id, title: p.name, image: p.images?.[0] || '', variant: p.variants?.[0]?.name || p.variants?.[0]?.color || '' });
   };
 
   return (
@@ -547,7 +547,7 @@ function ProductPicker({ pinned, onAdd, onRemove }: { pinned: any[]; onAdd: (pro
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 truncate">{p.name}</p>
-                      {(p.variants?.[0]?.name || p.material) && <p className="text-xs text-gray-400">{p.variants?.[0]?.name || p.material}</p>}
+                      {(p.variants?.[0]?.name || p.variants?.[0]?.color) && <p className="text-xs text-gray-400">{p.variants?.[0]?.name || p.variants?.[0]?.color}</p>}
                     </div>
                     <button onClick={() => toggle(p)} className={`flex-none text-xs px-2.5 py-1 rounded-full font-semibold transition-colors ${isAdded ? 'bg-red-100 text-red-600 hover:bg-red-200' : 'btn-primary'}`}>
                       {isAdded ? 'Remove' : '+ Add'}

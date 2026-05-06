@@ -83,7 +83,7 @@ function ShopFittingsHero({ section }: { section?: Section }) {
           className="absolute inset-0 transition-opacity duration-1000"
           style={{ opacity: i === idx ? 1 : 0 }}
         >
-          <Image src={url} alt={`slide ${i + 1}`} fill sizes="100vw" className="object-cover" priority={i === 0} />
+          <Image src={url} alt={`slide ${i + 1}`} fill sizes="100vw" className="object-cover" priority={i === 0} unoptimized />
         </div>
       ))}
       {allImages.length === 0 && <div className="absolute inset-0 bg-gray-900" />}
@@ -211,7 +211,7 @@ function SolutionsImageGrid({ section }: { section?: Section }) {
           {items.map((sol, i) => (
             <div key={sol.title + i} className="group relative h-72 rounded-2xl overflow-hidden">
               {sol.img ? (
-                <Image src={sol.img} alt={sol.title} fill className="object-cover transition-transform duration-700 group-hover:scale-105" />
+                <Image src={sol.img} alt={sol.title} fill className="object-cover transition-transform duration-700 group-hover:scale-105" unoptimized />
               ) : (
                 <div className="absolute inset-0 bg-gray-300" />
               )}
@@ -275,7 +275,7 @@ function EditorialGallery({ section }: { section?: Section }) {
           {/* Large card — 60% */}
           <div className="group relative rounded-2xl overflow-hidden shrink-0 lg:w-3/5" style={{ height: '480px' }}>
             {g0.src ? (
-              <Image src={g0.src} alt={g0.label} fill className="object-cover transition-transform duration-700 group-hover:scale-105" />
+              <Image src={g0.src} alt={g0.label} fill className="object-cover transition-transform duration-700 group-hover:scale-105" unoptimized />
             ) : (
               <div className="absolute inset-0 bg-gray-300" />
             )}
@@ -291,7 +291,7 @@ function EditorialGallery({ section }: { section?: Section }) {
             {rest.map((img, idx) => (
               <div key={img.label + idx} className="group relative rounded-2xl overflow-hidden flex-1" style={{ minHeight: '225px' }}>
                 {img.src ? (
-                  <Image src={img.src} alt={img.label} fill className="object-cover transition-transform duration-700 group-hover:scale-105" />
+                  <Image src={img.src} alt={img.label} fill className="object-cover transition-transform duration-700 group-hover:scale-105" unoptimized />
                 ) : (
                   <div className="absolute inset-0 bg-gray-300" />
                 )}
@@ -411,7 +411,7 @@ function ProductScrollStrip({
                   <Link key={p._id} href={`/product/${p._id}`} className="group flex-none w-64 md:w-72">
                     <div className="relative h-64 rounded-xl overflow-hidden bg-gray-200">
                       {imgUrl ? (
-                        <Image src={imgUrl} alt={p.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <Image src={imgUrl} alt={p.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" unoptimized />
                       ) : (
                         <div className="absolute inset-0 bg-gray-200" />
                       )}
@@ -468,7 +468,7 @@ function IndustriesSection({ section }: { section?: Section }) {
           {industries.map((ind) => (
             <div key={ind.name} className="group relative rounded-2xl overflow-hidden" style={{ height: '420px' }}>
               {ind.img ? (
-                <Image src={ind.img} alt={ind.name} fill className="object-cover transition-transform duration-700 group-hover:scale-105" />
+                <Image src={ind.img} alt={ind.name} fill className="object-cover transition-transform duration-700 group-hover:scale-105" unoptimized />
               ) : (
                 <div className="absolute inset-0 bg-gray-300" />
               )}

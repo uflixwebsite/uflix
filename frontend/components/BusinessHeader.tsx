@@ -163,6 +163,12 @@ export default function BusinessHeader() {
     }, 300);
   };
 
+  const isTopTabActive = (href: string) => {
+    if (!pathname) return false;
+    if (href === '/') return pathname === '/';
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
+
   const textColor = 'text-gray-900';
   const hoverColor = 'hover:text-accent';
 
@@ -180,13 +186,21 @@ export default function BusinessHeader() {
             </Link>
             <Link
               href="/business"
-              className="px-6 py-2 rounded-lg font-semibold transition-all text-sm bg-accent text-white shadow-lg"
+              className={`px-6 py-2 rounded-lg font-semibold transition-all text-sm shadow-lg ${
+                isTopTabActive('/business')
+                  ? 'bg-accent text-white'
+                  : 'bg-white/90 text-foreground hover:bg-accent hover:text-foreground border border-gray-200'
+              }`}
             >
               For Businesses
             </Link>
             <Link
               href="/shop-fittings"
-              className="px-6 py-2 rounded-lg font-semibold transition-all text-sm bg-white/90 text-foreground hover:bg-gray-100 shadow-md border border-gray-200"
+              className={`px-6 py-2 rounded-lg font-semibold transition-all text-sm shadow-md ${
+                isTopTabActive('/shop-fittings')
+                  ? 'bg-accent text-white border border-accent'
+                  : 'bg-white/90 text-foreground hover:bg-accent hover:text-foreground border border-gray-200'
+              }`}
             >
               Shop Fittings
             </Link>
@@ -325,7 +339,7 @@ export default function BusinessHeader() {
                 </form>
 
                 {searchQuery.trim().length > 0 && (
-                  <div className="bg-white border-t border-gray-200 max-h-[400px] overflow-y-auto rounded-b-lg shadow-lg">
+                  <div className="bg-white border-t border-gray-200 max-h-100 overflow-y-auto rounded-b-lg shadow-lg">
                     {isSearching ? (
                       <div className="flex items-center justify-center py-6">
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-accent"></div>
@@ -341,7 +355,7 @@ export default function BusinessHeader() {
                             <img
                               src={product.images?.[0]?.url || 'https://via.placeholder.com/150?text=No+Image'}
                               alt={product.name}
-                              className="w-12 h-12 object-cover rounded flex-shrink-0 bg-gray-100"
+                              className="w-12 h-12 object-cover rounded shrink-0 bg-gray-100"
                               onError={(e) => {
                                 const target = e.target as HTMLImageElement;
                                 target.src = 'https://via.placeholder.com/150?text=No+Image';

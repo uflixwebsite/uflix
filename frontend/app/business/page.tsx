@@ -187,8 +187,8 @@ function CategoryProductTabs({
               onClick={() => setActiveIdx(i)}
               className={`px-6 py-3 text-sm font-medium border-r border-gray-300 last:border-r-0 transition-colors relative ${
                 activeIdx === i
-                  ? 'bg-white text-gray-900'
-                  : 'bg-transparent text-gray-600 hover:bg-white/60'
+                  ? 'bg-accent text-white'
+                  : 'bg-transparent text-gray-700 hover:bg-accent hover:text-white'
               }`}
             >
               {cat.name}

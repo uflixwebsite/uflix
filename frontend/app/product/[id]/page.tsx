@@ -8,6 +8,7 @@ import Breadcrumb from '@/components/Breadcrumb';
 import ProductCard from '@/components/ProductCard';
 import Image from 'next/image';
 import ImageZoom from '@/components/ImageZoom';
+import VariantSelectorEnhanced from '@/components/VariantSelectorEnhanced';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { getProduct, getProducts } from '@/services/productService';
@@ -33,6 +34,9 @@ export default function ProductDetailPage() {
         }
         
         setProduct(response.data);
+        setDisplayImages(response.data.images || []);
+        setDisplayDescription(response.data.description || '');
+        setDisplayName(response.data.name || '');
         setError(null);
       } catch (err: any) {
         console.error('Error fetching product:', err);
@@ -82,11 +86,18 @@ export default function ProductDetailPage() {
   const { addToWishlist, isInWishlist, removeFromWishlist } = useWishlist();
   
   const [quantity, setQuantity] = useState(1);
+  const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'description' | 'specifications' | 'reviews'>('description');
   const [isQuotationDialogOpen, setIsQuotationDialogOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [displayImages, setDisplayImages] = useState<Array<{url: string, alt?: string}>>([]);
+  const [displayDescription, setDisplayDescription] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const displayPrice = selectedVariant?.discountPrice ?? selectedVariant?.price ?? product?.discountPrice ?? product?.price ?? 0;
+  const displayOriginalPrice = selectedVariant?.price ?? product?.price ?? 0;
+  const hasDisplayDiscount = displayPrice !== displayOriginalPrice;
   const isQuotationOnly = Boolean(product?.availableOnQuotation) || Number(product?.discountPrice || product?.price || 0) <= 0;
 
   const handleAddToCart = () => {
@@ -95,10 +106,17 @@ export default function ProductDetailPage() {
     for (let i = 0; i < quantity; i++) {
       addToCart({
         id: String(product._id),
-        name: product.name,
-        price: `₹${product.discountPrice || product.price}`,
+        name: selectedVariant?.name || displayName || product.name,
+        price: selectedVariant 
+          ? `₹${selectedVariant.discountPrice || selectedVariant.price || product.discountPrice || product.price}`
+          : `₹${product.discountPrice || product.price}`,
         image: product.images[0]?.url,
-        originalPrice: product.discountPrice ? `₹${product.price}` : undefined,
+        originalPrice: selectedVariant?.discountPrice 
+          ? `₹${selectedVariant.price || product.price}` 
+          : product.discountPrice ? `₹${product.price}` : undefined,
+        variantId: selectedVariant?._id,
+        color: selectedVariant?.color,
+        size: selectedVariant?.size,
       });
     }
   };
@@ -191,7 +209,7 @@ export default function ProductDetailPage() {
             <div className="space-y-4">
               {/* All images in carousel */}
               <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory">
-                {product.images.map((image: any, index: number) => (
+                {displayImages.map((image: any, index: number) => (
                   <div 
                     key={index} 
                     className="shrink-0 w-80 aspect-square cursor-pointer relative"
@@ -212,7 +230,7 @@ export default function ProductDetailPage() {
               
               {/* Thumbnail indicators */}
               <div className="flex justify-center gap-2">
-                {product.images.map((_: any, index: number) => (
+                {displayImages.map((_: any, index: number) => (
                   <div
                     key={index}
                     className="w-2 h-2 rounded-full bg-gray-300"
@@ -223,7 +241,7 @@ export default function ProductDetailPage() {
           ) : (
             /* Desktop: All images */
             <div className="space-y-4">
-              {product.images.map((image: any, index: number) => (
+              {displayImages.map((image: any, index: number) => (
                 <ImageZoom
                   key={index}
                   src={image.url}
@@ -235,7 +253,7 @@ export default function ProductDetailPage() {
 
           {/* Right: Product details (sticky) */}
           <div className="lg:sticky lg:top-8 lg:self-start">
-            <h1 className="text-3xl md:text-4xl font-bold mb-4">{product.name}</h1>
+            <h1 className="text-3xl md:text-4xl font-bold mb-4">{displayName || product.name}</h1>
             
             <div className="flex items-center gap-4 mb-6">
               <div className="flex items-center">
@@ -264,14 +282,30 @@ export default function ProductDetailPage() {
               </div>
             ) : (
               <div className="flex items-baseline gap-4 mb-6">
-                <span className="text-4xl font-bold text-accent">₹{product.discountPrice || product.price}</span>
-                {product.discountPrice && (
-                  <span className="text-xl text-neutral-dark line-through">₹{product.price}</span>
+                <span className="text-4xl font-bold text-accent">₹{displayPrice}</span>
+                {hasDisplayDiscount && (
+                  <span className="text-xl text-neutral-dark line-through">₹{displayOriginalPrice}</span>
                 )}
               </div>
             )}
 
-            <p className="text-neutral-dark mb-6 leading-relaxed">{product.description}</p>
+            {/* Variant Selector - If product has variants */}
+            {product.variants && product.variants.length > 0 && (
+              <div className="mb-6">
+                <VariantSelectorEnhanced
+                  variants={product.variants}
+                  onVariantSelect={setSelectedVariant}
+                  basePrice={product.price}
+                  baseDiscountPrice={product.discountPrice}
+                  baseName={product.name}
+                  baseDescription={product.description}
+                  productImages={product.images}
+                  onImagesChange={setDisplayImages}
+                  onDescriptionChange={setDisplayDescription}
+                  onNameChange={setDisplayName}
+                />
+              </div>
+            )}
 
             <div className="bg-neutral-light rounded-xl p-6 mb-6">
               <h3 className="font-semibold mb-4">Key Features</h3>
@@ -386,7 +420,7 @@ export default function ProductDetailPage() {
 
           {activeTab === 'description' && (
             <div className="prose max-w-none">
-              <p className="text-neutral-dark leading-relaxed">{product.description}</p>
+              <p className="text-neutral-dark leading-relaxed">{displayDescription || product.description}</p>
             </div>
           )}
 
@@ -464,7 +498,7 @@ export default function ProductDetailPage() {
             className="w-full overflow-x-auto snap-x snap-mandatory flex gap-4 px-4"
             onClick={(e) => e.stopPropagation()}
           >
-            {product.images.map((image: any, index: number) => (
+            {displayImages.map((image: any, index: number) => (
               <div key={index} className="shrink-0 w-[90vw] aspect-square relative bg-white rounded-2xl shadow-2xl overflow-hidden snap-center">
                 <Image
                   src={image.url}

@@ -12,6 +12,10 @@ export interface CartItem {
   originalPrice?: string;
   discount?: string;
   shippingFees?: number;
+  // Variant information
+  variantId?: string;
+  color?: string;
+  size?: string;
 }
 
 interface CartContextType {
@@ -47,15 +51,29 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addToCart = (item: Omit<CartItem, 'quantity'>) => {
     setCart((prevCart) => {
-      const existingItem = prevCart.find((cartItem) => cartItem.id === item.id);
+      // Create a unique identifier that includes variant info if present
+      const itemKey = item.variantId 
+        ? `${item.id}-${item.variantId}` 
+        : item.id;
+      
+      const existingItem = prevCart.find((cartItem) => {
+        const existingKey = cartItem.variantId 
+          ? `${cartItem.id}-${cartItem.variantId}` 
+          : cartItem.id;
+        return existingKey === itemKey;
+      });
+
       if (existingItem) {
         setToastMessage('Item quantity updated in cart');
         setShowToast(true);
-        return prevCart.map((cartItem) =>
-          cartItem.id === item.id
+        return prevCart.map((cartItem) => {
+          const existingKey = cartItem.variantId 
+            ? `${cartItem.id}-${cartItem.variantId}` 
+            : cartItem.id;
+          return existingKey === itemKey
             ? { ...cartItem, quantity: cartItem.quantity + 1 }
-            : cartItem
-        );
+            : cartItem;
+        });
       }
       setToastMessage('Item added to cart');
       setShowToast(true);
@@ -64,7 +82,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const removeFromCart = (id: string | number) => {
-    setCart((prevCart) => prevCart.filter((item) => item.id !== id));
+    setCart((prevCart) => 
+      prevCart.filter((item) => {
+        // Match by id and ensure no variant, or match only if id differs
+        return !(String(item.id) === String(id) && !item.variantId);
+      })
+    );
   };
 
   const updateQuantity = (id: string | number, quantity: number) => {
@@ -74,7 +97,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
     setCart((prevCart) =>
       prevCart.map((item) =>
-        item.id === id ? { ...item, quantity } : item
+        String(item.id) === String(id) && !item.variantId ? { ...item, quantity } : item
       )
     );
   };

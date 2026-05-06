@@ -10,6 +10,7 @@ import { getCategoryTree } from '@/services/categoryService';
 import { useAuthState } from '@/hooks/useAuthState';
 import { deleteFile } from '@/services/uploadService';
 import CategoryTreePicker, { flattenTree, findPath } from '@/components/CategoryTreePicker';
+import VariantManagerEnhanced from '@/components/VariantManagerEnhanced';
 
 function extractCloudinaryPublicId(url: string): string | null {
   if (!url || !url.includes('res.cloudinary.com')) return null;
@@ -52,6 +53,7 @@ export default function EditProductPage() {
   const [selectedVideo, setSelectedVideo] = useState<File | null>(null);
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string>('');
   const [existingVideo, setExistingVideo] = useState<string>('');
+  const [product, setProduct] = useState<any>(null);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -59,7 +61,6 @@ export default function EditProductPage() {
     discountPrice: '',
     shippingFees: '',
     sku: '',
-    material: '',
     dimensions: {
       length: '',
       width: '',
@@ -114,6 +115,7 @@ export default function EditProductPage() {
       const response = await api.get(`/products/${productId}`);
       const product = response.data.data;
       
+      setProduct(product);
       setFormData({
         name: String(product.name || ''),
         description: String(product.description || ''),
@@ -121,7 +123,6 @@ export default function EditProductPage() {
         discountPrice: product.discountPrice?.toString() || '',
         shippingFees: product.shippingFees?.toString() || '',
         sku: String(product.sku || ''),
-        material: String(product.material || ''),
         dimensions: {
           length: product.dimensions?.length?.toString() || '',
           width: product.dimensions?.width?.toString() || '',
@@ -330,7 +331,6 @@ export default function EditProductPage() {
         categoryRef: selectedCategoryIds[selectedCategoryIds.length - 1] || null,
         categoryRefs: allCategoryIds,
         subcategory: subcategoryForSubmit,
-        material: formData.material || undefined,
         weight: formData.weight ? { value: parseFloat(formData.weight), unit: 'kg' } : undefined,
         dimensions: {
           length: formData.dimensions.length ? parseFloat(formData.dimensions.length) : undefined,
@@ -454,7 +454,7 @@ export default function EditProductPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
                 <p className="text-sm text-gray-600 mb-1">Click to upload more images</p>
-                <p className="text-xs text-gray-500">PNG, JPG, WEBP • 800×800px recommended (1:1 square) • Max 10MB per image • Up to 6 images total</p>
+                <p className="text-xs text-gray-500">PNG, JPG, WEBP • 800×800px recommended (1:1 square) • Max 50MB per image • Up to 6 images total</p>
               </label>
             </div>
             
@@ -640,15 +640,6 @@ export default function EditProductPage() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-2">Material</label>
-                <input
-                  type="text"
-                  value={formData.material}
-                  onChange={(e) => setFormData({ ...formData, material: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
-                />
-              </div>
             </div>
           </div>
 
@@ -775,6 +766,28 @@ export default function EditProductPage() {
               </div>
             </div>
           </div>
+
+          {/* Product Variants Management */}
+          {product && (
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold mb-4">Product Variants</h2>
+              <VariantManagerEnhanced 
+                productId={productId as string}
+                variants={product.variants || []}
+                baseName={formData.name}
+                baseDescription={formData.description}
+                basePrice={formData.price ? parseFloat(formData.price) : undefined}
+                baseDiscountPrice={formData.discountPrice ? parseFloat(formData.discountPrice) : undefined}
+                baseImages={existingImages}
+                baseDimensions={product?.dimensions}
+                baseWeight={product?.weight}
+                productFolder={selectedCategoryIds.length > 0 ? (flattenTree(categoryTree).find((n: any) => n._id === selectedCategoryIds[selectedCategoryIds.length - 1])?.slug || 'uncategorized') : 'uncategorized'}
+                onVariantsChange={(variants) => {
+                  setProduct({ ...product, variants });
+                }}
+              />
+            </div>
+          )}
 
           {/* Status */}
           <div className="mb-6">

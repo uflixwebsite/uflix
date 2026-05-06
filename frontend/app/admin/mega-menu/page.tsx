@@ -28,6 +28,23 @@ const normalizeItems = (itemList: any[] = []) =>
     enabled: item?.enabled !== false,
   }));
 
+const pageOptions = [
+  { value: '*', label: 'Default (All Pages)' },
+  { value: '/', label: 'Home' },
+  { value: '/shop', label: 'Shop' },
+  { value: '/products', label: 'Products' },
+  { value: '/categories', label: 'Categories' },
+  { value: '/business', label: 'Main Business Page' },
+  { value: '/business/workspace', label: 'Business Workspace Page' },
+  { value: '/business/healthcare', label: 'Business Healthcare Page' },
+  { value: '/business/education', label: 'Business Education Page' },
+  { value: '/contact', label: 'Contact' },
+  { value: '/about', label: 'About' },
+  { value: '/projects', label: 'Projects' },
+];
+
+const getPageLabel = (value: string) => pageOptions.find((option) => option.value === value)?.label || value;
+
 export default function MegaMenuPage() {
   const { status, isAdmin } = useAuthState();
   
@@ -271,19 +288,11 @@ export default function MegaMenuPage() {
                 onChange={(e) => setSelectedPage(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="*">Default (All Pages)</option>
-                <option value="/">Home</option>
-                <option value="/shop">Shop</option>
-                <option value="/products">Products</option>
-                <option value="/categories">Categories</option>
-                <option value="/business">Business</option>
-                <option value="/business/*">Business — All Verticals (/business/*)</option>
-                <option value="/business/healthcare">Business — Healthcare</option>
-                <option value="/business/education">Business — Education</option>
-                <option value="/business/workspace">Business — Workspace</option>
-                <option value="/contact">Contact</option>
-                <option value="/about">About</option>
-                <option value="/projects">Projects</option>
+                {pageOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </div>
             <button
@@ -299,7 +308,7 @@ export default function MegaMenuPage() {
         {/* Navbar Links */}
         {navbarLinks.length > 0 && (
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold mb-4">Navbar Links for "{selectedPage}"</h2>
+            <h2 className="text-xl font-semibold mb-4">Navbar Links for "{getPageLabel(selectedPage)}"</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {navbarLinks.map((link: any, index: number) => (
                 <div key={index} className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
@@ -367,7 +376,7 @@ export default function MegaMenuPage() {
                     </button>
                   </div>
                   
-                  <div className="space-y-2 border border-gray-200 rounded-lg p-3 bg-gray-50 min-h-[300px]">
+                  <div className="space-y-2 border border-gray-200 rounded-lg p-3 bg-gray-50 min-h-75">
                     {categories.length === 0 ? (
                       <p className="text-gray-500 text-center py-12">Click "+ Add Category" to start</p>
                     ) : (
@@ -429,7 +438,7 @@ export default function MegaMenuPage() {
                     </button>
                   </div>
 
-                  <div className="space-y-3 border border-gray-200 rounded-lg p-3 bg-gray-50 min-h-[300px] max-h-[500px] overflow-y-auto">
+                  <div className="space-y-3 border border-gray-200 rounded-lg p-3 bg-gray-50 min-h-75 max-h-125 overflow-y-auto">
                     {!selectedCategoryId ? (
                       <p className="text-gray-500 text-center py-12">Select a category from the left to add items</p>
                     ) : currentCategoryItems.length === 0 ? (

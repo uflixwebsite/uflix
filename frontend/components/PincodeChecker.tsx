@@ -91,16 +91,16 @@ export default function PincodeChecker({ onPincodeChange }: PincodeCheckerProps)
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <div className="flex items-center gap-2 mb-4">
-        <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className="bg-white rounded-lg border border-gray-200 p-4">
+      <div className="flex items-center gap-2 mb-3">
+        <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
-        <h3 className="text-lg font-semibold">Check Delivery</h3>
+        <h3 className="text-sm sm:text-base font-semibold">Check Delivery</h3>
       </div>
       
-      <div className="space-y-4">
+      <div className="space-y-2.5">
         <div className="relative">
           <input
             type="text"
@@ -111,7 +111,7 @@ export default function PincodeChecker({ onPincodeChange }: PincodeCheckerProps)
             onChange={handlePincodeChange}
             maxLength={6}
             disabled={loading}
-            className={`w-full px-4 py-3 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50 ${
+            className={`w-full px-3 py-2.5 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50 text-sm ${
               isValid === true 
                 ? 'border-green-500 bg-green-50' 
                 : isValid === false 
@@ -134,16 +134,16 @@ export default function PincodeChecker({ onPincodeChange }: PincodeCheckerProps)
         <button
           onClick={handleCheckClick}
           disabled={loading || pincode.length < 2}
-          className="w-full bg-accent text-white py-3 rounded-lg font-semibold hover:bg-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full bg-accent text-white py-2 rounded-lg font-semibold hover:bg-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
         >
           {loading ? (
             <>
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
               Checking...
             </>
           ) : (
             <>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
@@ -162,15 +162,15 @@ export default function PincodeChecker({ onPincodeChange }: PincodeCheckerProps)
         )}
 
         {pincodeData && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span className="font-semibold text-green-800">Delivery Available</span>
+              <span className="font-semibold text-green-800 text-sm">Delivery Available</span>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
               <div>
                 <span className="text-gray-600">Location:</span>
                 <span className="font-medium text-gray-900 ml-2">{pincodeData.city}, {pincodeData.state}</span>

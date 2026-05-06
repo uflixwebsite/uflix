@@ -409,4 +409,146 @@ router.get('/:id/reviews', async (req, res) => {
   }
 });
 
+// ═══ VARIANT MANAGEMENT ═══
+
+// @route   POST /api/products/:id/variants
+// @desc    Add a new variant to a product
+// @access  Admin
+router.post('/:id/variants', protect, admin, async (req, res) => {
+  try {
+    const { name, sku, color, size, price, discountPrice, stock, images, description, dimensions, weight, isActive } = req.body;
+    
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+
+    if (!color && !size) {
+      return res.status(400).json({ success: false, message: 'At least color or size is required' });
+    }
+
+    // Create new variant
+    const newVariant = {
+      _id: new mongoose.Types.ObjectId(),
+      name: name ? String(name).trim() : `${product.name} - ${color || size}`,
+      sku: sku || `${product._id.toString()}-${color || size}`,
+      color: color ? String(color).trim() : '',
+      size: size ? String(size).trim() : '',
+      price: price !== undefined && price !== '' ? Number(price) : undefined,
+      discountPrice: discountPrice !== undefined && discountPrice !== '' ? Number(discountPrice) : undefined,
+      stock: { quantity: Number(stock || 0), reserved: 0 },
+      images: images || [],
+      description: description ? String(description).trim() : undefined,
+      dimensions: dimensions ? {
+        length: dimensions.length !== undefined ? Number(dimensions.length) : undefined,
+        width: dimensions.width !== undefined ? Number(dimensions.width) : undefined,
+        height: dimensions.height !== undefined ? Number(dimensions.height) : undefined,
+        unit: dimensions.unit || 'cm'
+      } : undefined,
+      weight: weight ? {
+        value: weight.value !== undefined ? Number(weight.value) : undefined,
+        unit: weight.unit || 'kg'
+      } : undefined,
+      isActive: isActive !== undefined ? Boolean(isActive) : true
+    };
+
+    product.variants.push(newVariant);
+    await product.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Variant added successfully',
+      data: product
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// @route   PUT /api/products/:id/variants/:variantId
+// @desc    Update a variant
+// @access  Admin
+router.put('/:id/variants/:variantId', protect, admin, async (req, res) => {
+  try {
+    const { name, color, size, price, discountPrice, stock, images, description, dimensions, weight, isActive } = req.body;
+    
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+
+    const variant = product.variants.find(v => v._id.toString() === req.params.variantId);
+    if (!variant) {
+      return res.status(404).json({ success: false, message: 'Variant not found' });
+    }
+
+    // Update variant fields
+    if (name !== undefined) variant.name = String(name).trim();
+    if (color !== undefined) variant.color = color ? String(color).trim() : '';
+    if (size !== undefined) variant.size = size ? String(size).trim() : '';
+    if (price !== undefined) variant.price = price === '' ? undefined : Number(price);
+    if (discountPrice !== undefined) variant.discountPrice = discountPrice === '' ? undefined : Number(discountPrice);
+    if (stock !== undefined) variant.stock.quantity = Number(stock);
+    if (images !== undefined) variant.images = images;
+    if (description !== undefined) variant.description = description ? String(description).trim() : undefined;
+    if (dimensions !== undefined) {
+      variant.dimensions = dimensions ? {
+        length: dimensions.length !== undefined ? Number(dimensions.length) : undefined,
+        width: dimensions.width !== undefined ? Number(dimensions.width) : undefined,
+        height: dimensions.height !== undefined ? Number(dimensions.height) : undefined,
+        unit: dimensions.unit || 'cm'
+      } : undefined;
+    }
+    if (weight !== undefined) {
+      variant.weight = weight ? {
+        value: weight.value !== undefined ? Number(weight.value) : undefined,
+        unit: weight.unit || 'kg'
+      } : undefined;
+    }
+    if (isActive !== undefined) variant.isActive = isActive;
+
+    await product.save();
+
+    res.json({
+      success: true,
+      message: 'Variant updated successfully',
+      data: product
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// @route   DELETE /api/products/:id/variants/:variantId
+// @desc    Delete a variant
+// @access  Admin
+router.delete('/:id/variants/:variantId', protect, admin, async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+
+    product.variants = product.variants.filter(v => v._id.toString() !== req.params.variantId);
+    await product.save();
+
+    res.json({
+      success: true,
+      message: 'Variant deleted successfully',
+      data: product
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
 module.exports = router;

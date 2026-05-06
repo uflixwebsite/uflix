@@ -52,7 +52,14 @@ const orderSchema = new mongoose.Schema({
       type: Number,
       required: true
     },
-    discountPrice: Number
+    discountPrice: Number,
+    // Variant information
+    variant: {
+      _id: mongoose.Schema.Types.ObjectId,
+      color: String,
+      size: String,
+      sku: String
+    }
   }],
   shippingAddress: {
     name: { type: String, required: true },

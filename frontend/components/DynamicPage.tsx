@@ -80,6 +80,7 @@ function HeroSection({ section }: { section: Section }) {
             fill
             className="object-cover"
             priority
+            unoptimized
           />
         )}
         <div className="absolute inset-0 flex items-center justify-center text-white z-10">
@@ -117,6 +118,7 @@ function HeroSection({ section }: { section: Section }) {
           fill
           className="object-cover opacity-20"
           priority
+          unoptimized
         />
       )}
       <div className={`absolute inset-0 flex items-center justify-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
@@ -170,6 +172,31 @@ function ContentSection({ section }: { section: Section }) {
 function FeaturesSection({ section }: { section: Section }) {
   const items = section.items || [];
   const cols = items.length <= 3 ? `lg:grid-cols-3` : `lg:grid-cols-4`;
+  
+  // Small helper to render an image with a safe SVG fallback when the image fails to load
+  function ImageWithFallback({ src, alt } : { src?: string; alt?: string }) {
+    const [failed, setFailed] = useState(false);
+    if (!src || failed) {
+      return (
+        <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 bg-[#fff1e8] border border-[#ffd7c2] shadow-sm">
+          <svg className="w-10 h-10 text-[#ff6b35]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.25} d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+      );
+    }
+
+    return (
+      <div className="w-20 h-20 rounded-2xl mx-auto mb-6 overflow-hidden">
+        <img
+          src={src}
+          alt={alt || ''}
+          className="w-full h-full object-cover"
+          onError={() => setFailed(true)}
+        />
+      </div>
+    );
+  }
   return (
     <section className={`py-20 ${getBgClass(section.bgColor)}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -203,17 +230,7 @@ function FeaturesSection({ section }: { section: Section }) {
         <div className={`hidden md:grid md:grid-cols-2 ${cols} gap-8`}>
           {items.map((item, idx) => (
             <div key={idx} className="text-center p-8 rounded-lg hover:shadow-lg transition-shadow bg-white">
-              {item.image ? (
-                <div className="w-20 h-20 rounded-2xl mx-auto mb-6 overflow-hidden">
-                  <img src={item.image} alt={item.title || ''} className="w-full h-full object-cover" />
-                </div>
-              ) : (
-                <div className="w-20 h-20 bg-linear-to-br from-accent to-secondary rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                  <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-              )}
+              <ImageWithFallback src={item.image} alt={item.title} />
               <h3 className="text-xl font-bold mb-3">{item.title}</h3>
               <p className="text-neutral-dark">{item.description}</p>
             </div>
@@ -390,6 +407,7 @@ function TextImageSection({ section }: { section: Section }) {
                 alt={section.imageAlt || section.title || ''}
                 fill
                 className="object-cover"
+                unoptimized
               />
             </div>
           )}
@@ -415,7 +433,7 @@ function ListSection({ section }: { section: Section }) {
             <div key={idx} className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
               {item.image && (
                 <div className={`relative h-72 md:h-100 rounded-2xl overflow-hidden shadow-2xl ${idx % 2 === 1 ? 'md:order-2' : ''}`}>
-                  <Image src={item.image} alt={item.title || ''} fill className="object-cover" />
+                  <Image src={item.image} alt={item.title || ''} fill className="object-cover" unoptimized />
                 </div>
               )}
               <div className={`${idx % 2 === 1 ? 'md:order-1' : ''} text-center md:text-left`}>

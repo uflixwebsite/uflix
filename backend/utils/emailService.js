@@ -346,6 +346,7 @@ const sendContactFormNotifications = async (payload) => {
       <p><strong>Email:</strong> ${payload.email}</p>
       <p><strong>Phone:</strong> ${payload.phone}</p>
       <p><strong>Subject:</strong> ${payload.subject}</p>
+      ${payload.selectedProduct ? `<p><strong>Selected Product:</strong> ${payload.selectedProduct}</p>` : ''}
       <p><strong>Message:</strong><br>${payload.message}</p>
     `,
   });

@@ -6,23 +6,28 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { getPageContent } from '@/services/pageService';
 import { submitContactForm } from '@/services/contactService';
+import { getProducts } from '@/services/productService';
 import { renderSection } from '@/components/DynamicPage';
 import type { Section } from '@/components/DynamicPage';
 
 function ContactPageContent() {
   const searchParams = useSearchParams();
   const [sections, setSections] = useState<Section[]>([]);
+  const [products, setProducts] = useState([]);
+  const [productQuery, setProductQuery] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
     subject: '',
+    selectedProduct: '',
     message: '',
   });
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     fetchPageContent();
+    fetchProducts();
     
     // Pre-select subject from URL parameter
     const subject = searchParams.get('subject');
@@ -40,15 +45,53 @@ function ContactPageContent() {
     }
   };
 
+  const fetchProducts = async () => {
+    try {
+      const response = await getProducts({ limit: 1000 }); // Get all products
+      setProducts(response.data || []);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    }
+  };
+
   const getSection = (id: string) => sections.find(s => s.sectionId === id);
   const contactInfo = getSection('contact-info');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+
+    if (name === 'subject' && value !== 'customize-existing') {
+      setFormData({
+        ...formData,
+        subject: value,
+        selectedProduct: '',
+      });
+      setProductQuery('');
+      return;
+    }
+
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
   };
+
+  const handleSelectProduct = (product: any) => {
+    const label = `${product.name}${product.category?.name ? ` (${product.category.name})` : ''}`;
+    setFormData({
+      ...formData,
+      selectedProduct: label,
+    });
+    setProductQuery(product.name || '');
+  };
+
+  const filteredProducts = products.filter((product: any) => {
+    const query = productQuery.trim().toLowerCase();
+    if (!query) return true;
+    const title = product.name?.toLowerCase() || '';
+    const category = product.category?.name?.toLowerCase() || '';
+    return title.includes(query) || category.includes(query);
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,6 +104,7 @@ function ContactPageContent() {
         email: '',
         phone: '',
         subject: '',
+        selectedProduct: '',
         message: '',
       });
     } catch (error: any) {
@@ -183,9 +227,71 @@ function ContactPageContent() {
                       <option value="other">Other</option>
                     </select>
                   </div>
+                  {formData.subject === 'customize-existing' && (
+                    <div className="space-y-4">
+                      <div>
+                        <label htmlFor="productQuery" className="block text-sm font-medium mb-2">Search and select a product</label>
+                        <input
+                          id="productQuery"
+                          name="productQuery"
+                          type="text"
+                          value={productQuery}
+                          onChange={(e) => setProductQuery(e.target.value)}
+                          placeholder="Type product name or category"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+                        />
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <label className="block text-sm font-medium">Matching products</label>
+                          {formData.selectedProduct && (
+                            <span className="text-sm text-accent">Selected: {formData.selectedProduct}</span>
+                          )}
+                        </div>
+                        <div className="border border-gray-300 rounded-md bg-white max-h-60 overflow-auto">
+                          {filteredProducts.length > 0 ? (
+                            filteredProducts.slice(0, 10).map((product: any) => {
+                              const label = `${product.name}${product.category?.name ? ` (${product.category.name})` : ''}`;
+                              return (
+                                <button
+                                  key={product._id}
+                                  type="button"
+                                  onClick={() => handleSelectProduct(product)}
+                                  className="w-full text-left px-4 py-3 hover:bg-gray-50 focus:bg-gray-50 transition-colors"
+                                >
+                                  <span className="font-medium block">{product.name}</span>
+                                  <span className="text-sm text-neutral-dark">{product.category?.name || 'Uncategorized'}</span>
+                                </button>
+                              );
+                            })
+                          ) : (
+                            <p className="p-4 text-sm text-neutral-dark">No products match your search. Try a different name or category.</p>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-sm text-neutral-dark">Click a product from the list to select it for customization.</p>
+                    </div>
+                  )}
                   <div>
-                    <label htmlFor="message" className="block text-sm font-medium mb-2">Message</label>
-                    <textarea id="message" name="message" value={formData.message} onChange={handleChange} rows={5} className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent" required />
+                    <label htmlFor="message" className="block text-sm font-medium mb-2">
+                      {formData.subject === 'customize-existing' 
+                        ? 'Describe the Changes You Want' 
+                        : 'Message'
+                      }
+                    </label>
+                    <textarea 
+                      id="message" 
+                      name="message" 
+                      value={formData.message} 
+                      onChange={handleChange} 
+                      rows={5} 
+                      placeholder={formData.subject === 'customize-existing' 
+                        ? 'Please describe what changes you would like to make to the selected product...' 
+                        : 'Enter your message here...'
+                      }
+                      className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent" 
+                      required 
+                    />
                   </div>
                   <button type="submit" disabled={submitting} className="w-full btn-primary py-3 rounded-md font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
                     {submitting ? 'Sending...' : 'Send Message'}

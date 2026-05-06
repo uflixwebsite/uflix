@@ -88,6 +88,69 @@ const productSchema = new mongoose.Schema({
   material: String,
   color: [String],
   tags: [String],
+  // Variants with color, size, and stock
+  variants: [{
+    _id: {
+      type: mongoose.Schema.Types.ObjectId,
+      default: () => new mongoose.Types.ObjectId()
+    },
+    name: {
+      type: String,
+      trim: true
+    },
+    sku: {
+      type: String,
+      trim: true
+    },
+    color: {
+      type: String,
+      trim: true,
+      default: ''
+    },
+    size: {
+      type: String,
+      trim: true,
+      default: ''
+    },
+    price: {
+      type: Number,
+      min: 0
+    },
+    discountPrice: {
+      type: Number,
+      min: 0
+    },
+    stock: {
+      quantity: { type: Number, default: 0 },
+      reserved: { type: Number, default: 0 }
+    },
+    images: [{
+      url: String,
+      alt: String
+    }],
+    isActive: {
+      type: Boolean,
+      default: true
+    },
+    description: {
+      type: String,
+      trim: true
+    },
+    dimensions: {
+      length: Number,
+      width: Number,
+      height: Number,
+      unit: { type: String, default: 'cm' }
+    },
+    weight: {
+      value: Number,
+      unit: { type: String, default: 'kg' }
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
   isFeatured: {
     type: Boolean,
     default: false

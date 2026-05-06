@@ -1,15 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --background: #FFFFFF;
-  --foreground: #1A1A1A;
+  --background: #FCFBF8;
+  --foreground: #231F1A;
+  --surface: #FFFEFB;
+  --surface-strong: #F6F1E8;
   --accent: #FF6B35;
   --accent-dark: #E85A2A;
   --accent-light: #FF8C5F;
   --secondary: #C73E1D;
-  --neutral-light: #F8F8F8;
-  --neutral-dark: #666666;
-  --border-color: #E5E5E5;
+  --neutral-light: #F7F4EE;
+  --neutral-dark: #6B5E52;
+  --border-color: #E9E1D5;
   --site-btn-primary-bg: #FF6B35;
   --site-btn-primary-text: #FFFFFF;
   --site-btn-primary-hover-bg: #C73E1D;
@@ -26,7 +28,7 @@
 /* Theme variables moved into :root above. Removed @theme rule which is invalid CSS. */
 
 body {
-  background: var(--background);
+  background: linear-gradient(180deg, #FCFBF8 0%, #FFFFFF 28%, #FFFFFF 100%);
   color: var(--foreground);
   font-family: var(--font-montserrat), 'Montserrat', system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
@@ -45,10 +47,10 @@ main.auth-page-main {
 
 /* ── Navbar: Glassmorphism ─────────────────────────────────────── */
 .navbar-glass {
-  background: rgba(255, 255, 255, 0.82) !important;
-  backdrop-filter: blur(18px) saturate(1.6);
-  -webkit-backdrop-filter: blur(18px) saturate(1.6);
-  box-shadow: 0 1px 24px rgba(0, 0, 0, 0.06), 0 1px 0 rgba(0, 0, 0, 0.04);
+  background: rgba(251, 245, 235, 0.92) !important;
+  backdrop-filter: blur(18px) saturate(1.25);
+  -webkit-backdrop-filter: blur(18px) saturate(1.25);
+  box-shadow: 0 1px 24px rgba(71, 49, 26, 0.08), 0 1px 0 rgba(71, 49, 26, 0.05);
 }
 
 /* ── Navbar: Animated gradient underline for nav links ─────────── */
@@ -272,4 +274,50 @@ body:not([data-route^="/wishlist"]):not([data-route^="/cart"]):not([data-route^=
 body.menu-open .whatsapp-button {
   display: none !important;
   pointer-events: none !important;
+}
+
+/* Header top-row pill overrides — ensure active/hover states are always readable
+   Use high-specificity selectors so these rules take precedence over component classes */
+header .hidden.lg\:block .rounded-full > a,
+header .hidden.lg\:block .rounded-full > a:hover,
+header .hidden.lg\:block .rounded-full > a:focus,
+header .hidden.lg\:block .rounded-full > a:active {
+  transition: background-color 0.18s ease, color 0.18s ease !important;
+}
+
+/* Active (gradient) state: ensure gradient is visible and text is white */
+header .hidden.lg\:block .rounded-full > a.bg-linear-to-r,
+header .hidden.lg\:block .rounded-full > a.shadow-lg,
+header .hidden.lg\:block .rounded-full > a[aria-current="page"] {
+  background-image: linear-gradient(90deg, var(--accent), var(--secondary)) !important;
+  color: #ffffff !important;
+  box-shadow: 0 10px 30px rgba(255,107,53,0.12) !important;
+}
+
+/* Hover/focus state: use accent background but keep text dark for readability */
+header .hidden.lg\:block .rounded-full > a:hover,
+header .hidden.lg\:block .rounded-full > a:focus {
+  background-color: var(--site-btn-primary-bg) !important;
+  color: var(--foreground) !important;
+}
+
+/* Prevent weird text-selection styling from making labels unreadable */
+header .hidden.lg\:block .rounded-full > a::selection {
+  background: rgba(255,107,53,0.18) !important;
+  color: #ffffff !important;
+}
+
+/* Ensure non-active header pills are plain white with dark text */
+header .hidden.lg\:block .rounded-full > a:not(.bg-linear-to-r):not(.shadow-lg) {
+  background-color: #ffffff !important;
+  background-image: none !important;
+  color: var(--foreground) !important;
+  box-shadow: none !important;
+}
+
+/* Remove accidental inner-gradient overlays that some browsers may render */
+header .hidden.lg\:block .rounded-full > a:not(.bg-linear-to-r):before,
+header .hidden.lg\:block .rounded-full > a:not(.bg-linear-to-r):after {
+  display: none !important;
+  background: transparent !important;
 }
