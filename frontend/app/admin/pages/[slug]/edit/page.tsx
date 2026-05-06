@@ -354,7 +354,7 @@ const SECTION_SCHEMAS: Record<string, SectionSchema> = {
     hint: '6 image cards with text overlay. Title always shown, description slides up on hover.',
     showTitle: true,
     itemLabel: 'Solution',
-    itemFields: ['title', 'description', 'image'],
+    itemFields: ['title', 'description', 'image', 'link'],
   },
   gallery: {
     label: 'Project Gallery — Bento Layout',
@@ -375,7 +375,7 @@ const SECTION_SCHEMAS: Record<string, SectionSchema> = {
     hint: '4 tall portrait cards. Description slides in on hover. Upload one image per industry.',
     showTitle: true, showDescription: true,
     itemLabel: 'Industry',
-    itemFields: ['title', 'description', 'image'],
+    itemFields: ['title', 'description', 'image', 'link'],
   },
   process: {
     label: 'How It Works — Process Steps',
