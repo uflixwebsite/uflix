@@ -275,6 +275,24 @@ export default function Header() {
         <div className="h-px bg-linear-to-r from-transparent via-[#e6ddd0]/60 to-transparent" />
       </div>
 
+      <div className="lg:hidden bg-[#f8f6f1] border-b border-[#ece4d8]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex gap-1 justify-center">
+          {[
+            { label: 'For Homes', href: '/categories' },
+            { label: 'For Businesses', href: '/business' },
+            { label: 'Retail Shop Fitting', href: '/shop-fittings' },
+          ].map((tab) => (
+            <Link key={tab.href} href={tab.href}
+              className={`flex-shrink-0 whitespace-nowrap px-2 py-1.5 rounded-full text-[11px] font-semibold transition-all duration-200 ${
+                isTopTabActive(tab.href)
+                  ? 'bg-orange-500 text-white shadow-sm'
+                  : 'bg-white text-gray-700 hover:bg-gray-100'
+              }`}
+            >{tab.label}</Link>
+          ))}
+        </div>
+      </div>
+
       {/* ═══ ROW 2: Main Navigation Bar ═══ */}
       <div className="border-b border-[#ece4d8] bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-20">

@@ -7,7 +7,7 @@ export const uploadSingleImage = async (file, folder = 'general') => {
 
   const response = await api.post(`/upload/image?folder=${folder}`, formData, {
     headers: {
-      'Content-Type': 'multipart/form-data',
+      'Content-Type': undefined,
     },
   });
 
@@ -21,11 +21,7 @@ export const uploadMultipleImages = async (files, folder = 'general') => {
     formData.append('images', file);
   });
 
-  const response = await api.post(`/upload/images?folder=${folder}`, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
+  const response = await api.post(`/upload/images?folder=${folder}`, formData);
 
   return response.data;
 };
@@ -35,11 +31,7 @@ export const uploadDocument = async (file, folder = 'documents') => {
   const formData = new FormData();
   formData.append('document', file);
 
-  const response = await api.post(`/upload/document?folder=${folder}`, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
+  const response = await api.post(`/upload/document?folder=${folder}`, formData);
 
   return response.data;
 };
@@ -49,11 +41,7 @@ export const uploadVideo = async (file, folder = 'videos') => {
   const formData = new FormData();
   formData.append('video', file);
 
-  const response = await api.post(`/upload/video?folder=${folder}`, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
+  const response = await api.post(`/upload/video?folder=${folder}`, formData);
 
   return response.data;
 };

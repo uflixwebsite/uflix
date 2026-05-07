@@ -38,22 +38,34 @@ const PROCESS = [
 
 function ShopFittingsHero({ section }: { section?: Section }) {
   const title    = section?.title             || 'Transform Your Retail Space';
+  const mobileTitle = (section as any)?.mobileTitle || '';
   const desc     = section?.description      || 'Premium shop fittings designed and manufactured in-house for leading retail brands across India.';
+  const mobileSubtitle = (section as any)?.mobileSubtitle || '';
   const mainLink = section?.link             || '#products';
   const mainText = section?.linkText         || 'Explore Products';
   const secLink  = section?.secondaryLink     || '/contact';
   const secText  = section?.secondaryLinkText || 'Get a Quote';
   const titleColor = (section as any)?.titleColor || undefined;
+  const mobileTitleColor = (section as any)?.mobileTitleColor || undefined;
   const subtitleColor = (section as any)?.subtitleColor || undefined;
+  const mobileSubtitleColor = (section as any)?.mobileSubtitleColor || undefined;
   const primaryButtonBg = (section as any)?.primaryButtonBg || undefined;
   const primaryButtonTextColor = (section as any)?.primaryButtonTextColor || undefined;
   const secondaryButtonBg = (section as any)?.secondaryButtonBg || undefined;
   const secondaryButtonTextColor = (section as any)?.secondaryButtonTextColor || undefined;
+  const mobileImage = (section as any)?.mobileImage || '';
 
+  // Desktop images — one per slide
   const allImages: string[] = [
     ...(section?.image ? [section.image] : []),
     ...((section?.items || []).filter((i: any) => i.image).map((i: any) => i.image as string)),
   ];
+
+  // Mobile images — use mobileImage for each slide if available, otherwise fall back to desktop image
+  const allMobileImages: string[] = [
+    mobileImage || (section?.image || ''),
+    ...((section?.items || []).filter((i: any) => i.image).map((i: any) => ((i as any).mobileImage || i.image) as string)),
+  ].filter(Boolean);
 
   const [idx, setIdx] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -76,17 +88,35 @@ function ShopFittingsHero({ section }: { section?: Section }) {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* Crossfade slides */}
-      {allImages.map((url, i) => (
-        <div
-          key={url + i}
-          className="absolute inset-0 transition-opacity duration-1000"
-          style={{ opacity: i === idx ? 1 : 0 }}
-        >
-          <Image src={url} alt={`slide ${i + 1}`} fill sizes="100vw" className="object-cover" priority={i === 0} unoptimized />
-        </div>
-      ))}
-      {allImages.length === 0 && <div className="absolute inset-0 bg-gray-900" />}
+      {/* Mobile carousel — uses mobileImage per slide */}
+      <div className="absolute inset-0 md:hidden">
+        {allMobileImages.length > 0 ? (
+          allMobileImages.map((mobileSrc, i) => (
+            <div
+              key={`mobile-${i}-${mobileSrc}`}
+              className="absolute inset-0 transition-opacity duration-1000"
+              style={{ opacity: i === idx ? 1 : 0 }}
+            >
+              <Image src={mobileSrc} alt={`slide ${i + 1}`} fill sizes="100vw" className="object-cover" priority={i === 0} unoptimized />
+            </div>
+          ))
+        ) : (
+          <div className="absolute inset-0 bg-gray-900" />
+        )}
+      </div>
+      {/* Desktop carousel */}
+      <div className="absolute inset-0 hidden md:block">
+        {allImages.map((url, i) => (
+          <div
+            key={`desktop-${i}-${url}`}
+            className="absolute inset-0 transition-opacity duration-1000"
+            style={{ opacity: i === idx ? 1 : 0 }}
+          >
+            <Image src={url} alt={`slide ${i + 1}`} fill sizes="100vw" className="object-cover" priority={i === 0} unoptimized />
+          </div>
+        ))}
+        {allImages.length === 0 && <div className="absolute inset-0 bg-gray-900" />}
+      </div>
 
       {/* Left arrow */}
       {total > 1 && (
@@ -119,8 +149,14 @@ function ShopFittingsHero({ section }: { section?: Section }) {
         <span className="inline-block bg-white/10 text-white border border-white/20 text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
           Shop Fitting Solutions
         </span>
-        <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight" style={{ color: titleColor }}>{title}</h1>
-        <p className="text-xl text-white/70 max-w-3xl mx-auto mb-10" style={{ color: subtitleColor }}>{desc}</p>
+        <div className="sm:hidden">
+          <h1 className="text-4xl font-bold text-white mb-4 leading-tight" style={{ color: mobileTitleColor || titleColor }}>{mobileTitle || title}</h1>
+          <p className="text-lg text-white/80 max-w-3xl mx-auto mb-8" style={{ color: mobileSubtitleColor || subtitleColor }}>{mobileSubtitle || desc}</p>
+        </div>
+        <div className="hidden sm:block">
+          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight" style={{ color: titleColor }}>{title}</h1>
+          <p className="text-xl text-white/70 max-w-3xl mx-auto mb-10" style={{ color: subtitleColor }}>{desc}</p>
+        </div>
         <div className="flex flex-wrap gap-4 justify-center">
           <Link href={mainLink} className="btn-primary px-8 py-3.5 rounded-full font-semibold shadow-lg transition-all" style={{ backgroundColor: primaryButtonBg, color: primaryButtonTextColor }}>
             {mainText}

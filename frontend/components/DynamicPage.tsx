@@ -36,6 +36,11 @@ interface Section {
   linkText?: string;
   secondaryLink?: string;
   secondaryLinkText?: string;
+  mobileImage?: string;
+  mobileTitle?: string;
+  mobileSubtitle?: string;
+  mobileTitleColor?: string;
+  mobileSubtitleColor?: string;
   titleColor?: string;
   subtitleColor?: string;
   primaryButtonBg?: string;
@@ -64,9 +69,53 @@ function getBgClass(bgColor?: string) {
 }
 
 function HeroSection({ section }: { section: Section }) {
-  const hasImage = !!section.image;
+  const hasImage = !!section.image || !!section.mobileImage;
   const isDark = section.bgColor === 'dark' || section.bgColor === 'gradient';
 
+  // If section has items, treat as slideshow
+  if (section.items && section.items.length > 0) {
+    const slides = [
+      {
+        image: section.image || '',
+        mobileImage: section.mobileImage || '',
+        title: section.title || '',
+        mobileTitle: (section as any).mobileTitle || '',
+        subtitle: section.subtitle || '',
+        mobileSubtitle: (section as any).mobileSubtitle || '',
+        buttonText: section.linkText || '',
+        buttonLink: section.link || '',
+        titleColor: (section as any).titleColor || '',
+        mobileTitleColor: (section as any).mobileTitleColor || '',
+        subtitleColor: (section as any).subtitleColor || '',
+        mobileSubtitleColor: (section as any).mobileSubtitleColor || '',
+        primaryButtonBg: (section as any).primaryButtonBg || '',
+        primaryButtonTextColor: (section as any).primaryButtonTextColor || '',
+        secondaryButtonBg: (section as any).secondaryButtonBg || '',
+        secondaryButtonTextColor: (section as any).secondaryButtonTextColor || '',
+      },
+      ...section.items.map((item: any) => ({
+        image: item.image || '',
+        mobileImage: item.mobileImage || '',
+        title: item.title || '',
+        mobileTitle: item.mobileTitle || '',
+        subtitle: item.subtitle || '',
+        mobileSubtitle: item.mobileSubtitle || '',
+        buttonText: item.linkText || '',
+        buttonLink: item.link || '',
+        titleColor: item.titleColor || '',
+        mobileTitleColor: item.mobileTitleColor || '',
+        subtitleColor: item.subtitleColor || '',
+        mobileSubtitleColor: item.mobileSubtitleColor || '',
+        primaryButtonBg: item.primaryButtonBg || '',
+        primaryButtonTextColor: item.primaryButtonTextColor || '',
+        secondaryButtonBg: item.secondaryButtonBg || '',
+        secondaryButtonTextColor: item.secondaryButtonTextColor || '',
+      }))
+    ];
+    return <Hero slides={slides} />;
+  }
+
+  // Single image hero
   if (isDark) {
     return (
       <section
@@ -74,21 +123,43 @@ function HeroSection({ section }: { section: Section }) {
         style={{ background: 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #0f3460 100%)' }}
       >
         {hasImage && (
-          <Image
-            src={section.image!}
-            alt={section.imageAlt || section.title || ''}
-            fill
-            className="object-cover"
-            priority
-            unoptimized
-          />
+          <>
+            <div className="absolute inset-0 md:hidden">
+              <Image
+                src={section.mobileImage || section.image!}
+                alt={section.imageAlt || section.mobileTitle || section.title || ''}
+                fill
+                className="object-cover"
+                priority
+                unoptimized
+              />
+            </div>
+            <div className="absolute inset-0 hidden md:block">
+              <Image
+                src={section.image || section.mobileImage!}
+                alt={section.imageAlt || section.title || section.mobileTitle || ''}
+                fill
+                className="object-cover"
+                priority
+                unoptimized
+              />
+            </div>
+          </>
         )}
         <div className="absolute inset-0 flex items-center justify-center text-white z-10">
           <div className="max-w-5xl mx-auto px-4 text-center">
-            <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold mb-4 md:mb-6" style={{ color: section.titleColor || undefined }}>{section.title}</h1>
-            {section.description && (
-              <p className="text-base sm:text-lg md:text-2xl mb-7 md:mb-8 max-w-3xl mx-auto text-white/80" style={{ color: section.subtitleColor || undefined }}>{section.description}</p>
-            )}
+            <div className="sm:hidden">
+              <h1 className="text-3xl font-bold mb-4" style={{ color: section.mobileTitleColor || section.titleColor || undefined }}>{section.mobileTitle || section.title}</h1>
+              {section.mobileSubtitle || section.description ? (
+                <p className="text-base mb-7 max-w-3xl mx-auto text-white/80" style={{ color: section.mobileSubtitleColor || section.subtitleColor || undefined }}>{section.mobileSubtitle || section.description}</p>
+              ) : null}
+            </div>
+            <div className="hidden sm:block">
+              <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold mb-4 md:mb-6" style={{ color: section.titleColor || undefined }}>{section.title}</h1>
+              {section.description && (
+                <p className="text-base sm:text-lg md:text-2xl mb-7 md:mb-8 max-w-3xl mx-auto text-white/80" style={{ color: section.subtitleColor || undefined }}>{section.description}</p>
+              )}
+            </div>
             {(section.link || section.secondaryLink) && (
               <div className="flex flex-wrap justify-center gap-4">
                 {section.link && section.linkText && (
@@ -112,21 +183,43 @@ function HeroSection({ section }: { section: Section }) {
   return (
     <section className={`relative ${hasImage ? 'min-h-screen' : 'h-64'} ${getBgClass(section.bgColor)} overflow-hidden`}>
       {hasImage && (
-        <Image
-          src={section.image!}
-          alt={section.imageAlt || section.title || ''}
-          fill
-          className="object-cover opacity-20"
-          priority
-          unoptimized
-        />
+        <>
+          <div className="absolute inset-0 md:hidden">
+            <Image
+              src={section.mobileImage || section.image!}
+              alt={section.imageAlt || section.mobileTitle || section.title || ''}
+              fill
+              className="object-cover opacity-20"
+              priority
+              unoptimized
+            />
+          </div>
+          <div className="absolute inset-0 hidden md:block">
+            <Image
+              src={section.image || section.mobileImage!}
+              alt={section.imageAlt || section.title || section.mobileTitle || ''}
+              fill
+              className="object-cover opacity-20"
+              priority
+              unoptimized
+            />
+          </div>
+        </>
       )}
       <div className={`absolute inset-0 flex items-center justify-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
         <div className="max-w-5xl mx-auto px-4 text-center">
-          <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold mb-4 md:mb-6" style={{ color: section.titleColor || undefined }}>{section.title}</h1>
-          {section.description && (
-            <p className="text-base sm:text-lg md:text-2xl mb-7 md:mb-8 max-w-3xl mx-auto" style={{ color: section.subtitleColor || undefined }}>{section.description}</p>
-          )}
+          <div className="sm:hidden">
+            <h1 className="text-3xl font-bold mb-4" style={{ color: section.mobileTitleColor || section.titleColor || undefined }}>{section.mobileTitle || section.title}</h1>
+            {section.mobileSubtitle || section.description ? (
+              <p className="text-base mb-7 max-w-3xl mx-auto" style={{ color: section.mobileSubtitleColor || section.subtitleColor || undefined }}>{section.mobileSubtitle || section.description}</p>
+            ) : null}
+          </div>
+          <div className="hidden sm:block">
+            <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold mb-4 md:mb-6" style={{ color: section.titleColor || undefined }}>{section.title}</h1>
+            {section.description && (
+              <p className="text-base sm:text-lg md:text-2xl mb-7 md:mb-8 max-w-3xl mx-auto" style={{ color: section.subtitleColor || undefined }}>{section.description}</p>
+            )}
+          </div>
           {(section.link || section.secondaryLink) && (
             <div className="flex flex-wrap justify-center gap-4">
               {section.link && section.linkText && (

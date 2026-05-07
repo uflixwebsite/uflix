@@ -312,91 +312,130 @@ export default function VariantManagerEnhanced({
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
+      <div className="overflow-x-auto rounded-lg border border-gray-200">
+        <table className="w-full border-collapse text-sm">
           <thead>
-            <tr className="bg-gray-100">
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Variant</th>
-              <th className="px-4 py-2 text-left text-sm font-semibold">Name</th>
-              <th className="px-4 py-2 text-left text-sm font-semibold">Description</th>
-              <th className="px-4 py-2 text-left text-sm font-semibold">SKU</th>
-              <th className="px-4 py-2 text-left text-sm font-semibold">Price</th>
-              <th className="px-4 py-2 text-left text-sm font-semibold">Dimensions</th>
-              <th className="px-4 py-2 text-left text-sm font-semibold">Weight</th>
-              <th className="px-4 py-2 text-left text-sm font-semibold">Stock</th>
-              <th className="px-4 py-2 text-left text-sm font-semibold">Status</th>
-              <th className="px-4 py-2 text-left text-sm font-semibold">Actions</th>
+            <tr className="bg-gray-50 border-b border-gray-200">
+              <th className="px-3 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-8">#</th>
+              <th className="px-3 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Type</th>
+              <th className="px-3 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Value</th>
+              <th className="px-3 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">SKU</th>
+              <th className="px-3 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Price</th>
+              <th className="px-3 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Dims / Weight</th>
+              <th className="px-3 py-2.5 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Stock</th>
+              <th className="px-3 py-2.5 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+              <th className="px-3 py-2.5 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
-          <tbody>
-            {variants.map((variant) => (
-              <tr key={variant._id} className="border-b hover:bg-gray-50">
-                <td className="px-4 py-3">
-                  <span className="text-sm font-medium">
-                    {variant.color && <span className="text-blue-600">{variant.color}</span>}
-                    {variant.color && variant.size && <span className="mx-1 text-gray-400">•</span>}
-                    {variant.size && <span className="text-purple-600">{variant.size}</span>}
-                  </span>
-                </td>
-                <td className="px-4 py-3">
-                  <span className="text-sm">{variant.name || '—'}</span>
-                </td>
-                <td className="px-4 py-3">
-                  <span className="text-sm text-gray-600">{variant.description || '—'}</span>
-                </td>
-                <td className="px-4 py-3">
-                  <span className="text-xs text-gray-600 font-mono">{variant.sku}</span>
-                </td>
-                <td className="px-4 py-3">
-                  <span className="text-sm">₹{variant.discountPrice ?? variant.price ?? 'Base'}</span>
-                </td>
-                <td className="px-4 py-3">
-                  <span className="text-xs text-gray-600">
-                    {variant.dimensions?.length && variant.dimensions?.width && variant.dimensions?.height
-                      ? `${variant.dimensions.length}×${variant.dimensions.width}×${variant.dimensions.height} ${variant.dimensions.unit || 'cm'}`
-                      : '—'}
-                  </span>
-                </td>
-                <td className="px-4 py-3">
-                  <span className="text-xs text-gray-600">
-                    {variant.weight?.value ? `${variant.weight.value} ${variant.weight.unit || 'kg'}` : '—'}
-                  </span>
-                </td>
-                <td className="px-4 py-3">
-                  <span className={`text-sm font-semibold ${variant.stock.quantity > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {variant.stock.quantity}
-                  </span>
-                </td>
-                <td className="px-4 py-3">
-                  <label className="flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={variant.isActive}
-                      onChange={(e) => handleVariantFieldChange(variant._id, 'isActive', e.target.checked)}
-                      disabled
-                      className="rounded"
-                    />
-                    <span className="ml-2 text-xs text-gray-600">{variant.isActive ? 'Active' : 'Inactive'}</span>
-                  </label>
-                </td>
-                <td className="px-4 py-3 space-x-2">
-                  <button
-                    type="button"
-                    onClick={() => openEditVariantModal(variant)}
-                    className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteVariant(variant._id)}
-                    className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
+          <tbody className="divide-y divide-gray-100">
+            {variants.map((variant, rowIdx) => {
+              const isColor = !!variant.color;
+              const isSize = !!variant.size;
+              const variantValue = variant.color || variant.size || '—';
+              const dims = variant.dimensions?.length && variant.dimensions?.width && variant.dimensions?.height
+                ? `${variant.dimensions.length}×${variant.dimensions.width}×${variant.dimensions.height} ${variant.dimensions.unit || 'cm'}`
+                : null;
+              const wt = variant.weight?.value
+                ? `${variant.weight.value} ${variant.weight.unit || 'kg'}`
+                : null;
+
+              return (
+                <tr key={variant._id} className="hover:bg-gray-50 transition-colors">
+                  {/* Row number */}
+                  <td className="px-3 py-2.5 text-xs text-gray-400">{rowIdx + 1}</td>
+
+                  {/* Type badge */}
+                  <td className="px-3 py-2.5">
+                    {isColor && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                        <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>
+                        Colour
+                      </span>
+                    )}
+                    {isSize && !isColor && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200">
+                        <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+                        Size
+                      </span>
+                    )}
+                    {!isColor && !isSize && (
+                      <span className="text-xs text-gray-400">—</span>
+                    )}
+                  </td>
+
+                  {/* Value */}
+                  <td className="px-3 py-2.5">
+                    <span className={`font-semibold text-sm ${isColor ? 'text-blue-700' : 'text-purple-700'}`}>
+                      {variantValue}
+                    </span>
+                  </td>
+
+                  {/* SKU */}
+                  <td className="px-3 py-2.5">
+                    <span className="inline-block font-mono text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded max-w-[100px] truncate" title={variant.sku}>
+                      {variant.sku || '—'}
+                    </span>
+                  </td>
+
+                  {/* Price */}
+                  <td className="px-3 py-2.5 whitespace-nowrap">
+                    {variant.discountPrice ? (
+                      <span className="flex flex-col">
+                        <span className="font-semibold text-gray-900 text-xs">₹{variant.discountPrice}</span>
+                        <span className="text-xs line-through text-gray-400">₹{variant.price}</span>
+                      </span>
+                    ) : (
+                      <span className="text-xs text-gray-700">{variant.price ? `₹${variant.price}` : <span className="text-gray-400">Base</span>}</span>
+                    )}
+                  </td>
+
+                  {/* Dims + Weight */}
+                  <td className="px-3 py-2.5">
+                    <div className="flex flex-col gap-0.5">
+                      {dims && <span className="text-xs text-gray-600 whitespace-nowrap">{dims}</span>}
+                      {wt  && <span className="text-xs text-gray-400 whitespace-nowrap">{wt}</span>}
+                      {!dims && !wt && <span className="text-xs text-gray-300">—</span>}
+                    </div>
+                  </td>
+
+                  {/* Stock */}
+                  <td className="px-3 py-2.5 text-center">
+                    <span className={`inline-block text-xs font-bold px-2 py-0.5 rounded-full ${
+                      variant.stock.quantity > 10
+                        ? 'bg-green-50 text-green-700'
+                        : variant.stock.quantity > 0
+                        ? 'bg-yellow-50 text-yellow-700'
+                        : 'bg-red-50 text-red-600'
+                    }`}>
+                      {variant.stock.quantity}
+                    </span>
+                  </td>
+
+                  {/* Status */}
+                  <td className="px-3 py-2.5 text-center">
+                    <span className={`inline-block w-2 h-2 rounded-full ${variant.isActive ? 'bg-green-500' : 'bg-gray-300'}`} title={variant.isActive ? 'Active' : 'Inactive'} />
+                  </td>
+
+                  {/* Actions */}
+                  <td className="px-3 py-2.5 text-right whitespace-nowrap">
+                    <button
+                      type="button"
+                      onClick={() => openEditVariantModal(variant)}
+                      className="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors mr-1"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteVariant(variant._id)}
+                      className="inline-flex items-center px-2 py-1 text-xs font-medium bg-red-50 text-red-600 border border-red-200 rounded hover:bg-red-600 hover:text-white transition-colors"
+                    >
+                      Del
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

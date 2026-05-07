@@ -55,7 +55,7 @@ const videoFilter = (req, file, cb) => {
 
 const uploadImage = multer({
   storage: storage,
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB limit
   fileFilter: imageFilter
 });
 
@@ -96,6 +96,10 @@ const uploadToCloudinary = (fileBuffer, folder, resourceType = 'image') => {
 // @access  Private
 router.post('/image', protect, uploadImage.single('image'), async (req, res) => {
   try {
+    console.log('Upload request received');
+    console.log('req.file:', req.file);
+    console.log('req.body:', req.body);
+    console.log('req.query:', req.query);
     if (!req.file) {
       return res.status(400).json({
         success: false,

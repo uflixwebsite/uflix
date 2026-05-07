@@ -72,7 +72,7 @@ export default function VariantSelectorEnhanced({
   const hasColorOptions = availableColors.length > 1;
   const hasSizeOptions = availableSizes.length > 1;
 
-  // Find selected variant
+  // Find selected variant — only set when user has explicitly chosen all required options
   const selectedVariant = useMemo(() => {
     if (hasColorOptions && hasSizeOptions) {
       if (!selectedColor || !selectedSize) return null;
@@ -91,7 +91,8 @@ export default function VariantSelectorEnhanced({
       return inStockVariants.find((variant) => variant.size === selectedSize) || null;
     }
 
-    return inStockVariants[0] || null;
+    // No multi-choice dimensions — user must explicitly click the variant button
+    return selectedColor || selectedSize ? (inStockVariants[0] || null) : null;
   }, [inStockVariants, hasColorOptions, hasSizeOptions, selectedColor, selectedSize]);
 
   // Handle variant selection change
@@ -116,31 +117,16 @@ export default function VariantSelectorEnhanced({
     }
   };
 
-  useEffect(() => {
-    if (availableColors.length === 1 && !selectedColor) {
-      setSelectedColor(availableColors[0]);
-    }
-  }, [availableColors, selectedColor]);
-
+  // If selected size becomes unavailable after a color change, clear it
   useEffect(() => {
     if (selectedSize && availableSizes.length > 0 && !availableSizes.includes(selectedSize)) {
       setSelectedSize(null);
-      return;
-    }
-
-    if (availableSizes.length === 1 && !selectedSize) {
-      setSelectedSize(availableSizes[0]);
     }
   }, [availableSizes, selectedSize]);
 
   useEffect(() => {
-    if (!selectedColor && !selectedSize && !hasColorOptions && !hasSizeOptions && inStockVariants.length === 1) {
-      onVariantSelect(inStockVariants[0]);
-    }
-  }, [hasColorOptions, hasSizeOptions, inStockVariants, onVariantSelect, selectedColor, selectedSize]);
-
-  useEffect(() => {
     handleVariantChange(selectedVariant);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedVariant]);
 
   const resetSelection = () => {
@@ -164,7 +150,8 @@ export default function VariantSelectorEnhanced({
                 <button
                   key={color}
                   onClick={() => {
-                    setSelectedColor(color);
+                    const next = selectedColor === color ? null : color;
+                    setSelectedColor(next);
                     setSelectedSize(null);
                   }}
                   className={`px-4 py-2 rounded-lg border-2 font-medium transition-all ${
@@ -180,22 +167,18 @@ export default function VariantSelectorEnhanced({
           </div>
         )}
 
-        {/* Size Selection */}
-        {availableSizes.length > 0 && (!hasColorOptions || selectedColor) && (
+        {/* Size Selection — show when sizes exist; if there are multiple colors, wait for color pick */}
+        {availableSizes.length > 0 && (availableColors.length === 0 || selectedColor || !hasColorOptions) && (
           <div className="mb-6 animate-in fade-in-50">
             <label className="block text-sm font-medium mb-3 text-neutral-dark">
               Size {selectedSize && <span className="text-foreground font-semibold">{selectedSize}</span>}
             </label>
             <div className="flex flex-wrap gap-2">
               {availableSizes.map((size) => {
-                const sizeVariant = inStockVariants.find((variant) => {
-                  if (hasColorOptions && variant.color !== selectedColor) return false;
-                  return variant.size === size;
-                });
                 return (
                   <button
                     key={size}
-                    onClick={() => setSelectedSize(size)}
+                    onClick={() => setSelectedSize(selectedSize === size ? null : size)}
                     className={`px-4 py-2 rounded-lg border-2 font-medium transition-all ${
                       selectedSize === size
                         ? 'border-accent bg-accent text-white'

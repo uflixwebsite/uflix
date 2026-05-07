@@ -481,15 +481,20 @@ function SectionItemEditor({ item, index, onChange, onRemove, fields, itemLabel,
 
 type HeroSlide = {
   image: string;
+  mobileImage: string;
   title: string;
+  mobileTitle: string;
   subtitle: string;
+  mobileSubtitle: string;
   description: string;
   linkText: string;
   link: string;
   secondaryLinkText: string;
   secondaryLink: string;
   titleColor: string;
+  mobileTitleColor: string;
   subtitleColor: string;
+  mobileSubtitleColor: string;
   primaryButtonBg: string;
   primaryButtonTextColor: string;
   secondaryButtonBg: string;
@@ -499,15 +504,20 @@ type HeroSlide = {
 function heroDataToSlides(data: any): HeroSlide[] {
   const first: HeroSlide = {
     image: data.image || '',
+    mobileImage: data.mobileImage || '',
     title: data.title || '',
+    mobileTitle: data.mobileTitle || '',
     subtitle: data.subtitle || '',
+    mobileSubtitle: data.mobileSubtitle || '',
     description: data.description || '',
     linkText: data.linkText || '',
     link: data.link || '',
     secondaryLinkText: data.secondaryLinkText || '',
     secondaryLink: data.secondaryLink || '',
     titleColor: data.titleColor || '',
+    mobileTitleColor: data.mobileTitleColor || '',
     subtitleColor: data.subtitleColor || '',
+    mobileSubtitleColor: data.mobileSubtitleColor || '',
     primaryButtonBg: data.primaryButtonBg || '',
     primaryButtonTextColor: data.primaryButtonTextColor || '',
     secondaryButtonBg: data.secondaryButtonBg || '',
@@ -515,15 +525,20 @@ function heroDataToSlides(data: any): HeroSlide[] {
   };
   const rest: HeroSlide[] = (data.items || []).map((item: any) => ({
     image: item.image || '',
+    mobileImage: item.mobileImage || '',
     title: item.title || '',
+    mobileTitle: item.mobileTitle || '',
     subtitle: item.subtitle || '',
+    mobileSubtitle: item.mobileSubtitle || '',
     description: item.description || '',
     linkText: item.linkText || '',
     link: item.link || '',
     secondaryLinkText: item.secondaryLinkText || '',
     secondaryLink: item.secondaryLink || '',
     titleColor: item.titleColor || '',
+    mobileTitleColor: item.mobileTitleColor || '',
     subtitleColor: item.subtitleColor || '',
+    mobileSubtitleColor: item.mobileSubtitleColor || '',
     primaryButtonBg: item.primaryButtonBg || '',
     primaryButtonTextColor: item.primaryButtonTextColor || '',
     secondaryButtonBg: item.secondaryButtonBg || '',
@@ -536,7 +551,7 @@ function heroSlidesToData(slides: HeroSlide[], existing: any): any {
   const [s0, ...rest] =
     slides.length > 0
       ? slides
-      : [{ image: '', title: '', subtitle: '', description: '', linkText: '', link: '', secondaryLinkText: '', secondaryLink: '', titleColor: '', subtitleColor: '', primaryButtonBg: '', primaryButtonTextColor: '', secondaryButtonBg: '', secondaryButtonTextColor: '' }];
+      : [{ image: '', mobileImage: '', title: '', mobileTitle: '', subtitle: '', mobileSubtitle: '', description: '', linkText: '', link: '', secondaryLinkText: '', secondaryLink: '', titleColor: '', mobileTitleColor: '', subtitleColor: '', mobileSubtitleColor: '', primaryButtonBg: '', primaryButtonTextColor: '', secondaryButtonBg: '', secondaryButtonTextColor: '' }];
   return {
     ...existing,
     image: s0.image,
@@ -548,22 +563,32 @@ function heroSlidesToData(slides: HeroSlide[], existing: any): any {
     secondaryLinkText: s0.secondaryLinkText,
     secondaryLink: s0.secondaryLink,
     titleColor: s0.titleColor,
+    mobileTitleColor: s0.mobileTitleColor,
     subtitleColor: s0.subtitleColor,
+    mobileSubtitleColor: s0.mobileSubtitleColor,
+    mobileImage: s0.mobileImage,
+    mobileTitle: s0.mobileTitle,
+    mobileSubtitle: s0.mobileSubtitle,
     primaryButtonBg: s0.primaryButtonBg,
     primaryButtonTextColor: s0.primaryButtonTextColor,
     secondaryButtonBg: s0.secondaryButtonBg,
     secondaryButtonTextColor: s0.secondaryButtonTextColor,
     items: rest.map((s) => ({
       image: s.image,
+      mobileImage: s.mobileImage,
       title: s.title,
+      mobileTitle: s.mobileTitle,
       subtitle: s.subtitle,
+      mobileSubtitle: s.mobileSubtitle,
       description: s.description,
       linkText: s.linkText,
       link: s.link,
       secondaryLinkText: s.secondaryLinkText,
       secondaryLink: s.secondaryLink,
       titleColor: s.titleColor,
+      mobileTitleColor: s.mobileTitleColor,
       subtitleColor: s.subtitleColor,
+      mobileSubtitleColor: s.mobileSubtitleColor,
       primaryButtonBg: s.primaryButtonBg,
       primaryButtonTextColor: s.primaryButtonTextColor,
       secondaryButtonBg: s.secondaryButtonBg,
@@ -577,7 +602,7 @@ function heroSlidesToData(slides: HeroSlide[], existing: any): any {
 function HeroPerSlideEditor({ section, onChange }: { section: any; onChange: (s: any) => void }) {
   const [slides, setSlides] = useState<HeroSlide[]>(() => heroDataToSlides(section));
   const [uploading, setUploading] = useState<number | null>(null);
-  const [expandedIdx, setExpandedIdx] = useState<number>(0);
+  const [expandedSlides, setExpandedSlides] = useState<Set<number>>(new Set([0]));
   const dragIdx = useRef<number | null>(null);
 
   const dataKey =
@@ -601,22 +626,32 @@ function HeroPerSlideEditor({ section, onChange }: { section: any; onChange: (s:
     if (slides.length <= 1) { alert('At least one slide is required.'); return; }
     deleteOldCloudinaryImage(slides[i].image);
     const next = slides.filter((_, idx) => idx !== i);
-    setExpandedIdx((prev) => (prev >= next.length ? next.length - 1 : prev));
+    setExpandedSlides(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(i);
+      // Adjust indices for slides after the removed one
+      const adjusted = new Set<number>();
+      newSet.forEach(idx => {
+        if (idx > i) adjusted.add(idx - 1);
+        else adjusted.add(idx);
+      });
+      return adjusted;
+    });
     commit(next);
   };
 
   const addSlide = () => {
     const blank: HeroSlide = {
-      image: '', title: '', subtitle: '', description: '',
+      image: '', mobileImage: '', title: '', mobileTitle: '', subtitle: '', mobileSubtitle: '', description: '',
       linkText: 'Explore Products', link: '#just-arrived',
       secondaryLinkText: 'Request a Quote', secondaryLink: '/contact',
-      titleColor: '', subtitleColor: '',
+      titleColor: '', mobileTitleColor: '', subtitleColor: '', mobileSubtitleColor: '',
       primaryButtonBg: '', primaryButtonTextColor: '',
       secondaryButtonBg: '', secondaryButtonTextColor: '',
     };
     const next = [...slides, blank];
     commit(next);
-    setExpandedIdx(next.length - 1);
+    setExpandedSlides(prev => new Set(prev).add(next.length - 1));
   };
 
   const uploadImage = async (i: number, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -657,7 +692,15 @@ function HeroPerSlideEditor({ section, onChange }: { section: any; onChange: (s:
           >
             <div
               className="flex items-center gap-3 p-3 cursor-pointer select-none hover:bg-gray-50"
-              onClick={() => setExpandedIdx(expandedIdx === i ? -1 : i)}
+              onClick={() => setExpandedSlides(prev => {
+                const newSet = new Set(prev);
+                if (newSet.has(i)) {
+                  newSet.delete(i);
+                } else {
+                  newSet.add(i);
+                }
+                return newSet;
+              })}
             >
               <span className="text-gray-300 text-lg leading-none shrink-0" title="Drag to reorder">⠿</span>
               <div className="w-16 h-10 rounded overflow-hidden bg-gray-100 shrink-0 border border-gray-200">
@@ -670,7 +713,7 @@ function HeroPerSlideEditor({ section, onChange }: { section: any; onChange: (s:
                 <p className="text-sm font-medium truncate text-gray-800">{slide.title || `Slide ${i + 1}`}</p>
                 {i === 0 && <span className="text-[10px] font-bold bg-accent text-white px-1.5 py-0.5 rounded">MAIN</span>}
               </div>
-              <svg className={`w-4 h-4 text-gray-400 shrink-0 transition-transform ${expandedIdx === i ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+              <svg className={`w-4 h-4 text-gray-400 shrink-0 transition-transform ${expandedSlides.has(i) ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
               <button
                 onClick={(e) => { e.stopPropagation(); removeSlide(i); }}
                 className="p-1.5 text-red-400 hover:text-red-600 rounded shrink-0"
@@ -678,7 +721,7 @@ function HeroPerSlideEditor({ section, onChange }: { section: any; onChange: (s:
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
-            {expandedIdx === i && (
+            {expandedSlides.has(i) && (
               <div className="border-t border-gray-100 p-4 space-y-4 bg-gray-50/50">
                 <div>
                   <p className="text-xs font-semibold text-gray-600 mb-2">Hero Image <span className="font-normal text-gray-400">📐 1920×1080px (16:9, JPG/WEBP)</span></p>
@@ -701,15 +744,55 @@ function HeroPerSlideEditor({ section, onChange }: { section: any; onChange: (s:
                   </div>
                 </div>
                 <div>
+                  <p className="text-xs font-semibold text-gray-600 mb-2">Mobile Hero Image <span className="font-normal text-gray-400">📐 1080×1920px (9:16 portrait, JPG/WEBP)</span></p>
+                  <div className="flex gap-3 items-start">
+                    <div className="w-24 h-40 rounded-lg overflow-hidden bg-gray-100 border border-gray-200 shrink-0">
+                      {slide.mobileImage
+                        ? <img src={slide.mobileImage} alt="" className="w-full h-full object-cover" />
+                        : <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">No image</div>
+                      }
+                    </div>
+                    <div className="flex gap-2 flex-wrap pt-1">
+                      <label className={`px-3 py-2 text-sm rounded-md cursor-pointer transition-colors ${uploading === i ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'btn-primary'}`}>
+                        {uploading === i ? 'Uploading…' : slide.mobileImage ? 'Replace' : 'Upload'}
+                        <input type="file" accept="image/*" className="hidden" disabled={uploading !== null} onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setUploading(i);
+                          uploadSingleImage(file, 'pages')
+                            .then((result) => updateSlide(i, 'mobileImage', result.data.url))
+                            .catch(() => alert('Upload failed. Please try again.'))
+                            .finally(() => setUploading(null));
+                        }} />
+                      </label>
+                      {slide.mobileImage && (
+                        <button onClick={() => updateSlide(i, 'mobileImage', '')} className="px-3 py-2 text-sm rounded-md bg-red-50 text-red-600 hover:bg-red-100">Remove</button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1">Headline</label>
                   <input type="text" value={slide.title} onChange={(e) => updateSlide(i, 'title', e.target.value)}
                     placeholder="e.g. Furniture That Means Business"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
                 </div>
                 <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Mobile headline <span className="font-normal text-gray-400">(optional)</span></label>
+                  <input type="text" value={slide.mobileTitle} onChange={(e) => updateSlide(i, 'mobileTitle', e.target.value)}
+                    placeholder="Mobile headline override"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
+                </div>
+                <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1">Sub-headline <span className="font-normal text-gray-400">(optional)</span></label>
                   <input type="text" value={slide.subtitle} onChange={(e) => updateSlide(i, 'subtitle', e.target.value)}
                     placeholder="Optional tagline"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Mobile sub-headline <span className="font-normal text-gray-400">(optional)</span></label>
+                  <input type="text" value={slide.mobileSubtitle} onChange={(e) => updateSlide(i, 'mobileSubtitle', e.target.value)}
+                    placeholder="Mobile subtitle override"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
                 </div>
                 <div>
@@ -748,7 +831,9 @@ function HeroPerSlideEditor({ section, onChange }: { section: any; onChange: (s:
                   <p className="text-xs font-semibold text-gray-500 mb-2">🎨 Text &amp; Button Colors</p>
                   <div className="grid grid-cols-2 gap-2">
                     <ColorSwatch label="Heading Color" value={slide.titleColor || '#ffffff'} onChange={(v) => updateSlide(i, 'titleColor', v)} />
+                    <ColorSwatch label="Mobile Heading Color" value={slide.mobileTitleColor || '#ffffff'} onChange={(v) => updateSlide(i, 'mobileTitleColor', v)} />
                     <ColorSwatch label="Description Color" value={slide.subtitleColor || '#ffffffB3'} onChange={(v) => updateSlide(i, 'subtitleColor', v)} />
+                    <ColorSwatch label="Mobile Description Color" value={slide.mobileSubtitleColor || '#ffffffB3'} onChange={(v) => updateSlide(i, 'mobileSubtitleColor', v)} />
                     <ColorSwatch label="Primary Button Bg" value={slide.primaryButtonBg || '#f97316'} onChange={(v) => updateSlide(i, 'primaryButtonBg', v)} />
                     <ColorSwatch label="Primary Button Text" value={slide.primaryButtonTextColor || '#ffffff'} onChange={(v) => updateSlide(i, 'primaryButtonTextColor', v)} />
                     <ColorSwatch label="Secondary Button Bg" value={slide.secondaryButtonBg || 'transparent'} onChange={(v) => updateSlide(i, 'secondaryButtonBg', v)} />

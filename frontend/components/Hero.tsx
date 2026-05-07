@@ -8,12 +8,17 @@ import Link from 'next/link';
 interface HeroProps {
   slides?: Array<{
     image: string;
+    mobileImage?: string;
     title: string;
+    mobileTitle?: string;
     subtitle?: string;
+    mobileSubtitle?: string;
     buttonText?: string;
     buttonLink?: string;
     titleColor?: string;
+    mobileTitleColor?: string;
     subtitleColor?: string;
+    mobileSubtitleColor?: string;
     primaryButtonBg?: string;
     primaryButtonTextColor?: string;
     secondaryButtonBg?: string;
@@ -23,12 +28,17 @@ interface HeroProps {
 
 type HeroSlide = {
   image: string;
+  mobileImage?: string;
   title: string;
+  mobileTitle?: string;
   subtitle?: string;
+  mobileSubtitle?: string;
   buttonText?: string;
   buttonLink?: string;
   titleColor?: string;
+  mobileTitleColor?: string;
   subtitleColor?: string;
+  mobileSubtitleColor?: string;
   primaryButtonBg?: string;
   primaryButtonTextColor?: string;
   secondaryButtonBg?: string;
@@ -78,22 +88,41 @@ export default function Hero({ slides: propSlides }: HeroProps) {
       {slides.map((slide, index) => (
         <div
           key={index}
-          className={`absolute inset-0 transition-opacity duration-1000 ${
-            index === currentSlide ? 'opacity-100' : 'opacity-0'
-          }`}
+          className={`absolute inset-0 ${index === currentSlide ? 'block' : 'hidden'}`}
         >
-          {slide.image ? (
-            <Image
-              src={slide.image}
-              alt={slide.title}
-              fill
-              sizes="100vw"
-              className="object-cover"
-              priority={index === 0}
-              loading={index === 0 ? 'eager' : 'lazy'}
-            />
+          {slide.mobileImage || slide.image ? (
+            <div className="absolute inset-0 md:hidden">
+              <Image
+                key={`mobile-${index}-${slide.mobileImage || slide.image}`}
+                src={slide.mobileImage || slide.image}
+                alt={slide.mobileTitle || slide.title}
+                fill
+                sizes="100vw"
+                className="object-cover"
+                priority={index === 0}
+                loading={index === 0 ? 'eager' : 'lazy'}
+                unoptimized
+              />
+            </div>
           ) : (
-            <div className="w-full h-full bg-gray-200" />
+            <div className="absolute inset-0 bg-gray-200 md:hidden" />
+          )}
+          {slide.image ? (
+            <div className="absolute inset-0 hidden md:block">
+              <Image
+                key={`desktop-${index}-${slide.image}`}
+                src={slide.image}
+                alt={slide.title}
+                fill
+                sizes="100vw"
+                className="object-cover"
+                priority={index === 0}
+                loading={index === 0 ? 'eager' : 'lazy'}
+                unoptimized
+              />
+            </div>
+          ) : (
+            <div className="absolute inset-0 hidden md:block bg-gray-200" />
           )}
           <div className="absolute inset-0 bg-linear-to-r from-foreground/70 to-foreground/30" />
         </div>
@@ -102,13 +131,22 @@ export default function Hero({ slides: propSlides }: HeroProps) {
       <div className="absolute inset-0 flex items-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="max-w-2xl">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-3 sm:mb-4 leading-tight" style={{ color: slides[currentSlide].titleColor || undefined }}>
-              {slides[currentSlide].title}
-            </h1>
-            <p className="text-base sm:text-xl md:text-2xl text-white/90 mb-6 sm:mb-8 leading-relaxed" style={{ color: slides[currentSlide].subtitleColor || undefined }}>
-              {slides[currentSlide].subtitle}
-            </p>
-            
+            <div className="sm:hidden">
+              <h1 className="text-3xl font-bold text-white mb-3 leading-tight" style={{ color: slides[currentSlide].mobileTitleColor || slides[currentSlide].titleColor || undefined }}>
+                {slides[currentSlide].mobileTitle || slides[currentSlide].title}
+              </h1>
+              <p className="text-base text-white/90 mb-6 leading-relaxed" style={{ color: slides[currentSlide].mobileSubtitleColor || slides[currentSlide].subtitleColor || undefined }}>
+                {slides[currentSlide].mobileSubtitle || slides[currentSlide].subtitle}
+              </p>
+            </div>
+            <div className="hidden sm:block">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-3 sm:mb-4 leading-tight" style={{ color: slides[currentSlide].titleColor || undefined }}>
+                {slides[currentSlide].title}
+              </h1>
+              <p className="text-base sm:text-xl md:text-2xl text-white/90 mb-6 sm:mb-8 leading-relaxed" style={{ color: slides[currentSlide].subtitleColor || undefined }}>
+                {slides[currentSlide].subtitle}
+              </p>
+            </div>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Link
                 href={slides[currentSlide].buttonLink || '/shop'}
@@ -131,20 +169,20 @@ export default function Hero({ slides: propSlides }: HeroProps) {
 
       <button
         onClick={prevSlide}
-        className="hidden sm:block absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full backdrop-blur-sm transition-colors"
+        className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-2 sm:p-3 rounded-full backdrop-blur-sm transition-colors"
         aria-label="Previous slide"
       >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
       </button>
 
       <button
         onClick={nextSlide}
-        className="hidden sm:block absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full backdrop-blur-sm transition-colors"
+        className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-2 sm:p-3 rounded-full backdrop-blur-sm transition-colors"
         aria-label="Next slide"
       >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
       </button>
