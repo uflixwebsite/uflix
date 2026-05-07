@@ -160,17 +160,17 @@ export default function CategoryPage() {
       <Header />
       
       <main>
-        <div className="relative h-64 bg-foreground">
+        <div className="relative h-44 bg-foreground">
           <div className="absolute inset-0">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-center">
               <Breadcrumb items={[{ label: 'Categories', href: '/categories' }, { label: category.name }]} />
-              <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">{category.name}</h1>
-              <p className="text-lg text-white/90 max-w-2xl">{category.description}</p>
+              <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">{category.name}</h1>
+              <p className="text-lg text-neutral-dark max-w-2xl">{category.description}</p>
             </div>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-8">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
             <p className="text-neutral-dark">
               {filteredProducts.length > 0 

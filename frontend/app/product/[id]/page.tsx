@@ -18,6 +18,7 @@ import PincodeChecker from '@/components/PincodeChecker';
 export default function ProductDetailPage() {
   const params = useParams();
   const [product, setProduct] = useState<any>(null);
+  const [navbarContextPath, setNavbarContextPath] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
@@ -72,6 +73,22 @@ export default function ProductDetailPage() {
 
     if (product) {
       fetchRelatedProducts();
+    }
+  }, [product]);
+
+  useEffect(() => {
+    if (!product?.categories) {
+      setNavbarContextPath(undefined);
+      return;
+    }
+
+    const normalizedCategories = product.categories.map((cat: string) => cat.toLowerCase());
+    if (normalizedCategories.some((cat: string) => cat.includes('business'))) {
+      setNavbarContextPath('/business');
+    } else if (normalizedCategories.some((cat: string) => cat.includes('shop'))) {
+      setNavbarContextPath('/shop-fittings');
+    } else {
+      setNavbarContextPath(undefined);
     }
   }, [product]);
 
@@ -193,7 +210,7 @@ export default function ProductDetailPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <Header navbarContextPath={navbarContextPath} />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Breadcrumb items={[

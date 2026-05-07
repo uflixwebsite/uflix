@@ -11,7 +11,11 @@ import { getProducts } from '@/services/productService';
 import { getNavbarConfig } from '@/services/navbarService';
 import { getMegaMenu } from '@/services/megaMenuV2Service';
 
-export default function Header() {
+type HeaderProps = {
+  navbarContextPath?: string;
+};
+
+export default function Header({ navbarContextPath }: HeaderProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -51,7 +55,7 @@ export default function Header() {
       setLoadingMegaMenu(true);
       setMegaMenuData(null);
       setActiveMegaCategory(null);
-      const currentPath = pathname || '/';
+      const currentPath = getNavbarPath(pathname);
       // Backend handles wildcard fallback automatically
       const response = await getMegaMenu(currentPath, linkUrl);
       const data = response?.data ?? null;
@@ -127,11 +131,30 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const normalizePath = (path: string | undefined) => {
+    if (!path) return '*';
+    const cleaned = path.toLowerCase().replace(/\/+$|^\/+/g, '');
+    return '/' + cleaned;
+  };
+
+  // Function to map pathname to navbar path
+  const getNavbarPath = (path: string | undefined) => {
+    if (navbarContextPath) return normalizePath(navbarContextPath);
+    const normalized = normalizePath(path);
+    if (normalized.startsWith('/category/for-business')) return '/business';
+    if (normalized.startsWith('/category/shop-fitting')) return '/shop-fittings';
+    if (normalized.startsWith('/business')) return '/business';
+    if (normalized.startsWith('/shop-fittings')) return '/shop-fittings';
+    return normalized || '*';
+  };
+
+  const activeNavbarPath = getNavbarPath(pathname);
+
   // Fetch navbar links for current page
   useEffect(() => {
     const fetchNavbarLinks = async () => {
       try {
-        const pagePath = pathname || '*';
+        const pagePath = activeNavbarPath;
         const data = await getNavbarConfig(pagePath);
         const links = data?.data?.configs?.[0]?.links || data?.data?.links;
         if (data?.success && links) {
@@ -151,7 +174,7 @@ export default function Header() {
     };
 
     fetchNavbarLinks();
-  }, [pathname]);
+  }, [pathname, navbarContextPath]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -304,15 +327,18 @@ export default function Header() {
 
           {/* Center: Nav Links (desktop) */}
           <nav className="hidden lg:flex items-center gap-1">
-            {navLinks.map((link) => (
-              <div key={`${link.label}-${link.url}`} className="relative"
-                onMouseEnter={() => handleNavLinkMouseEnter(link.url)}
-              >
-                <Link href={link.url}
-                  className={`nav-link-fancy px-3 py-2 text-[13px] font-semibold tracking-wide uppercase transition-colors duration-200 text-gray-700 hover:text-accent ${pathname === link.url ? 'active' : ''}`}
-                >{link.label}</Link>
-              </div>
-            ))}
+            {navLinks.map((link) => {
+              const isActive = activeNavbarPath === link.url;
+              return (
+                <div key={`${link.label}-${link.url}`} className="relative"
+                  onMouseEnter={() => handleNavLinkMouseEnter(link.url)}
+                >
+                  <Link href={link.url}
+                    className={`px-3 py-2 text-[13px] font-semibold tracking-wide uppercase transition-colors duration-200 ${isActive ? 'text-accent' : 'text-gray-700 hover:text-accent'}`}
+                  >{link.label}</Link>
+                </div>
+              );
+            })}
           </nav>
 
           {/* Right: Icon group (desktop) */}
