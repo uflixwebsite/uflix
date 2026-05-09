@@ -71,7 +71,33 @@ export default function VariantManager({
     }
 
     try {
-      const images = useBaseImages ? baseImages : [];
+      let images: any[] = [];
+      
+      // Add base images if selected
+      if (useBaseImages && baseImages?.length > 0) {
+        images = [...baseImages];
+      }
+
+      // Upload new variant images if selected
+      if (newVariantImages.length > 0) {
+        const formData = new FormData();
+        newVariantImages.forEach((file) => {
+          formData.append('images', file);
+        });
+
+        const uploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!uploadResponse.ok) throw new Error('Failed to upload images');
+        
+        const uploadData = await uploadResponse.json();
+        if (uploadData.data) {
+          images = [...images, ...uploadData.data];
+        }
+      }
+
       const response = await fetch(`/api/products/${productId}/variants`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

@@ -53,21 +53,27 @@ export default function VariantSelectorEnhanced({
     [activeVariants]
   );
 
-  // Get unique values for each dimension
+  // Get unique values for each dimension. Use activeVariants so options created from
+  // the product data are visible even when currently out of stock. We mark
+  // options as disabled when no in-stock variant exists for that value.
   const availableColors = useMemo(
-    () => [...new Set(inStockVariants.map((variant) => variant.color).filter(Boolean))],
-    [inStockVariants]
+    () => [...new Set(activeVariants.map((variant) => variant.color).filter(Boolean))],
+    [activeVariants]
   );
 
   const availableSizes = useMemo(() => {
-    let filteredVariants = inStockVariants;
+    let filteredVariants = activeVariants;
 
     if (selectedColor && availableColors.length > 0) {
       filteredVariants = filteredVariants.filter((variant) => variant.color === selectedColor);
     }
 
     return [...new Set(filteredVariants.map((variant) => variant.size).filter(Boolean))];
-  }, [inStockVariants, availableColors.length, selectedColor]);
+  }, [activeVariants, availableColors.length, selectedColor]);
+
+  // Helper to check whether a color/size has any in-stock variants
+  const colorHasStock = (color: string) => inStockVariants.some((v) => v.color === color);
+  const sizeHasStock = (size: string) => inStockVariants.some((v) => v.size === size);
 
   const hasColorOptions = availableColors.length > 1;
   const hasSizeOptions = availableSizes.length > 1;
@@ -146,23 +152,32 @@ export default function VariantSelectorEnhanced({
               Color {selectedColor && <span className="text-foreground font-semibold">{selectedColor}</span>}
             </label>
             <div className="flex flex-wrap gap-2">
-              {availableColors.map(color => (
-                <button
-                  key={color}
-                  onClick={() => {
-                    const next = selectedColor === color ? null : color;
-                    setSelectedColor(next);
-                    setSelectedSize(null);
-                  }}
-                  className={`px-4 py-2 rounded-lg border-2 font-medium transition-all ${
-                    selectedColor === color
-                      ? 'border-accent bg-accent text-white'
-                      : 'border-gray-300 bg-white text-foreground hover:border-accent'
-                  }`}
-                >
-                  {color}
-                </button>
-              ))}
+              {availableColors.map(color => {
+                const disabled = !colorHasStock(color);
+                const isSelected = selectedColor === color;
+                return (
+                  <button
+                    key={color}
+                    onClick={() => {
+                      if (disabled) return;
+                      const next = selectedColor === color ? null : color;
+                      setSelectedColor(next);
+                      setSelectedSize(null);
+                    }}
+                    disabled={disabled}
+                    className={`px-4 py-2 rounded-lg border-2 font-medium transition-all ${
+                      isSelected
+                        ? 'border-accent bg-accent text-white'
+                        : disabled
+                        ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : 'border-gray-300 bg-white text-foreground hover:border-accent'
+                    }`}
+                  >
+                    {color}
+                    {disabled && <span className="ml-2 text-xs text-red-600">OOS</span>}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
@@ -175,17 +190,23 @@ export default function VariantSelectorEnhanced({
             </label>
             <div className="flex flex-wrap gap-2">
               {availableSizes.map((size) => {
+                const disabled = Boolean(!sizeHasStock(size) || (!!selectedColor && !inStockVariants.some(v => v.size === size && v.color === selectedColor)));
+                const isSelected = selectedSize === size;
                 return (
                   <button
                     key={size}
-                    onClick={() => setSelectedSize(selectedSize === size ? null : size)}
+                    onClick={() => { if (disabled) return; setSelectedSize(selectedSize === size ? null : size); }}
+                    disabled={disabled}
                     className={`px-4 py-2 rounded-lg border-2 font-medium transition-all ${
-                      selectedSize === size
+                      isSelected
                         ? 'border-accent bg-accent text-white'
+                        : disabled
+                        ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
                         : 'border-gray-300 bg-white text-foreground hover:border-accent'
                     }`}
                   >
                     {size}
+                    {disabled && <span className="ml-2 text-xs text-red-600">OOS</span>}
                   </button>
                 );
               })}

@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
-import { getPageContentAdmin, updatePageContent, deleteSection } from '@/services/pageService';
+import { createPage, getPageContentAdmin, updatePageContent, deleteSection } from '@/services/pageService';
 import { uploadSingleImage, deleteFile } from '@/services/uploadService';
 import { useAuthState } from '@/hooks/useAuthState';
 
@@ -173,6 +173,70 @@ const SHOP_FITTINGS_REQUIRED_SECTIONS: any[] = [
   },
 ];
 
+const STEEL_METAL_REQUIRED_SECTIONS: any[] = [
+  {
+    sectionId: 'hero', type: 'hero', bgColor: 'dark', order: 0, isVisible: true,
+    title: 'Steel Fabrication Solutions in Delhi NCR',
+    subtitle: 'End-to-end steel fabrication services for commercial, industrial, and retail projects.',
+    description: 'MS & SS fabrication, custom metal work, laser cutting and powder coating with quality execution.',
+    link: '/contact', linkText: 'Get a Free Quote',
+    secondaryLink: '#services', secondaryLinkText: 'Explore Services',
+    image: '', items: [
+      { title: 'Custom Fabrication', subtitle: 'Tailored to your needs', description: '', image: '', link: '' },
+      { title: 'High Quality Steel', subtitle: 'Premium MS & SS Material', description: '', image: '', link: '' },
+      { title: 'On-time Delivery', subtitle: 'Committed timelines', description: '', image: '', link: '' },
+      { title: 'Delhi NCR Service', subtitle: 'Pan India support', description: '', image: '', link: '' },
+    ],
+  },
+  {
+    sectionId: 'services', type: 'custom', bgColor: 'white', order: 1, isVisible: true,
+    title: 'Our Steel Fabrication Services',
+    subtitle: 'Precision-built fabrication services for retail, commercial and industrial environments.',
+    description: '',
+    image: '',
+    items: [
+      { title: 'MS Fabrication', description: 'Mild steel fabrication for industrial & commercial applications.', image: '', link: '#' },
+      { title: 'SS Fabrication', description: 'Stainless steel fabrication for premium and long lasting solutions.', image: '', link: '#' },
+      { title: 'Laser Cutting', description: 'Precision laser cutting for MS, SS and other metals.', image: '', link: '#' },
+    ],
+  },
+  {
+    sectionId: 'why-choose-us', type: 'custom', bgColor: 'light', order: 2, isVisible: true,
+    title: 'Why Choose Uflix Interio?',
+    description: '',
+    image: '',
+    items: [
+      { icon: 'factory', title: 'In-house Manufacturing', description: 'Modern machines and skilled experts', image: '', link: '' },
+      { icon: 'custom', title: 'Custom Solutions', description: 'We build as per your design and requirement', image: '', link: '' },
+      { icon: 'shield-check', title: 'Quality Assurance', description: 'Strict quality checks at every stage', image: '', link: '' },
+      { icon: 'users', title: 'Experienced Team', description: 'Skilled people guiding every project', image: '', link: '' },
+      { icon: 'truck', title: 'End-to-End Delivery', description: 'From fabrication to installation', image: '', link: '' },
+    ],
+  },
+  {
+    sectionId: 'process', type: 'custom', bgColor: 'white', order: 3, isVisible: true,
+    title: 'Our Fabrication Process',
+    description: '',
+    image: '',
+    items: [
+      { title: 'Requirement Discussion', description: 'Understanding your requirements and project scope.', image: '', link: '' },
+      { title: 'Design & Planning', description: 'Creating drawings and plans as per your needs.', image: '', link: '' },
+      { title: 'Fabrication & Installation', description: 'Execution and final installation with quality checks.', image: '', link: '' },
+    ],
+  },
+  {
+    sectionId: 'projects', type: 'custom', bgColor: 'light', order: 4, isVisible: true,
+    title: 'Our Recent Projects',
+    description: '',
+    image: '',
+    items: [
+      { title: 'Project 1', description: 'Project details', image: '', link: '', linkText: 'Commercial Fit-Out', stats: 'Delhi NCR' },
+      { title: 'Project 2', description: 'Project details', image: '', link: '', linkText: 'Retail Fabrication', stats: 'Delhi NCR' },
+      { title: 'Project 3', description: 'Project details', image: '', link: '', linkText: 'Steel Fabrication', stats: 'Delhi NCR' },
+    ],
+  },
+];
+
 function extractCloudinaryPublicId(url: string): string | null {
   if (!url || !url.includes('res.cloudinary.com')) return null;
   try {
@@ -284,7 +348,7 @@ type SectionSchema = {
   showLink?: boolean;
   showSecondaryLink?: boolean;
   itemLabel?: string;
-  itemFields: Array<'title'|'image'|'link'|'description'|'stats'|'statsLabel'>;
+  itemFields: Array<'title'|'image'|'link'|'description'|'stats'|'statsLabel'|'icon'>;
   noItems?: boolean;
   isSlider?: boolean;
   isHeroImages?: boolean; // unified drag-drop image grid replaces showImage + items
@@ -332,6 +396,13 @@ const SECTION_SCHEMAS: Record<string, SectionSchema> = {
     hint: 'Dark bottom banner with two buttons.',
     showTitle: true, showDescription: true, showLink: true, showSecondaryLink: true,
     itemFields: [], noItems: true,
+  },
+  'why-choose-us': {
+    label: 'Why Choose Us',
+    hint: 'White feature strip with icon cards. Edit the icon, title and short description for each card.',
+    showTitle: true,
+    itemLabel: 'Icon Card',
+    itemFields: ['icon', 'title', 'description'],
   },
   slider: {
     label: 'Product Slider',
@@ -399,9 +470,18 @@ function getSchema(sectionId: string): SectionSchema {
     label: 'Section',
     showTitle: true, showDescription: true, showImage: true, showLink: true, showSecondaryLink: true,
     itemLabel: 'Item',
-    itemFields: ['title', 'description', 'image', 'link', 'stats', 'statsLabel'],
+    itemFields: ['title', 'description', 'image', 'link', 'stats', 'statsLabel', 'icon'],
   };
 }
+
+const ITEM_ICON_OPTIONS = [
+  { value: 'factory', label: 'Factory' },
+  { value: 'custom', label: 'Custom' },
+  { value: 'shield-check', label: 'Shield Check' },
+  { value: 'users', label: 'Team' },
+  { value: 'truck', label: 'Delivery' },
+  { value: 'badge-check', label: 'Badge Check' },
+];
 
 // ─── Schema-aware item editor ─────────────────────────────────────────────────
 function SectionItemEditor({ item, index, onChange, onRemove, fields, itemLabel, isSlider }: any) {
@@ -449,6 +529,20 @@ function SectionItemEditor({ item, index, onChange, onRemove, fields, itemLabel,
             </label>
             <input type="text" value={item.title || ''} onChange={(e) => update('title', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
+          </div>
+        )}
+        {show('icon') && (
+          <div>
+            <label className="block text-xs font-medium mb-1 text-gray-600">Icon</label>
+            <select
+              value={item.icon || 'shield-check'}
+              onChange={(e) => update('icon', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+            >
+              {ITEM_ICON_OPTIONS.map((icon) => (
+                <option key={icon.value} value={icon.value}>{icon.label}</option>
+              ))}
+            </select>
           </div>
         )}
         {/* Non-slider: description = regular description textarea */}
@@ -1045,7 +1139,7 @@ function SectionEditor({ section, index, onChange, onDelete, onMoveUp, onMoveDow
   const update = (field: string, value: any) => onChange({ ...section, [field]: value });
 
   const addItem = () => {
-    update('items', [...(section.items || []), { title: '', description: '', image: '', link: '', stats: '', statsLabel: '' }]);
+    update('items', [...(section.items || []), { title: '', description: '', image: '', link: '', stats: '', statsLabel: '', icon: 'shield-check' }]);
   };
   const updateItem = (idx: number, item: any) => {
     const items = [...(section.items || [])]; items[idx] = item; update('items', items);
@@ -1248,6 +1342,9 @@ export default function AdminPageEditorPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const previewPath = slug === 'business-steel-metal'
+    ? '/business/steel-and-metal-fabrication-delhi-ncr'
+    : `/${slug}`;
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -1284,8 +1381,34 @@ export default function AdminPageEditorPage() {
           ];
         }
       }
+      if (slug === 'business-steel-metal' && pageData) {
+        const existing: any[] = pageData.sections || [];
+        const existingIds = new Set(existing.map((s: any) => s.sectionId));
+        const missing = STEEL_METAL_REQUIRED_SECTIONS.filter((s) => !existingIds.has(s.sectionId));
+        if (missing.length > 0) {
+          pageData.sections = [
+            ...existing,
+            ...missing.map((s, i) => ({ ...s, order: existing.length + i })),
+          ];
+        }
+      }
       setPage(pageData);
-    } catch (error) {
+    } catch (error: any) {
+      // Auto-create the steel page in CMS if missing, so admin can edit immediately.
+      if (slug === 'business-steel-metal' && error?.response?.status === 404) {
+        try {
+          const created = await createPage({
+            slug: 'business-steel-metal',
+            title: 'Steel & Metal Fabrication',
+            description: 'Business page content for steel and metal fabrication.',
+            sections: STEEL_METAL_REQUIRED_SECTIONS,
+          });
+          setPage(created.data);
+          return;
+        } catch (createError) {
+          console.error('Error creating steel/metal page:', createError);
+        }
+      }
       console.error('Error fetching page:', error);
     } finally {
       setLoading(false);
@@ -1426,7 +1549,7 @@ export default function AdminPageEditorPage() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Link href={`/${page.slug}`} target="_blank" className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 text-sm transition-colors">
+            <Link href={previewPath} target="_blank" className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 text-sm transition-colors">
               Preview
             </Link>
             <button

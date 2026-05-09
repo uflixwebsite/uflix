@@ -21,7 +21,11 @@ export const uploadMultipleImages = async (files, folder = 'general') => {
     formData.append('images', file);
   });
 
-  const response = await api.post(`/upload/images?folder=${folder}`, formData);
+  const response = await api.post(`/upload/images?folder=${folder}`, formData, {
+    headers: {
+      'Content-Type': undefined,
+    },
+  });
 
   return response.data;
 };

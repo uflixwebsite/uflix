@@ -213,11 +213,24 @@ router.get('/', async (req, res) => {
 // @access  Public
 router.get('/:id', async (req, res) => {
   try {
-    const product = await Product.findByIdAndUpdate(
-      req.params.id,
-      { $inc: { views: 1 } },
-      { new: true, runValidators: false }
-    );
+    const { id } = req.params;
+    let product = null;
+
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      product = await Product.findByIdAndUpdate(
+        id,
+        { $inc: { views: 1 } },
+        { new: true, runValidators: false }
+      );
+    }
+
+    if (!product) {
+      product = await Product.findOneAndUpdate(
+        { slug: String(id).toLowerCase() },
+        { $inc: { views: 1 } },
+        { new: true, runValidators: false }
+      );
+    }
 
     if (!product) {
       return res.status(404).json({

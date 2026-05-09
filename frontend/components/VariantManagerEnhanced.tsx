@@ -687,12 +687,12 @@ export default function VariantManagerEnhanced({
                           <button
                             type="button"
                             onClick={() => toggleBaseImage(index)}
-                            className="absolute top-1 right-1 h-6 w-6 rounded-full bg-white/90 text-gray-700 flex items-center justify-center text-xs hover:bg-red-100"
+                            className="absolute top-1 right-1 h-6 w-6 rounded-full bg-white/90 text-red-600 flex items-center justify-center text-xs font-bold hover:bg-red-100"
                           >
-                            {selected ? '×' : '+'}
+                            ×
                           </button>
                           <div className="absolute bottom-0 left-0 right-0 bg-black/40 text-white text-[10px] px-1 py-0.5 text-center">
-                            {selected ? 'Included' : 'Add'}
+                            {selected ? 'Included' : 'Excluded'}
                           </div>
                         </div>
                       );
@@ -704,7 +704,7 @@ export default function VariantManagerEnhanced({
                         <button
                           type="button"
                           onClick={() => removeVariantImage(index)}
-                          className="absolute top-1 right-1 h-6 w-6 rounded-full bg-white/90 text-red-600 flex items-center justify-center text-xs"
+                          className="absolute top-1 right-1 h-6 w-6 rounded-full bg-white/90 text-red-600 flex items-center justify-center text-xs font-bold hover:bg-red-100"
                         >
                           ×
                         </button>
@@ -726,7 +726,7 @@ export default function VariantManagerEnhanced({
                     </label>
                   </div>
 
-                  <p className="text-xs text-gray-500">Select existing images to include or remove them with the cross. New uploads appear in the same gallery.</p>
+                  <p className="text-xs text-gray-500">Click the × to remove an image from this variant. Base images show as "Included" or "Excluded". New uploaded images are removed individually.</p>
                 </div>
               </div>
 

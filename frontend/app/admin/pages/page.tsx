@@ -13,6 +13,10 @@ export default function AdminPagesPage() {
   const { status, isAdmin } = useAuthState();
   const [pages, setPages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const resolvePreviewPath = (slug: string) =>
+    slug === 'business-steel-metal'
+      ? '/business/steel-and-metal-fabrication-delhi-ncr'
+      : `/${slug}`;
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -68,31 +72,6 @@ export default function AdminPagesPage() {
           </Link>
         </div>
 
-        {/* Industry page shortcuts */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          {[
-            { label: 'Healthcare', desc: '/business/healthcare', href: '/admin/business/healthcare', color: 'bg-cyan-100 text-cyan-700' },
-            { label: 'Education', desc: '/business/education', href: '/admin/pages/education', color: 'bg-blue-100 text-blue-700' },
-            { label: 'Workspace', desc: '/business/workspace', href: '/admin/pages/workspace', color: 'bg-violet-100 text-violet-700' },
-          ].map((p) => (
-            <Link
-              key={p.href}
-              href={p.href}
-              className="group bg-white rounded-lg border border-border p-5 hover:shadow-md transition-all hover:border-accent flex items-center gap-4"
-            >
-              <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-none ${p.color} group-hover:opacity-80`}>
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <div>
-                <p className="font-semibold text-gray-900">{p.label}</p>
-                <p className="text-xs text-gray-500 mt-0.5">{p.desc}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-
         <h2 className="text-lg font-semibold mb-4 text-gray-700">CMS Pages (from database)</h2>
         <div className="bg-white rounded-lg border border-border overflow-hidden">
           <table className="w-full">
@@ -146,7 +125,7 @@ export default function AdminPagesPage() {
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <Link
-                        href={`/${page.slug}`}
+                        href={resolvePreviewPath(page.slug)}
                         target="_blank"
                         className="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
                       >
