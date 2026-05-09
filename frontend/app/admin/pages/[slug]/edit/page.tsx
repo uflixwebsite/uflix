@@ -1343,7 +1343,7 @@ export default function AdminPageEditorPage() {
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const previewPath = slug === 'business-steel-metal'
-    ? '/business/steel-and-metal-fabrication-delhi-ncr'
+    ? '/business/steel-fabrication-delhi-ncr'
     : `/${slug}`;
 
   useEffect(() => {

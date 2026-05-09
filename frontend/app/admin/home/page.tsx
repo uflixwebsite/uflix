@@ -251,7 +251,7 @@ export default function AdminHomePage() {
       setSettings({ ...settings, hero: { ...settings.hero, slides: newSlides } });
     };
     const addSlide = () => {
-      setSettings({ ...settings, hero: { ...settings.hero, slides: [...slides, { image: '', title: '', subtitle: '', buttonText: 'Shop Now', buttonLink: '/shop' }] } });
+      setSettings({ ...settings, hero: { ...settings.hero, slides: [...slides, { image: '', mobileImage: '', title: '', mobileTitle: '', subtitle: '', mobileSubtitle: '', buttonText: 'Shop Now', buttonLink: '/shop', titleColor: '', mobileTitleColor: '', subtitleColor: '', mobileSubtitleColor: '', primaryButtonBg: '', primaryButtonTextColor: '', secondaryButtonBg: '', secondaryButtonTextColor: '' }] } });
     };
     const removeSlide = (index: number) => {
       if (slides.length <= 1) { alert('At least one slide is required.'); return; }
@@ -296,13 +296,22 @@ export default function AdminHomePage() {
               </div>
               <div className="grid gap-3">
                 <ImageUploader value={slide.image} onChange={(url) => updateSlide(index, 'image', url)} label="Background Image" folder="home/hero" hint="1920×1080px (16:9 landscape, JPG/WEBP)" />
+                <ImageUploader value={slide.mobileImage || ''} onChange={(url) => updateSlide(index, 'mobileImage', url)} label="Mobile Hero Image" folder="home/hero/mobile" hint="1080×1920px (9:16 portrait, JPG/WEBP)" />
                 <div>
                   <label className="block text-sm font-medium mb-1">Title</label>
                   <input type="text" value={slide.title || ''} onChange={(e) => updateSlide(index, 'title', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" />
                 </div>
                 <div>
+                  <label className="block text-sm font-medium mb-1">Mobile Title</label>
+                  <input type="text" value={slide.mobileTitle || ''} onChange={(e) => updateSlide(index, 'mobileTitle', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" />
+                </div>
+                <div>
                   <label className="block text-sm font-medium mb-1">Subtitle</label>
                   <input type="text" value={slide.subtitle || ''} onChange={(e) => updateSlide(index, 'subtitle', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Mobile Subtitle</label>
+                  <input type="text" value={slide.mobileSubtitle || ''} onChange={(e) => updateSlide(index, 'mobileSubtitle', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -318,7 +327,9 @@ export default function AdminHomePage() {
                   <p className="text-xs font-semibold text-gray-500 mb-2">🎨 Text &amp; Button Colors</p>
                   <div className="grid grid-cols-2 gap-2">
                     <ColorSwatch label="Heading Color" value={slide.titleColor || '#ffffff'} onChange={(v) => updateSlide(index, 'titleColor', v)} />
+                    <ColorSwatch label="Mobile Heading Color" value={slide.mobileTitleColor || slide.titleColor || '#ffffff'} onChange={(v) => updateSlide(index, 'mobileTitleColor', v)} />
                     <ColorSwatch label="Subtitle Color" value={slide.subtitleColor || '#ffffffE6'} onChange={(v) => updateSlide(index, 'subtitleColor', v)} />
+                    <ColorSwatch label="Mobile Subtitle Color" value={slide.mobileSubtitleColor || slide.subtitleColor || '#ffffffE6'} onChange={(v) => updateSlide(index, 'mobileSubtitleColor', v)} />
                     <ColorSwatch label="Primary Button Bg" value={slide.primaryButtonBg || '#f97316'} onChange={(v) => updateSlide(index, 'primaryButtonBg', v)} />
                     <ColorSwatch label="Primary Button Text" value={slide.primaryButtonTextColor || '#ffffff'} onChange={(v) => updateSlide(index, 'primaryButtonTextColor', v)} />
                     <ColorSwatch label="Alt Button Bg" value={slide.secondaryButtonBg || '#ffffff'} onChange={(v) => updateSlide(index, 'secondaryButtonBg', v)} />

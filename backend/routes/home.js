@@ -17,9 +17,9 @@ const getDefaults = () => ({
   ],
   hero: {
     slides: [
-      { image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1920&q=80', title: 'Transform Your Living Space', subtitle: 'Discover premium furniture that combines style and comfort', buttonText: 'Shop Now', buttonLink: '/shop' },
-      { image: 'https://images.unsplash.com/photo-1540574163026-643ea20ade25?w=1920&q=80', title: 'Bedroom Elegance', subtitle: 'Create your perfect sanctuary with our curated collection', buttonText: 'Shop Now', buttonLink: '/shop' },
-      { image: 'https://images.unsplash.com/photo-1615066390971-03e4e1c36ddf?w=1920&q=80', title: 'Dining in Style', subtitle: 'Gather around beautiful furniture made for memorable moments', buttonText: 'Shop Now', buttonLink: '/shop' }
+      { image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1920&q=80', mobileImage: '', title: 'Transform Your Living Space', mobileTitle: '', subtitle: 'Discover premium furniture that combines style and comfort', mobileSubtitle: '', buttonText: 'Shop Now', buttonLink: '/shop', titleColor: '', mobileTitleColor: '', subtitleColor: '', mobileSubtitleColor: '', primaryButtonBg: '', primaryButtonTextColor: '', secondaryButtonBg: '', secondaryButtonTextColor: '' },
+      { image: 'https://images.unsplash.com/photo-1540574163026-643ea20ade25?w=1920&q=80', mobileImage: '', title: 'Bedroom Elegance', mobileTitle: '', subtitle: 'Create your perfect sanctuary with our curated collection', mobileSubtitle: '', buttonText: 'Shop Now', buttonLink: '/shop', titleColor: '', mobileTitleColor: '', subtitleColor: '', mobileSubtitleColor: '', primaryButtonBg: '', primaryButtonTextColor: '', secondaryButtonBg: '', secondaryButtonTextColor: '' },
+      { image: 'https://images.unsplash.com/photo-1615066390971-03e4e1c36ddf?w=1920&q=80', mobileImage: '', title: 'Dining in Style', mobileTitle: '', subtitle: 'Gather around beautiful furniture made for memorable moments', mobileSubtitle: '', buttonText: 'Shop Now', buttonLink: '/shop', titleColor: '', mobileTitleColor: '', subtitleColor: '', mobileSubtitleColor: '', primaryButtonBg: '', primaryButtonTextColor: '', secondaryButtonBg: '', secondaryButtonTextColor: '' }
     ]
   },
   clients: {

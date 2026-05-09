@@ -2,12 +2,17 @@ const mongoose = require('mongoose');
 
 const heroSlideSchema = new mongoose.Schema({
   image: { type: String, required: true },
+  mobileImage: { type: String, default: '' },
   title: { type: String, required: true },
+  mobileTitle: { type: String, default: '' },
   subtitle: { type: String },
+  mobileSubtitle: { type: String, default: '' },
   buttonText: { type: String, default: 'Shop Now' },
   buttonLink: { type: String, default: '/shop' },
   titleColor: { type: String, default: '' },
+  mobileTitleColor: { type: String, default: '' },
   subtitleColor: { type: String, default: '' },
+  mobileSubtitleColor: { type: String, default: '' },
   primaryButtonBg: { type: String, default: '' },
   primaryButtonTextColor: { type: String, default: '' },
   secondaryButtonBg: { type: String, default: '' },

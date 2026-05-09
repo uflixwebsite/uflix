@@ -275,9 +275,9 @@ export default function Header({ navbarContextPath }: HeaderProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-11">
           <div className="flex items-center gap-1 bg-white/75 rounded-full p-0.5 border border-[#f0e8da] shadow-sm">
             {[
-              { label: 'For Homes', href: '/categories' },
               { label: 'For Businesses', href: '/business' },
               { label: 'Retail Shop Fitting', href: '/shop-fittings' },
+                { label: 'Steel Fabrication', href: '/business/steel-fabrication-delhi-ncr' },
             ].map((tab) => (
               <Link key={tab.href} href={tab.href}
                 className={`px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-all duration-300 ${
@@ -301,12 +301,12 @@ export default function Header({ navbarContextPath }: HeaderProps) {
       <div className="lg:hidden bg-[#f8f6f1] border-b border-[#ece4d8]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex gap-1 justify-center">
           {[
-            { label: 'For Homes', href: '/categories' },
             { label: 'For Businesses', href: '/business' },
             { label: 'Retail Shop Fitting', href: '/shop-fittings' },
+              { label: 'Steel Fabrication', href: '/business/steel-fabrication-delhi-ncr' },
           ].map((tab) => (
             <Link key={tab.href} href={tab.href}
-              className={`flex-shrink-0 whitespace-nowrap px-2 py-1.5 rounded-full text-[11px] font-semibold transition-all duration-200 ${
+              className={`shrink-0 whitespace-nowrap px-2 py-1.5 rounded-full text-[11px] font-semibold transition-all duration-200 ${
                 isTopTabActive(tab.href)
                   ? 'bg-orange-500 text-white shadow-sm'
                   : 'bg-white text-gray-700 hover:bg-gray-100'

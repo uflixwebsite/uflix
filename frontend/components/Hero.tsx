@@ -130,12 +130,12 @@ export default function Hero({ slides: propSlides }: HeroProps) {
 
       <div className="absolute inset-0 flex items-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="max-w-2xl">
+          <div className="max-w-xl sm:max-w-2xl">
             <div className="sm:hidden">
-              <h1 className="text-3xl font-bold text-white mb-3 leading-tight" style={{ color: slides[currentSlide].mobileTitleColor || slides[currentSlide].titleColor || undefined }}>
+              <h1 className="text-2xl font-bold text-white mb-2 leading-snug" style={{ color: slides[currentSlide].mobileTitleColor || slides[currentSlide].titleColor || undefined }}>
                 {slides[currentSlide].mobileTitle || slides[currentSlide].title}
               </h1>
-              <p className="text-base text-white/90 mb-6 leading-relaxed" style={{ color: slides[currentSlide].mobileSubtitleColor || slides[currentSlide].subtitleColor || undefined }}>
+              <p className="text-sm text-white/90 mb-4 leading-relaxed max-w-md" style={{ color: slides[currentSlide].mobileSubtitleColor || slides[currentSlide].subtitleColor || undefined }}>
                 {slides[currentSlide].mobileSubtitle || slides[currentSlide].subtitle}
               </p>
             </div>
@@ -147,17 +147,17 @@ export default function Hero({ slides: propSlides }: HeroProps) {
                 {slides[currentSlide].subtitle}
               </p>
             </div>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
               <Link
                 href={slides[currentSlide].buttonLink || '/shop'}
-                className="btn-primary px-6 sm:px-8 py-3 rounded-md font-semibold transition-colors text-center"
+                className="btn-primary px-4 sm:px-8 py-2.5 rounded-md text-sm sm:text-base font-semibold transition-colors text-center"
                 style={{ backgroundColor: slides[currentSlide].primaryButtonBg || undefined, color: slides[currentSlide].primaryButtonTextColor || undefined }}
               >
                 {slides[currentSlide].buttonText || 'Shop Now'}
               </Link>
               <Link
                 href="/categories"
-                className="bg-white hover:bg-neutral-light text-foreground px-6 sm:px-8 py-3 rounded-md font-semibold transition-colors text-center"
+                className="bg-white hover:bg-neutral-light text-foreground px-4 sm:px-8 py-2.5 rounded-md text-sm sm:text-base font-semibold transition-colors text-center"
                 style={{ backgroundColor: slides[currentSlide].secondaryButtonBg || undefined, color: slides[currentSlide].secondaryButtonTextColor || undefined }}
               >
                 Browse Categories
