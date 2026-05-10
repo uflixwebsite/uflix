@@ -372,7 +372,7 @@ export default function VariantManagerEnhanced({
 
                   {/* SKU */}
                   <td className="px-3 py-2.5">
-                    <span className="inline-block font-mono text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded max-w-[100px] truncate" title={variant.sku}>
+                    <span className="inline-block font-mono text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded max-w-25 truncate" title={variant.sku}>
                       {variant.sku || '—'}
                     </span>
                   </td>

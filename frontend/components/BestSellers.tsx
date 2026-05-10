@@ -57,7 +57,7 @@ export default function BestSellers({ title, subtitle, limit, ctaText, ctaLink, 
             <div className="lg:hidden -mx-4 px-4 overflow-x-auto snap-x snap-mandatory pb-4" onScroll={handleMobileScroll} style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               <div className="flex gap-4 w-max">
                 {[...Array(8)].map((_, i) => (
-                  <div key={i} className="animate-pulse shrink-0 snap-start w-[82vw] sm:w-[58vw] max-w-[360px]">
+                  <div key={i} className="animate-pulse shrink-0 snap-start w-[82vw] sm:w-[58vw] max-w-90">
                     <div className="bg-gray-200 h-48 rounded-lg mb-4"></div>
                     <div className="h-4 bg-gray-200 rounded mb-2"></div>
                     <div className="h-4 bg-gray-200 rounded w-3/4"></div>
@@ -91,7 +91,7 @@ export default function BestSellers({ title, subtitle, limit, ctaText, ctaLink, 
             <div className="lg:hidden -mx-4 px-4 overflow-x-auto snap-x snap-mandatory pb-4" onScroll={handleMobileScroll} style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               <div className="flex gap-4 w-max">
                 {products.map((product) => (
-                  <div key={product._id} className="shrink-0 snap-start w-[82vw] sm:w-[58vw] max-w-[360px]">
+                  <div key={product._id} className="shrink-0 snap-start w-[82vw] sm:w-[58vw] max-w-90">
                     <ProductCard {...product} />
                   </div>
                 ))}

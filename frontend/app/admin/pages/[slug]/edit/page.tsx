@@ -388,10 +388,11 @@ const SECTION_SCHEMAS: Record<string, SectionSchema> = {
     itemFields: [], noItems: true,
   },
   projects: {
-    label: 'Flagship Projects',
-    hint: 'Project showcase. Each project has a name, short description, image and link.',
+    label: 'Our Recent Projects',
+    hint: 'Project cards with image, title, description, optional link, and location.',
+    showTitle: true,
     itemLabel: 'Project',
-    itemFields: ['title', 'description', 'image', 'link'],
+    itemFields: ['title', 'description', 'image', 'link', 'stats'],
   },
   cta: {
     label: 'Call to Action',
@@ -412,14 +413,6 @@ const SECTION_SCHEMAS: Record<string, SectionSchema> = {
     showTitle: true,
     itemLabel: 'Icon Card',
     itemFields: ['icon', 'title', 'description'],
-  },
-  projects: {
-    label: 'Our Recent Projects',
-    hint: 'Project cards with image, title, description, and location. Add unlimited projects.',
-    showTitle: true,
-    itemLabel: 'Project',
-    itemFields: ['title', 'description', 'image', 'stats'],
-    statsLabel: 'Location',
   },
   slider: {
     label: 'Product Slider',

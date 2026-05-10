@@ -418,7 +418,7 @@ function ProjectsSection({ section }: { section?: Section }) {
           <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">{title}</h2>
         </div>
 
-        <div className="relative mx-auto h-[420px] w-full max-w-6xl overflow-hidden">
+        <div className="relative mx-auto h-105 w-full max-w-6xl overflow-hidden">
           {projects.map((project, i) => {
             const pos = getRelativePos(i);
             if (pos === 99) return null;
@@ -437,7 +437,7 @@ function ProjectsSection({ section }: { section?: Section }) {
                   setActiveIndex(i);
                   setOpenIndex(i);
                 }}
-                className={`absolute top-8 h-[290px] md:h-[340px] overflow-hidden rounded-2xl border border-white/20 shadow-xl transition-all duration-500 ${cardClasses}`}
+                className={`absolute top-8 h-72.5 md:h-85 overflow-hidden rounded-2xl border border-white/20 shadow-xl transition-all duration-500 ${cardClasses}`}
                 aria-label={`Open details for ${project.title}`}
               >
                 <img src={project.image} alt={project.title} className="h-full w-full object-cover" />
@@ -476,7 +476,7 @@ function ProjectsSection({ section }: { section?: Section }) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="grid grid-cols-1 md:grid-cols-[1.2fr_1fr]">
-              <div className="h-[320px] md:h-[520px] bg-gray-100">
+              <div className="h-80 md:h-130 bg-gray-100">
                 <img src={projects[openIndex].image} alt={projects[openIndex].title} className="h-full w-full object-cover" />
               </div>
               <div className="p-6 md:p-8">
@@ -588,7 +588,7 @@ export default function SteelMetalFabricationPage() {
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      <main className="homepage-main pt-[108px] md:pt-[124px]">
+      <main className="homepage-main pt-27 md:pt-31">
         {!pageReady ? (
           <div className="min-h-screen flex items-center justify-center bg-gray-900">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-accent"></div>
