@@ -1,1 +1,5 @@
-export { default } from '../steel-and-metal-fabrication-delhi-ncr/page';
+import { redirect } from 'next/navigation';
+
+export default function SteelFabricationBusinessRedirect() {
+	redirect('/steel-fabrication-delhi-ncr');
+}

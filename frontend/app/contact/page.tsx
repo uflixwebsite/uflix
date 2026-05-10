@@ -7,6 +7,7 @@ import Footer from '@/components/Footer';
 import { getPageContent } from '@/services/pageService';
 import { submitContactForm } from '@/services/contactService';
 import { getProducts } from '@/services/productService';
+import { getFooterSettings } from '@/services/footerService';
 import { renderSection } from '@/components/DynamicPage';
 import type { Section } from '@/components/DynamicPage';
 
@@ -15,6 +16,7 @@ function ContactPageContent() {
   const [sections, setSections] = useState<Section[]>([]);
   const [products, setProducts] = useState([]);
   const [productQuery, setProductQuery] = useState('');
+  const [footerContactItems, setFooterContactItems] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -28,6 +30,7 @@ function ContactPageContent() {
   useEffect(() => {
     fetchPageContent();
     fetchProducts();
+    fetchFooterSettings();
     
     // Pre-select subject from URL parameter
     const subject = searchParams.get('subject');
@@ -54,8 +57,38 @@ function ContactPageContent() {
     }
   };
 
+  const fetchFooterSettings = async () => {
+    try {
+      const response = await getFooterSettings();
+      const items = response.data?.contactItems || [];
+      setFooterContactItems(items.filter((item: any) => item.enabled !== false));
+    } catch (error) {
+      console.error('Error fetching footer settings:', error);
+    }
+  };
+
   const getSection = (id: string) => sections.find(s => s.sectionId === id);
   const contactInfo = getSection('contact-info');
+  const fallbackContactItems = footerContactItems.map((item: any) => {
+    const label = item.label || item.type || 'Contact';
+    if (item.type === 'phone') {
+      return {
+        title: label,
+        description: item.value,
+      };
+    }
+    if (item.type === 'email') {
+      return {
+        title: label,
+        description: item.value,
+      };
+    }
+    return {
+      title: label,
+      description: item.value,
+    };
+  });
+  const displayContactItems = contactInfo?.items?.length ? contactInfo.items : fallbackContactItems;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -144,7 +177,7 @@ function ContactPageContent() {
                 </p>
 
                 <div className="space-y-6">
-                  {(contactInfo?.items || []).map((item, idx) => (
+                  {displayContactItems.map((item, idx) => (
                     <div key={idx} className="flex items-start gap-4">
                       <div className="w-12 h-12 bg-accent-light rounded-full flex items-center justify-center shrink-0">
                         <svg className="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -157,7 +190,7 @@ function ContactPageContent() {
                       </div>
                     </div>
                   ))}
-                  {(!contactInfo || !contactInfo.items || contactInfo.items.length === 0) && (
+                  {displayContactItems.length === 0 && (!contactInfo || !contactInfo.items || contactInfo.items.length === 0) && (
                     <>
                       <div className="flex items-start gap-4">
                         <div className="w-12 h-12 bg-accent-light rounded-full flex items-center justify-center shrink-0">
@@ -219,6 +252,7 @@ function ContactPageContent() {
                     <select id="subject" name="subject" value={formData.subject} onChange={handleChange} className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent" required>
                       <option value="">Select a subject</option>
                       <option value="custom-built">Custom Built Furniture</option>
+                      <option value="steel-metal-fabrication-enquiry">Steel &amp; Metal Fabrication Enquiry</option>
                       <option value="customize-existing">Customize Existing Product</option>
                       <option value="shop-fittings">Shop Fittings</option>
                       <option value="business-order">For Business - Custom Order</option>

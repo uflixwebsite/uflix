@@ -14,8 +14,8 @@ export default function AdminPagesPage() {
   const [pages, setPages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const resolvePreviewPath = (slug: string) =>
-    slug === 'business-steel-metal'
-      ? '/business/steel-fabrication-delhi-ncr'
+    slug === 'steel-fabrication-delhi-ncr'
+      ? '/steel-fabrication-delhi-ncr'
       : `/${slug}`;
 
   useEffect(() => {

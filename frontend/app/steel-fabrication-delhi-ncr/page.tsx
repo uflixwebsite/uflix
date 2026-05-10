@@ -1,0 +1,1 @@
+export { default } from '../business/steel-and-metal-fabrication-delhi-ncr/page';

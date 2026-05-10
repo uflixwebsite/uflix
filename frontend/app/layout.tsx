@@ -27,8 +27,30 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: "UFLIX - Premium Furniture & Manufacturing Solutions",
+  title: {
+    default: "UFLIX - Premium Furniture & Manufacturing Solutions",
+    template: "%s | UFLIX",
+  },
   description: "Leading manufacturer of premium furniture, metal fabrication, and shop fittings. Serving government, corporate, and retail sectors with ISO 9001:2015 certified quality.",
+  keywords: [
+    "UFLIX",
+    "furniture manufacturer",
+    "metal fabrication",
+    "shop fittings",
+    "steel fabrication",
+    "industrial furniture",
+  ],
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
+  },
   icons: {
     icon: '/Logos/Uflix_Logo.png',
     apple: '/Logos/Uflix_Logo.png',

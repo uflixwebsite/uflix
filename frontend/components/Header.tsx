@@ -277,7 +277,7 @@ export default function Header({ navbarContextPath }: HeaderProps) {
             {[
               { label: 'For Businesses', href: '/business' },
               { label: 'Retail Shop Fitting', href: '/shop-fittings' },
-                { label: 'Steel Fabrication', href: '/business/steel-fabrication-delhi-ncr' },
+                { label: 'Steel Fabrication', href: '/steel-fabrication-delhi-ncr' },
             ].map((tab) => (
               <Link key={tab.href} href={tab.href}
                 className={`px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-all duration-300 ${
@@ -303,7 +303,7 @@ export default function Header({ navbarContextPath }: HeaderProps) {
           {[
             { label: 'For Businesses', href: '/business' },
             { label: 'Retail Shop Fitting', href: '/shop-fittings' },
-              { label: 'Steel Fabrication', href: '/business/steel-fabrication-delhi-ncr' },
+              { label: 'Steel Fabrication', href: '/steel-fabrication-delhi-ncr' },
           ].map((tab) => (
             <Link key={tab.href} href={tab.href}
               className={`shrink-0 whitespace-nowrap px-2 py-1.5 rounded-full text-[11px] font-semibold transition-all duration-200 ${

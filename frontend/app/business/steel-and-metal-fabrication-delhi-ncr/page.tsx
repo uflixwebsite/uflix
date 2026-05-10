@@ -5,6 +5,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
 import { getPageContent } from '@/services/pageService';
+import { getFooterSettings } from '@/services/footerService';
 import type { Section } from '@/components/DynamicPage';
 
 const PH_HERO = {
@@ -37,12 +38,12 @@ const PH_WHY_CHOOSE_US = [
 ];
 
 const PH_PROCESS = [
-  { title: 'Requirement Discussion', description: 'Understanding your requirements and project scope.' },
-  { title: 'Design & Planning', description: 'Creating drawings and plans as per your needs.' },
-  { title: 'Material Selection', description: 'Choosing high quality MS/SS material for durability.' },
-  { title: 'Fabrication', description: 'Precision cutting, welding and assembly by experts.' },
-  { title: 'Finishing', description: 'Polishing, coating & finishing for a perfect look.' },
-  { title: 'Installation', description: 'On-site installation with complete quality check.' }
+  { icon: 'users', title: 'Requirement Discussion', description: 'Understanding your requirements and project scope.' },
+  { icon: 'custom', title: 'Design & Planning', description: 'Creating drawings and plans as per your needs.' },
+  { icon: 'factory', title: 'Material Selection', description: 'Choosing high quality MS/SS material for durability.' },
+  { icon: 'truck', title: 'Fabrication', description: 'Precision cutting, welding and assembly by experts.' },
+  { icon: 'badge-check', title: 'Finishing', description: 'Polishing, coating & finishing for a perfect look.' },
+  { icon: 'shield-check', title: 'Installation', description: 'On-site installation with complete quality check.' }
 ];
 
 const PH_PROJECTS = [
@@ -244,57 +245,61 @@ function ServicesSection({ section }: { section?: Section }) {
   const items = section?.items?.length ? section.items : PH_SERVICES;
   const sectionTitle = section?.title || 'Our Steel Fabrication Services';
   const sectionSubtitle = section?.subtitle || section?.description || 'Precision-built fabrication services for retail, commercial and industrial environments.';
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [items.length]);
+
+  const activeItem = items[activeIndex] || items[0];
 
   return (
-    <section id="services" className="py-24 bg-linear-to-b from-[#fff8f3] to-white">
+    <section id="services" className="py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-14 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div className="max-w-2xl">
-            <h4 className="text-accent text-sm font-bold uppercase tracking-[0.2em] mb-3">Our Services</h4>
-            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 leading-tight">{sectionTitle}</h2>
-          </div>
-          <p className="text-gray-600 text-sm md:text-base max-w-xl md:text-right">{sectionSubtitle}</p>
+        <div className="mb-12 max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">{sectionTitle}</h2>
+          <p className="mt-3 text-sm md:text-base text-gray-600 leading-relaxed max-w-3xl mx-auto">{sectionSubtitle}</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {items.map((item: any, i: number) => (
-            <article
-              key={i}
-              className="group relative overflow-hidden rounded-2xl border border-[#f1e2d6] bg-white shadow-[0_12px_30px_rgba(31,28,25,0.06)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(31,28,25,0.12)]"
-            >
-              <div className="grid grid-cols-1 sm:grid-cols-[220px_1fr] min-h-[260px]">
-                <div className="relative h-56 sm:h-full overflow-hidden">
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-linear-to-t from-black/45 via-black/10 to-transparent" />
-                  <div className="absolute top-4 left-4 h-9 w-9 rounded-full bg-white/90 text-accent flex items-center justify-center shadow-sm">
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="p-6 sm:p-7 flex flex-col justify-between">
-                  <div>
-                    <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-accent mb-2">Service {String(i + 1).padStart(2, '0')}</p>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-3 leading-snug">{item.title}</h3>
-                    <p className="text-gray-600 text-sm md:text-base leading-relaxed">{item.description}</p>
-                  </div>
-                  <div className="mt-6">
-                    <Link
-                      href={item.link || '#'}
-                      className="inline-flex items-center gap-2 rounded-md bg-gray-900 text-white px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-accent"
-                    >
-                      Learn More
-                      <span>→</span>
-                    </Link>
-                  </div>
-                </div>
+        <div className="grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)] gap-4 lg:gap-6 items-start">
+          <div className="overflow-visible">
+            <div className="p-0">
+              {items.map((item: any, i: number) => {
+                const isActive = i === activeIndex;
+                return (
+                  <button
+                    key={i}
+                    onClick={() => setActiveIndex(i)}
+                    className={`w-full text-left px-6 py-3.5 transition duration-150 flex items-center justify-between ${
+                      isActive ? 'bg-[#ff6b35] text-white' : 'text-gray-800 hover:bg-[#fff4ee]'
+                    }`}
+                  >
+                    <div>
+                      <h3 className="text-xl md:text-[22px] font-medium leading-tight">{item.title}</h3>
+                    </div>
+                    <span className={`shrink-0 text-base transition-transform ${isActive ? 'text-white' : 'text-gray-400'}`}>
+                      →
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="overflow-hidden rounded-2xl">
+            <div className="relative h-80 md:h-105 w-full rounded-2xl overflow-hidden">
+              <img
+                src={activeItem?.image || PH_HERO.image}
+                alt={activeItem?.title || sectionTitle}
+                className="absolute inset-0 h-full w-full object-cover rounded-2xl"
+              />
+              <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6 text-white">
+                <h3 className="text-xl md:text-2xl font-semibold leading-tight max-w-2xl">{activeItem?.title}</h3>
+                <p className="mt-2 max-w-2xl text-sm text-white/90 leading-relaxed">{activeItem?.description || sectionSubtitle}</p>
               </div>
-            </article>
-          ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -303,14 +308,14 @@ function ServicesSection({ section }: { section?: Section }) {
 
 function WhyChooseUsSection({ section }: { section?: Section }) {
   const sourceItems = section?.items?.length ? section.items : PH_WHY_CHOOSE_US;
-  const items = [...Array(5)].map((_, index) => sourceItems[index] || PH_WHY_CHOOSE_US[index]);
+  const items = sourceItems.slice(0, Math.max(5, sourceItems.length)); // Support 5+, but use all available
 
   return (
     <section className="bg-white py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h4 className="text-accent text-sm font-bold uppercase tracking-wider mb-3">Why Choose Us</h4>
-          <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">Why Choose Uflix Interio?</h2>
+          <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">{section?.title || 'Why Choose Uflix Interio?'}</h2>
         </div>
 
         <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
@@ -336,9 +341,9 @@ function ProcessSection({ section }: { section?: Section }) {
   const items = section?.items?.length ? section.items : PH_PROCESS;
 
   return (
-    <section className="py-20 bg-white overflow-hidden">
+    <section className="py-16 bg-white overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-20">
+        <div className="text-center mb-16">
           <h4 className="text-accent text-sm font-bold uppercase tracking-wider mb-3">Our Process</h4>
           <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">Our Fabrication Process</h2>
         </div>
@@ -349,11 +354,10 @@ function ProcessSection({ section }: { section?: Section }) {
 
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-8 lg:gap-4 relative z-10">
             {items.map((item: any, i: number) => {
-              const isOrange = i % 2 !== 0; // 0, 2, 4 are black; 1, 3, 5 are orange
               return (
                 <div key={i} className="text-center relative">
-                  <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center shadow-md mb-6 ${isOrange ? 'bg-accent text-white' : 'bg-gray-900 text-white'}`}>
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+                  <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center shadow-md mb-6 bg-gray-900 text-white">
+                    <WhyChooseUsIcon icon={item.icon || 'badge-check'} />
                   </div>
                   <div className="text-accent font-bold text-sm mb-2">0{i + 1}</div>
                   <h3 className="text-sm font-bold text-gray-900 mb-2 px-2">{item.title}</h3>
@@ -483,7 +487,7 @@ function ProjectsSection({ section }: { section?: Section }) {
                   <p className="text-xs uppercase tracking-[0.14em] text-gray-500 mb-1">Location</p>
                   <p className="text-sm font-semibold text-gray-900">{projects[openIndex].location}</p>
                 </div>
-                <Link href="/contact" className="inline-flex items-center bg-accent hover:bg-accent-dark text-white px-5 py-2.5 rounded-md text-sm font-semibold transition-colors">
+                <Link href="/contact?subject=steel-metal-fabrication-enquiry" className="inline-flex items-center bg-accent hover:bg-accent-dark text-white px-5 py-2.5 rounded-md text-sm font-semibold transition-colors">
                   Discuss Similar Project
                 </Link>
               </div>
@@ -495,7 +499,10 @@ function ProjectsSection({ section }: { section?: Section }) {
   );
 }
 
-function CTASection() {
+function CTASection({ footerContact }: { footerContact?: { phone?: string; email?: string } }) {
+  const phone = footerContact?.phone || '+91 99999 99999';
+  const email = footerContact?.email || 'info@uflixfurniture.in';
+
   return (
     <section className="relative py-24 bg-gray-900 overflow-hidden">
       <div className="absolute inset-0 opacity-20">
@@ -515,7 +522,7 @@ function CTASection() {
                 </div>
                 <div className="text-left">
                   <p className="text-white font-bold text-sm">Call Us</p>
-                  <p className="text-gray-400 text-sm">+91 99999 99999</p>
+                  <p className="text-gray-400 text-sm">{phone}</p>
                 </div>
               </div>
               <div className="flex items-center gap-4">
@@ -524,14 +531,14 @@ function CTASection() {
                 </div>
                 <div className="text-left">
                   <p className="text-white font-bold text-sm">Email Us</p>
-                  <p className="text-gray-400 text-sm">info@uflixfurniture.in</p>
+                  <p className="text-gray-400 text-sm">{email}</p>
                 </div>
               </div>
             </div>
           </div>
 
           <div className="shrink-0">
-            <Link href="/contact" className="bg-accent hover:bg-accent-dark text-white px-8 py-4 rounded-md font-bold text-lg shadow-lg shadow-accent/30 transition-all hover:-translate-y-1 inline-block">
+            <Link href="/contact?subject=steel-metal-fabrication-enquiry" className="bg-accent hover:bg-accent-dark text-white px-8 py-4 rounded-md font-bold text-lg shadow-lg shadow-accent/30 transition-all hover:-translate-y-1 inline-block">
               Request a Quote
             </Link>
           </div>
@@ -544,14 +551,19 @@ function CTASection() {
 export default function SteelMetalFabricationPage() {
   const [sections, setSections] = useState<Section[]>([]);
   const [pageReady, setPageReady] = useState(false);
+  const [footerContact, setFooterContact] = useState<{phone?:string,email?:string}>({});
+  const fetchFooter = async () => {
+    await fetchFooterSettingsLocal(setFooterContact);
+  };
 
   useEffect(() => {
     fetchPageContent();
+    fetchFooter();
   }, []);
 
   const fetchPageContent = async () => {
     try {
-      const data = await getPageContent('business-steel-metal');
+      const data = await getPageContent('steel-fabrication-delhi-ncr');
       setSections(data.data?.sections || []);
     } catch (err) {
       console.error('Error fetching page content:', err);
@@ -576,7 +588,7 @@ export default function SteelMetalFabricationPage() {
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      <main className="homepage-main pt-[118px] md:pt-[132px]">
+      <main className="homepage-main pt-[108px] md:pt-[124px]">
         {!pageReady ? (
           <div className="min-h-screen flex items-center justify-center bg-gray-900">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-accent"></div>
@@ -588,11 +600,23 @@ export default function SteelMetalFabricationPage() {
             {visible('why-choose-us') && <WhyChooseUsSection section={whyChooseUsSection} />}
             {visible('process') && <ProcessSection section={processSection} />}
             {visible('projects') && <ProjectsSection section={projectsSection} />}
-            <CTASection />
+            <CTASection footerContact={footerContact} />
           </>
         )}
       </main>
       <Footer />
     </div>
   );
+}
+
+async function fetchFooterSettingsLocal(setFooterContact: any) {
+  try {
+    const response = await getFooterSettings();
+    const items = response.data?.contactItems || [];
+    const phoneItem = items.find((i: any) => i.type === 'phone');
+    const emailItem = items.find((i: any) => i.type === 'email');
+    setFooterContact({ phone: phoneItem?.value, email: emailItem?.value });
+  } catch (e) {
+    // ignore
+  }
 }

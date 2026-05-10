@@ -195,9 +195,11 @@ const STEEL_METAL_REQUIRED_SECTIONS: any[] = [
     description: '',
     image: '',
     items: [
-      { title: 'MS Fabrication', description: 'Mild steel fabrication for industrial & commercial applications.', image: '', link: '#' },
+      { title: 'MS Fabrication', description: 'Mild steel fabrication for industrial and commercial applications.', image: '', link: '#' },
       { title: 'SS Fabrication', description: 'Stainless steel fabrication for premium and long lasting solutions.', image: '', link: '#' },
       { title: 'Laser Cutting', description: 'Precision laser cutting for MS, SS and other metals.', image: '', link: '#' },
+      { title: 'Powder Coating', description: 'High quality coating for a durable and polished finish.', image: '', link: '#' },
+      { title: 'Display Rack Fabrication', description: 'Custom display racks and fixtures for retail spaces.', image: '', link: '#' },
     ],
   },
   {
@@ -397,12 +399,27 @@ const SECTION_SCHEMAS: Record<string, SectionSchema> = {
     showTitle: true, showDescription: true, showLink: true, showSecondaryLink: true,
     itemFields: [], noItems: true,
   },
+  services: {
+    label: 'Our Steel Fabrication Services',
+    hint: 'Add unlimited service cards. Each card has a title, description, and image. No buttons or links needed.',
+    showTitle: true, showDescription: true,
+    itemLabel: 'Service',
+    itemFields: ['title', 'description', 'image'],
+  },
   'why-choose-us': {
     label: 'Why Choose Us',
-    hint: 'White feature strip with icon cards. Edit the icon, title and short description for each card.',
+    hint: 'White feature strip with icon cards (supports 5+ badges). Edit the icon, title and short description for each card.',
     showTitle: true,
     itemLabel: 'Icon Card',
     itemFields: ['icon', 'title', 'description'],
+  },
+  projects: {
+    label: 'Our Recent Projects',
+    hint: 'Project cards with image, title, description, and location. Add unlimited projects.',
+    showTitle: true,
+    itemLabel: 'Project',
+    itemFields: ['title', 'description', 'image', 'stats'],
+    statsLabel: 'Location',
   },
   slider: {
     label: 'Product Slider',
@@ -453,7 +470,7 @@ const SECTION_SCHEMAS: Record<string, SectionSchema> = {
     hint: '4-step horizontal timeline. Use the "Number" field for the step label (01, 02…).',
     showTitle: true,
     itemLabel: 'Step',
-    itemFields: ['stats', 'title', 'description'],
+    itemFields: ['stats', 'title', 'description', 'icon'],
   },
   'why-cta': {
     label: 'Why Uflix + CTA Card',
@@ -773,7 +790,7 @@ function HeroPerSlideEditor({ section, onChange }: { section: any; onChange: (s:
 
   return (
     <div className="space-y-3">
-      <p className="text-sm text-gray-500">Each slide has its own image, headline, description and buttons. Drag cards to reorder.</p>
+      <p className="text-sm text-gray-500">Add as many slides as you need. Each slide has its own image, headline, description and buttons, and you can drag cards to reorder them.</p>
       <div className="space-y-2">
         {slides.map((slide, i) => (
           <div
@@ -1342,8 +1359,8 @@ export default function AdminPageEditorPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
-  const previewPath = slug === 'business-steel-metal'
-    ? '/business/steel-fabrication-delhi-ncr'
+  const previewPath = slug === 'steel-fabrication-delhi-ncr'
+    ? '/steel-fabrication-delhi-ncr'
     : `/${slug}`;
 
   useEffect(() => {
@@ -1381,7 +1398,7 @@ export default function AdminPageEditorPage() {
           ];
         }
       }
-      if (slug === 'business-steel-metal' && pageData) {
+      if (slug === 'steel-fabrication-delhi-ncr' && pageData) {
         const existing: any[] = pageData.sections || [];
         const existingIds = new Set(existing.map((s: any) => s.sectionId));
         const missing = STEEL_METAL_REQUIRED_SECTIONS.filter((s) => !existingIds.has(s.sectionId));
@@ -1395,12 +1412,12 @@ export default function AdminPageEditorPage() {
       setPage(pageData);
     } catch (error: any) {
       // Auto-create the steel page in CMS if missing, so admin can edit immediately.
-      if (slug === 'business-steel-metal' && error?.response?.status === 404) {
+      if (slug === 'steel-fabrication-delhi-ncr' && error?.response?.status === 404) {
         try {
           const created = await createPage({
-            slug: 'business-steel-metal',
+            slug: 'steel-fabrication-delhi-ncr',
             title: 'Steel & Metal Fabrication',
-            description: 'Business page content for steel and metal fabrication.',
+            description: 'Independent page content for steel and metal fabrication.',
             sections: STEEL_METAL_REQUIRED_SECTIONS,
           });
           setPage(created.data);
