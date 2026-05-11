@@ -8,52 +8,6 @@ import { getPageContent } from '@/services/pageService';
 import { getFooterSettings } from '@/services/footerService';
 import type { Section } from '@/components/DynamicPage';
 
-const PH_HERO = {
-  title: 'Steel Fabrication Solutions in Delhi NCR',
-  subtitle: 'We provide end-to-end steel fabrication services including MS & SS fabrication, custom metal work, laser cutting, and powder coating for commercial, industrial & retail projects.',
-  image: 'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&q=80',
-  features: [
-    { title: 'Custom Fabrication', subtitle: 'Tailored to your needs' },
-    { title: 'High Quality Steel', subtitle: 'Premium MS & SS Material' },
-    { title: 'On-time Delivery', subtitle: 'Committed timelines' },
-    { title: 'Delhi NCR Service', subtitle: 'Pan India support' }
-  ]
-};
-
-const PH_SERVICES = [
-  { title: 'MS Fabrication', description: 'Mild steel fabrication for industrial & commercial applications.', image: 'https://images.unsplash.com/photo-1565514020179-026b92b2d707?auto=format&fit=crop&q=80', link: '#' },
-  { title: 'SS Fabrication', description: 'Stainless steel fabrication for premium & long lasting solutions.', image: 'https://images.unsplash.com/photo-1541888086225-ee593f656ce2?auto=format&fit=crop&q=80', link: '#' },
-  { title: 'Display Rack Fabrication', description: 'Custom display racks for retail stores & supermarkets.', image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80', link: '#' },
-  { title: 'Retail Shop Fabrication', description: 'Complete fabrication solutions for retail shop fit-outs.', image: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&q=80', link: '#' },
-  { title: 'Laser Cutting', description: 'Precision laser cutting for MS, SS & other metals.', image: 'https://images.unsplash.com/photo-1586953208448-b95a79491f20?auto=format&fit=crop&q=80', link: '#' },
-  { title: 'Powder Coating', description: 'High quality powder coating for long lasting finish.', image: 'https://images.unsplash.com/photo-1533090161767-e6ffed986c88?auto=format&fit=crop&q=80', link: '#' }
-];
-
-const PH_WHY_CHOOSE_US = [
-  { icon: 'factory', title: 'In-house Manufacturing', description: 'Modern machines and skilled experts' },
-  { icon: 'custom', title: 'Custom Solutions', description: 'We build as per your design & requirement' },
-  { icon: 'shield-check', title: 'Quality Assurance', description: 'Strict quality checks at every stage' },
-  { icon: 'users', title: 'Experienced Team', description: '10+ years of industry experience' },
-  { icon: 'truck', title: 'End-to-End Service', description: 'From design to installation' }
-];
-
-const PH_PROCESS = [
-  { icon: 'users', title: 'Requirement Discussion', description: 'Understanding your requirements and project scope.' },
-  { icon: 'custom', title: 'Design & Planning', description: 'Creating drawings and plans as per your needs.' },
-  { icon: 'factory', title: 'Material Selection', description: 'Choosing high quality MS/SS material for durability.' },
-  { icon: 'truck', title: 'Fabrication', description: 'Precision cutting, welding and assembly by experts.' },
-  { icon: 'badge-check', title: 'Finishing', description: 'Polishing, coating & finishing for a perfect look.' },
-  { icon: 'shield-check', title: 'Installation', description: 'On-site installation with complete quality check.' }
-];
-
-const PH_PROJECTS = [
-  'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1565514020179-026b92b2d707?auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1541888086225-ee593f656ce2?auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&q=80'
-];
-
 function FabricationHero({ section }: { section?: Section }) {
   const parseFeatureString = (value: string) => {
     if (!value?.trim()) return [];
@@ -79,14 +33,14 @@ function FabricationHero({ section }: { section?: Section }) {
 
   const sectionLevelFeatures = parseFeatureString(section?.content || '');
   const defaultSlide = {
-    image: section?.image || PH_HERO.image,
-    title: section?.title || PH_HERO.title,
-    subtitle: section?.subtitle || section?.description || PH_HERO.subtitle,
+    image: section?.image || '',
+    title: section?.title || '',
+    subtitle: section?.subtitle || section?.description || '',
     link: section?.link || '/contact',
     linkText: section?.linkText || 'Get a Free Quote',
     secondaryLink: section?.secondaryLink || '#projects',
     secondaryLinkText: section?.secondaryLinkText || 'Our Projects',
-    features: sectionLevelFeatures.length ? sectionLevelFeatures : PH_HERO.features,
+    features: sectionLevelFeatures,
   };
 
   const cmsSlides = !isLegacyBadgeOnlyData
@@ -139,7 +93,7 @@ function FabricationHero({ section }: { section?: Section }) {
     >
       {/* Background Image using standard img tag to prevent Next.js optimization timeout errors */}
       <div className="absolute inset-0 z-0">
-        <img src={currentSlide.image} alt="Hero Background" className="w-full h-full object-cover transition-all duration-700" />
+        <img src={currentSlide.image || ''} alt="Hero Background" className="w-full h-full object-cover transition-all duration-700" />
         <div className="absolute inset-0 bg-black/70" />
       </div>
 
@@ -242,7 +196,7 @@ function WhyChooseUsIcon({ icon }: { icon?: string }) {
 }
 
 function ServicesSection({ section }: { section?: Section }) {
-  const items = section?.items?.length ? section.items : PH_SERVICES;
+  const items = section?.items || [];
   const sectionTitle = section?.title || 'Our Steel Fabrication Services';
   const sectionSubtitle = section?.subtitle || section?.description || 'Precision-built fabrication services for retail, commercial and industrial environments.';
   const [activeIndex, setActiveIndex] = useState(0);
@@ -289,7 +243,7 @@ function ServicesSection({ section }: { section?: Section }) {
           <div className="overflow-hidden rounded-2xl">
             <div className="relative h-80 md:h-105 w-full rounded-2xl overflow-hidden">
               <img
-                src={activeItem?.image || PH_HERO.image}
+                src={activeItem?.image || ''}
                 alt={activeItem?.title || sectionTitle}
                 className="absolute inset-0 h-full w-full object-cover rounded-2xl"
               />
@@ -307,8 +261,7 @@ function ServicesSection({ section }: { section?: Section }) {
 }
 
 function WhyChooseUsSection({ section }: { section?: Section }) {
-  const sourceItems = section?.items?.length ? section.items : PH_WHY_CHOOSE_US;
-  const items = sourceItems.slice(0, Math.max(5, sourceItems.length)); // Support 5+, but use all available
+  const items = section?.items || [];
 
   return (
     <section className="bg-white py-20">
@@ -318,14 +271,31 @@ function WhyChooseUsSection({ section }: { section?: Section }) {
           <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">{section?.title || 'Why Choose Uflix Interio?'}</h2>
         </div>
 
-        <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="md:hidden -mx-4 px-4 overflow-x-auto snap-x snap-mandatory pb-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <div className="flex gap-4 w-max">
+            {items.map((item: any, i: number) => (
+              <div
+                key={i}
+                className={`snap-start shrink-0 w-[84vw] max-w-sm px-6 py-8 text-center rounded-3xl border border-gray-200 bg-white shadow-sm ${i > 0 ? '' : ''}`}
+              >
+                <div className="w-14 h-14 mx-auto mb-5 rounded-full bg-black text-white flex items-center justify-center">
+                  <WhyChooseUsIcon icon={item.icon} />
+                </div>
+                <h3 className="text-base font-bold text-gray-900 mb-2">{item.title}</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">{item.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="hidden md:grid overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
           {items.map((item: any, i: number) => (
             <div
               key={i}
               className={`px-6 py-8 text-center ${i > 0 ? 'border-t border-gray-200 lg:border-t-0 lg:border-l' : ''}`}
             >
-              <div className="w-14 h-14 mx-auto mb-5 rounded-full bg-[#FFF3EB] text-[#FF6B35] flex items-center justify-center">
-                <WhyChooseUsIcon icon={item.icon || (PH_WHY_CHOOSE_US[i] as any)?.icon} />
+              <div className="w-14 h-14 mx-auto mb-5 rounded-full bg-black text-white flex items-center justify-center">
+                <WhyChooseUsIcon icon={item.icon} />
               </div>
               <h3 className="text-base font-bold text-gray-900 mb-2">{item.title}</h3>
               <p className="text-sm text-gray-600 leading-relaxed">{item.description}</p>
@@ -338,7 +308,7 @@ function WhyChooseUsSection({ section }: { section?: Section }) {
 }
 
 function ProcessSection({ section }: { section?: Section }) {
-  const items = section?.items?.length ? section.items : PH_PROCESS;
+  const items = section?.items || [];
 
   return (
     <section className="py-16 bg-white overflow-hidden">
@@ -373,13 +343,6 @@ function ProcessSection({ section }: { section?: Section }) {
 }
 
 function ProjectsSection({ section }: { section?: Section }) {
-  const fallbackProjects = PH_PROJECTS.map((image, idx) => ({
-    image,
-    title: `Fabrication Project ${idx + 1}`,
-    description: 'Custom-built steel fabrication delivered with precision detailing and clean finish for commercial spaces.',
-    location: 'Delhi NCR',
-    category: idx % 2 === 0 ? 'Commercial Fit-Out' : 'Retail Fabrication',
-  }));
   const cmsProjects = (section?.items || [])
     .filter((i: any) => i.image)
     .map((i: any, idx: number) => ({
@@ -389,7 +352,7 @@ function ProjectsSection({ section }: { section?: Section }) {
       location: i.stats || i.icon || 'Delhi NCR',
       category: i.linkText || 'Steel Fabrication',
     }));
-  const projects = cmsProjects.length ? cmsProjects : fallbackProjects;
+  const projects = cmsProjects;
   const [activeIndex, setActiveIndex] = useState(0);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 

@@ -3,6 +3,76 @@ const router = express.Router();
 const PageContent = require('../models/PageContent');
 const { protect, admin } = require('../middleware/auth');
 
+const STEEL_PAGE_SLUGS = ['steel-fabrication-delhi-ncr', 'business-steel-metal'];
+
+const normalizeSteelSlug = (slug) => (slug === 'business-steel-metal' ? 'steel-fabrication-delhi-ncr' : slug);
+
+const scorePageContent = (page) => {
+  const sections = Array.isArray(page?.sections) ? page.sections : [];
+  const sectionScore = sections.reduce((score, section) => {
+    return score + [section?.title, section?.subtitle, section?.description, section?.content, section?.image].filter(Boolean).length;
+  }, 0);
+
+  return [page?.title, page?.description].filter(Boolean).length + sections.length + sectionScore;
+};
+
+const findPageBySlug = async (slug) => {
+  const normalizedSlug = normalizeSteelSlug(slug);
+  const candidateSlugs = slug === normalizedSlug ? [normalizedSlug, 'business-steel-metal'] : [normalizedSlug, slug];
+  const candidates = await PageContent.find({ slug: { $in: candidateSlugs } });
+
+  if (candidates.length === 0) {
+    return { page: null, normalizedSlug };
+  }
+
+  const page = candidates
+    .sort((left, right) => {
+      const scoreDelta = scorePageContent(right) - scorePageContent(left);
+      if (scoreDelta !== 0) {
+        return scoreDelta;
+      }
+
+      if (left.slug === normalizedSlug) {
+        return 1;
+      }
+
+      if (right.slug === normalizedSlug) {
+        return -1;
+      }
+
+      return 0;
+    })[0];
+
+  return { page, normalizedSlug };
+};
+
+const persistSteelPage = async (page, normalizedSlug) => {
+  if (!page) {
+    return null;
+  }
+
+  if (page.slug === normalizedSlug) {
+    await page.save();
+    return page;
+  }
+
+  const canonicalPage = await PageContent.findOne({ slug: normalizedSlug });
+
+  if (canonicalPage && canonicalPage.id !== page.id) {
+    canonicalPage.title = page.title;
+    canonicalPage.description = page.description;
+    canonicalPage.isPublished = page.isPublished;
+    canonicalPage.sections = page.sections;
+    await canonicalPage.save();
+    await page.deleteOne();
+    return canonicalPage;
+  }
+
+  page.slug = normalizedSlug;
+  await page.save();
+  return page;
+};
+
 // @route   GET /api/pages
 // @desc    Get all pages (admin - includes unpublished)
 // @access  Private/Admin
@@ -12,7 +82,29 @@ router.get('/', protect, admin, async (req, res) => {
       .select('slug title description isPublished updatedAt sections')
       .sort({ title: 1 });
 
-    const pagesWithCount = pages.map(p => ({
+    const normalizedPages = pages.reduce((accumulator, page) => {
+      const plain = page.toObject();
+      if (STEEL_PAGE_SLUGS.includes(plain.slug)) {
+        plain.slug = 'steel-fabrication-delhi-ncr';
+        if (!plain.title || plain.title === 'Steel & Metal Fabrication') {
+          plain.title = 'Steel & Metal Fabrication';
+        }
+      }
+
+      const existingIndex = accumulator.findIndex((item) => item.slug === plain.slug);
+      if (existingIndex === -1) {
+        accumulator.push(plain);
+        return accumulator;
+      }
+
+      if (scorePageContent(plain) > scorePageContent(accumulator[existingIndex])) {
+        accumulator[existingIndex] = plain;
+      }
+
+      return accumulator;
+    }, []);
+
+    const pagesWithCount = normalizedPages.map(p => ({
       _id: p._id,
       slug: p.slug,
       title: p.title,
@@ -33,7 +125,7 @@ router.get('/', protect, admin, async (req, res) => {
 // @access  Public
 router.get('/:slug', async (req, res) => {
   try {
-    const page = await PageContent.findOne({ slug: req.params.slug });
+    const { page, normalizedSlug } = await findPageBySlug(req.params.slug);
 
     if (!page) {
       return res.status(404).json({ success: false, message: 'Page not found' });
@@ -56,6 +148,7 @@ router.get('/:slug', async (req, res) => {
       success: true,
       data: {
         ...page.toObject(),
+        slug: normalizedSlug,
         sections: visibleSections
       }
     });
@@ -69,13 +162,13 @@ router.get('/:slug', async (req, res) => {
 // @access  Private/Admin
 router.get('/:slug/admin', protect, admin, async (req, res) => {
   try {
-    const page = await PageContent.findOne({ slug: req.params.slug });
+    const { page, normalizedSlug } = await findPageBySlug(req.params.slug);
 
     if (!page) {
       return res.status(404).json({ success: false, message: 'Page not found' });
     }
 
-    res.json({ success: true, data: page });
+    res.json({ success: true, data: { ...page.toObject(), slug: normalizedSlug } });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -88,7 +181,7 @@ router.put('/:slug', protect, admin, async (req, res) => {
   try {
     const { title, description, isPublished, sections } = req.body;
 
-    let page = await PageContent.findOne({ slug: req.params.slug });
+    const { page, normalizedSlug } = await findPageBySlug(req.params.slug);
 
     if (!page) {
       return res.status(404).json({ success: false, message: 'Page not found' });
@@ -99,9 +192,9 @@ router.put('/:slug', protect, admin, async (req, res) => {
     if (isPublished !== undefined) page.isPublished = isPublished;
     if (sections !== undefined) page.sections = sections;
 
-    await page.save();
+    const savedPage = await persistSteelPage(page, normalizedSlug);
 
-    res.json({ success: true, data: page, message: 'Page updated successfully' });
+    res.json({ success: true, data: savedPage, message: 'Page updated successfully' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -112,7 +205,7 @@ router.put('/:slug', protect, admin, async (req, res) => {
 // @access  Private/Admin
 router.post('/:slug/sections', protect, admin, async (req, res) => {
   try {
-    const page = await PageContent.findOne({ slug: req.params.slug });
+    const { page } = await findPageBySlug(req.params.slug);
 
     if (!page) {
       return res.status(404).json({ success: false, message: 'Page not found' });
@@ -151,7 +244,7 @@ router.post('/:slug/sections', protect, admin, async (req, res) => {
 // @access  Private/Admin
 router.put('/:slug/sections/:sectionId', protect, admin, async (req, res) => {
   try {
-    const page = await PageContent.findOne({ slug: req.params.slug });
+    const { page } = await findPageBySlug(req.params.slug);
 
     if (!page) {
       return res.status(404).json({ success: false, message: 'Page not found' });
@@ -189,7 +282,7 @@ router.put('/:slug/sections/:sectionId', protect, admin, async (req, res) => {
 // @access  Private/Admin
 router.delete('/:slug/sections/:sectionId', protect, admin, async (req, res) => {
   try {
-    const page = await PageContent.findOne({ slug: req.params.slug });
+    const { page } = await findPageBySlug(req.params.slug);
 
     if (!page) {
       return res.status(404).json({ success: false, message: 'Page not found' });
