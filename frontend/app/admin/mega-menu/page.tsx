@@ -38,6 +38,8 @@ const pageOptions = [
   { value: '/business/workspace', label: 'Business Workspace Page' },
   { value: '/business/healthcare', label: 'Business Healthcare Page' },
   { value: '/business/education', label: 'Business Education Page' },
+  { value: '/steel-fabrication-delhi-ncr', label: 'Steel Fabrication Canonical Page' },
+  { value: '/shop-fittings/metal-sheet', label: 'Metal Sheet Page' },
   { value: '/contact', label: 'Contact' },
   { value: '/about', label: 'About' },
   { value: '/projects', label: 'Projects' },
