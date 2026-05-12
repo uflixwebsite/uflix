@@ -237,6 +237,19 @@ const STEEL_METAL_REQUIRED_SECTIONS: any[] = [
       { title: 'Project 3', description: 'Project details', image: '', link: '', linkText: 'Steel Fabrication', stats: 'Delhi NCR' },
     ],
   },
+  {
+    sectionId: 'cta', type: 'custom', bgColor: 'dark', order: 5, isVisible: true,
+    title: '',
+    subtitle: '',
+    description: '',
+    image: '',
+    link: '',
+    linkText: '',
+    phone: '',
+    phoneLabel: '',
+    email: '',
+    emailLabel: '',
+  },
 ];
 
 function extractCloudinaryPublicId(url: string): string | null {
@@ -349,11 +362,14 @@ type SectionSchema = {
   showImage?: boolean;
   showLink?: boolean;
   showSecondaryLink?: boolean;
+  secondaryLinkLabel?: string;
+  secondaryLinkTextLabel?: string;
   itemLabel?: string;
   itemFields: Array<'title'|'image'|'link'|'description'|'stats'|'statsLabel'|'icon'>;
   noItems?: boolean;
   isSlider?: boolean;
   isHeroImages?: boolean; // unified drag-drop image grid replaces showImage + items
+  customFields?: Array<{ key: string; label: string; type: 'text'|'number'; placeholder?: string }>;
 };
 
 const SECTION_SCHEMAS: Record<string, SectionSchema> = {
@@ -395,17 +411,19 @@ const SECTION_SCHEMAS: Record<string, SectionSchema> = {
     itemFields: ['title', 'description', 'image', 'link', 'stats'],
   },
   cta: {
-    label: 'Call to Action',
-    hint: 'Dark bottom banner with two buttons.',
-    showTitle: true, showDescription: true, showLink: true, showSecondaryLink: true,
-    itemFields: [], noItems: true,
-  },
-  services: {
-    label: 'Our Steel Fabrication Services',
-    hint: 'Add unlimited service cards. Each card has a title, description, and image. No buttons or links needed.',
+    label: 'CTA Section — Have a Project in Mind',
+    hint: 'Dark section with background image, contact details (phone, email), and a call-to-action button. Edit Title, Description (subtitle), Image, Button Link (secondary link), and Button Text (secondary link text). Phone and Email can be added in the section data.',
     showTitle: true, showDescription: true,
-    itemLabel: 'Service',
-    itemFields: ['title', 'description', 'image'],
+    showImage: true, showLink: true, showSecondaryLink: true,
+    secondaryLinkLabel: 'Button Link',
+    secondaryLinkTextLabel: 'Button Text',
+    customFields: [
+      { key: 'phone', label: 'Phone Number', type: 'text', placeholder: '+91 98765 43210' },
+      { key: 'phoneLabel', label: 'Phone Label (e.g., "Call Us")', type: 'text', placeholder: 'Call Us' },
+      { key: 'email', label: 'Email Address', type: 'text', placeholder: 'info@uflix.com' },
+      { key: 'emailLabel', label: 'Email Label (e.g., "Email Us")', type: 'text', placeholder: 'Email Us' },
+    ],
+    itemFields: [], noItems: true,
   },
   'why-choose-us': {
     label: 'Why Choose Us',
@@ -1269,6 +1287,27 @@ function SectionEditor({ section, index, onChange, onDelete, onMoveUp, onMoveDow
                 <input type="text" value={section.secondaryLinkText || ''} onChange={(e) => update('secondaryLinkText', e.target.value)}
                   placeholder="Request a Quote"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
+              </div>
+            </div>
+          )}
+
+          {/* Custom fields (e.g., phone, email for CTA section) */}
+          {schema.customFields && schema.customFields.length > 0 && !schema.isHeroImages && (
+            <div className="border-t border-gray-100 pt-4">
+              <p className="text-xs font-semibold text-gray-500 mb-3">📋 Additional Details</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {schema.customFields.map((field) => (
+                  <div key={field.key}>
+                    <label className="block text-sm font-medium mb-1">{field.label}</label>
+                    <input
+                      type={field.type}
+                      value={(section as any)[field.key] || ''}
+                      onChange={(e) => update(field.key, e.target.value)}
+                      placeholder={field.placeholder || ''}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                    />
+                  </div>
+                ))}
               </div>
             </div>
           )}

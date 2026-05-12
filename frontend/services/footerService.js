@@ -1,33 +1,31 @@
-import axios from 'axios';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+import api from './api';
 
 export const getFooterSettings = async () => {
-  const response = await axios.get(`${API_URL}/footer`);
+  const response = await api.get('/footer');
   return response.data;
 };
 
 export const updateFooterSettings = async (data) => {
-  const response = await axios.put(`${API_URL}/footer`, data, { withCredentials: true });
+  const response = await api.put('/footer', data);
   return response.data;
 };
 
 export const addLinkColumn = async (data) => {
-  const response = await axios.post(`${API_URL}/footer/link-column`, data, { withCredentials: true });
+  const response = await api.post('/footer/link-column', data);
   return response.data;
 };
 
 export const removeLinkColumn = async (columnId) => {
-  const response = await axios.delete(`${API_URL}/footer/link-column/${columnId}`, { withCredentials: true });
+  const response = await api.delete(`/footer/link-column/${columnId}`);
   return response.data;
 };
 
 export const addSocialLink = async (data) => {
-  const response = await axios.post(`${API_URL}/footer/social-link`, data, { withCredentials: true });
+  const response = await api.post('/footer/social-link', data);
   return response.data;
 };
 
 export const removeSocialLink = async (linkId) => {
-  const response = await axios.delete(`${API_URL}/footer/social-link/${linkId}`, { withCredentials: true });
+  const response = await api.delete(`/footer/social-link/${linkId}`);
   return response.data;
 };

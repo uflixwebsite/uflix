@@ -462,47 +462,66 @@ function ProjectsSection({ section }: { section?: Section }) {
   );
 }
 
-function CTASection({ footerContact }: { footerContact?: { phone?: string; email?: string } }) {
-  const phone = footerContact?.phone || '+91 99999 99999';
-  const email = footerContact?.email || 'info@uflixfurniture.in';
+function CTASection({ section, footerContact }: { section?: Section; footerContact?: { phone?: string; email?: string } }) {
+  const title = section?.title || '';
+  const subtitle = (section as any)?.subtitle || section?.description || '';
+  const image = section?.image || '';
+  const phone = (section as any)?.phone || footerContact?.phone || '';
+  const phoneLabel = (section as any)?.phoneLabel || 'Call Us';
+  const email = (section as any)?.email || footerContact?.email || '';
+  const emailLabel = (section as any)?.emailLabel || 'Email Us';
+  const buttonLink = section?.secondaryLink || '/contact?subject=steel-metal-fabrication-enquiry';
+  const buttonText = section?.secondaryLinkText || 'Request a Quote';
+
+  if (!section && (!footerContact?.phone && !footerContact?.email)) {
+    return null;
+  }
 
   return (
     <section className="relative py-24 bg-gray-900 overflow-hidden">
-      <div className="absolute inset-0 opacity-20">
-        <img src="https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&q=80" alt="Background" className="w-full h-full object-cover" />
-      </div>
+      {image && (
+        <div className="absolute inset-0 opacity-20">
+          <img src={image} alt="Background" className="w-full h-full object-cover" />
+        </div>
+      )}
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-10">
           <div className="max-w-2xl text-center md:text-left">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Have a Project in Mind?</h2>
-            <p className="text-gray-300 mb-8">Get in touch with us today for a free consultation and quote.</p>
+            {title && <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">{title}</h2>}
+            {subtitle && <p className="text-gray-300 mb-8">{subtitle}</p>}
 
-            <div className="flex flex-col sm:flex-row items-center md:items-start gap-8">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-accent">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-                </div>
-                <div className="text-left">
-                  <p className="text-white font-bold text-sm">Call Us</p>
-                  <p className="text-gray-400 text-sm">{phone}</p>
-                </div>
+            {(phone || email) && (
+              <div className="flex flex-col sm:flex-row items-center md:items-start gap-8">
+                {phone && (
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-accent">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                    </div>
+                    <div className="text-left">
+                      <p className="text-white font-bold text-sm">{phoneLabel}</p>
+                      <p className="text-gray-400 text-sm">{phone}</p>
+                    </div>
+                  </div>
+                )}
+                {email && (
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-accent">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                    </div>
+                    <div className="text-left">
+                      <p className="text-white font-bold text-sm">{emailLabel}</p>
+                      <p className="text-gray-400 text-sm">{email}</p>
+                    </div>
+                  </div>
+                )}
               </div>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-accent">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                </div>
-                <div className="text-left">
-                  <p className="text-white font-bold text-sm">Email Us</p>
-                  <p className="text-gray-400 text-sm">{email}</p>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
 
           <div className="shrink-0">
-            <Link href="/contact?subject=steel-metal-fabrication-enquiry" className="bg-accent hover:bg-accent-dark text-white px-8 py-4 rounded-md font-bold text-lg shadow-lg shadow-accent/30 transition-all hover:-translate-y-1 inline-block">
-              Request a Quote
+            <Link href={buttonLink} className="bg-accent hover:bg-accent-dark text-white px-8 py-4 rounded-md font-bold text-lg shadow-lg shadow-accent/30 transition-all hover:-translate-y-1 inline-block">
+              {buttonText}
             </Link>
           </div>
         </div>
@@ -542,6 +561,7 @@ export default function SteelMetalFabricationPage() {
   const projectsSection = get('projects');
   const processSection = get('process');
   const whyChooseUsSection = get('why-choose-us');
+  const ctaSection = get('cta');
 
   const visible = (id: string) => {
     const s = id === 'hero' ? sections.find((s) => s.type === 'hero') : get(id);
@@ -563,7 +583,7 @@ export default function SteelMetalFabricationPage() {
             {visible('why-choose-us') && <WhyChooseUsSection section={whyChooseUsSection} />}
             {visible('process') && <ProcessSection section={processSection} />}
             {visible('projects') && <ProjectsSection section={projectsSection} />}
-            <CTASection footerContact={footerContact} />
+            {visible('cta') && <CTASection section={ctaSection} footerContact={footerContact} />}
           </>
         )}
       </main>

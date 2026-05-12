@@ -1,4 +1,7 @@
 {
+  "/admin/pages/page": "app/admin/pages/page.js",
+  "/admin/page": "app/admin/page.js",
   "/admin/pages/[slug]/edit/page": "app/admin/pages/[slug]/edit/page.js",
-  "/steel-fabrication-delhi-ncr/page": "app/steel-fabrication-delhi-ncr/page.js"
+  "/steel-fabrication-delhi-ncr/page": "app/steel-fabrication-delhi-ncr/page.js",
+  "/admin/footer/page": "app/admin/footer/page.js"
 }
