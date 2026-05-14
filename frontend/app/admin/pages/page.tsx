@@ -13,10 +13,17 @@ export default function AdminPagesPage() {
   const { status, isAdmin } = useAuthState();
   const [pages, setPages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const resolvePreviewPath = (slug: string) =>
-    slug === 'steel-fabrication-delhi-ncr'
-      ? '/steel-fabrication-delhi-ncr'
-      : `/${slug}`;
+  const resolvePreviewPath = (slug: string) => {
+    const routeMap: Record<string, string> = {
+      'steel-fabrication-delhi-ncr': '/steel-fabrication-delhi-ncr',
+      'steel-fabrication-delhi-ncr-msfabrication': '/steel-fabrication-delhi-ncr/msfabrication',
+      'steel-fabrication-delhi-ncr-laser-sheet-cutting': '/steel-fabrication-delhi-ncr/laser-sheet-cutting',
+      'steel-fabrication-delhi-ncr-powder-coating': '/steel-fabrication-delhi-ncr/powder-coating',
+      'steel-fabrication-delhi-ncr-laser-pipe-cutting': '/steel-fabrication-delhi-ncr/laser-pipe-cutting',
+    };
+
+    return routeMap[slug] || `/${slug}`;
+  };
 
   useEffect(() => {
     if (status === 'loading') return;

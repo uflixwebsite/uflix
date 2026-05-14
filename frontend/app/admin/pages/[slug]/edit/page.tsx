@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
-import { createPage, getPageContentAdmin, updatePageContent, deleteSection } from '@/services/pageService';
+import { getPageContentAdmin, updatePageContent, deleteSection } from '@/services/pageService';
 import { uploadSingleImage, deleteFile } from '@/services/uploadService';
 import { useAuthState } from '@/hooks/useAuthState';
 
@@ -251,6 +251,22 @@ const STEEL_METAL_REQUIRED_SECTIONS: any[] = [
     emailLabel: '',
   },
 ];
+
+const BUSINESS_STYLE_PAGE_SLUGS = new Set([
+  'business',
+  'steel-fabrication-delhi-ncr-msfabrication',
+  'steel-fabrication-delhi-ncr-laser-sheet-cutting',
+  'steel-fabrication-delhi-ncr-powder-coating',
+  'steel-fabrication-delhi-ncr-laser-pipe-cutting',
+]);
+
+const PAGE_PREVIEW_PATHS: Record<string, string> = {
+  'steel-fabrication-delhi-ncr': '/steel-fabrication-delhi-ncr',
+  'steel-fabrication-delhi-ncr-msfabrication': '/steel-fabrication-delhi-ncr/msfabrication',
+  'steel-fabrication-delhi-ncr-laser-sheet-cutting': '/steel-fabrication-delhi-ncr/laser-sheet-cutting',
+  'steel-fabrication-delhi-ncr-powder-coating': '/steel-fabrication-delhi-ncr/powder-coating',
+  'steel-fabrication-delhi-ncr-laser-pipe-cutting': '/steel-fabrication-delhi-ncr/laser-pipe-cutting',
+};
 
 function extractCloudinaryPublicId(url: string): string | null {
   if (!url || !url.includes('res.cloudinary.com')) return null;
@@ -1391,9 +1407,7 @@ export default function AdminPageEditorPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
-  const previewPath = slug === 'steel-fabrication-delhi-ncr'
-    ? '/steel-fabrication-delhi-ncr'
-    : `/${slug}`;
+  const previewPath = PAGE_PREVIEW_PATHS[slug] || `/${slug}`;
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -1406,9 +1420,9 @@ export default function AdminPageEditorPage() {
     try {
       const data = await getPageContentAdmin(slug);
       const pageData = data.data;
-      // For the business page, auto-populate any missing sections so the admin
+      // For business-style pages, auto-populate any missing sections so admin
       // always sees all editable sections without manual setup.
-      if (slug === 'business' && pageData) {
+      if (BUSINESS_STYLE_PAGE_SLUGS.has(slug) && pageData) {
         const existing: any[] = pageData.sections || [];
         const existingIds = new Set(existing.map((s: any) => s.sectionId));
         const missing = BUSINESS_REQUIRED_SECTIONS.filter((s) => !existingIds.has(s.sectionId));
@@ -1443,21 +1457,6 @@ export default function AdminPageEditorPage() {
       }
       setPage(pageData);
     } catch (error: any) {
-      // Auto-create the steel page in CMS if missing, so admin can edit immediately.
-      if (slug === 'steel-fabrication-delhi-ncr' && error?.response?.status === 404) {
-        try {
-          const created = await createPage({
-            slug: 'steel-fabrication-delhi-ncr',
-            title: 'Steel & Metal Fabrication',
-            description: 'Independent page content for steel and metal fabrication.',
-            sections: STEEL_METAL_REQUIRED_SECTIONS,
-          });
-          setPage(created.data);
-          return;
-        } catch (createError) {
-          console.error('Error creating steel/metal page:', createError);
-        }
-      }
       console.error('Error fetching page:', error);
     } finally {
       setLoading(false);

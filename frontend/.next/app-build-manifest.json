@@ -1,9 +1,9 @@
 {
   "pages": {
-    "/page": [
+    "/business/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/page.js"
+      "static/chunks/app/business/page.js"
     ],
     "/layout": [
       "static/chunks/webpack.js",
@@ -11,30 +11,20 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/admin/page": [
+    "/admin/navbar/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/page.js"
+      "static/chunks/app/admin/navbar/page.js"
     ],
-    "/admin/footer/page": [
+    "/steel-fabrication-delhi-ncr/msfabrication/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/footer/page.js"
+      "static/chunks/app/steel-fabrication-delhi-ncr/msfabrication/page.js"
     ],
-    "/steel-fabrication-delhi-ncr/page": [
+    "/admin/mega-menu/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/steel-fabrication-delhi-ncr/page.js"
-    ],
-    "/admin/pages/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/admin/pages/page.js"
-    ],
-    "/admin/pages/[slug]/edit/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/admin/pages/[slug]/edit/page.js"
+      "static/chunks/app/admin/mega-menu/page.js"
     ]
   }
 }

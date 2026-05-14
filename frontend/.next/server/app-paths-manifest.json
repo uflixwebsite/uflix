@@ -1,7 +1,6 @@
 {
-  "/admin/pages/page": "app/admin/pages/page.js",
-  "/admin/page": "app/admin/page.js",
-  "/admin/pages/[slug]/edit/page": "app/admin/pages/[slug]/edit/page.js",
-  "/steel-fabrication-delhi-ncr/page": "app/steel-fabrication-delhi-ncr/page.js",
-  "/admin/footer/page": "app/admin/footer/page.js"
+  "/business/page": "app/business/page.js",
+  "/admin/navbar/page": "app/admin/navbar/page.js",
+  "/steel-fabrication-delhi-ncr/msfabrication/page": "app/steel-fabrication-delhi-ncr/msfabrication/page.js",
+  "/admin/mega-menu/page": "app/admin/mega-menu/page.js"
 }

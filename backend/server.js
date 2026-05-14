@@ -7,6 +7,7 @@ const helmet = require('helmet');
 const hpp = require('hpp');
 const path = require('path');
 const { ClerkExpressWithAuth } = require('@clerk/clerk-sdk-node');
+const PageContent = require('./models/PageContent');
 const {
   globalApiLimiter,
   contactLimiter,
@@ -18,6 +19,57 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+const BUSINESS_CLONE_PAGES = [
+  { slug: 'steel-fabrication-delhi-ncr-msfabrication', title: 'MS Fabrication' },
+  { slug: 'steel-fabrication-delhi-ncr-laser-sheet-cutting', title: 'Laser Sheet Cutting' },
+  { slug: 'steel-fabrication-delhi-ncr-powder-coating', title: 'Powder Coating' },
+  { slug: 'steel-fabrication-delhi-ncr-laser-pipe-cutting', title: 'Laser Pipe Cutting' },
+];
+
+const cloneSections = (sections = []) => sections.map((section) => {
+  const plain = section?.toObject ? section.toObject() : section;
+  const clonedItems = Array.isArray(plain?.items)
+    ? plain.items.map((item) => {
+        const plainItem = item?.toObject ? item.toObject() : item;
+        return { ...plainItem, _id: undefined };
+      })
+    : [];
+
+  return {
+    ...plain,
+    _id: undefined,
+    items: clonedItems,
+  };
+});
+
+const ensureBusinessClonePages = async () => {
+  try {
+    const source = await PageContent.findOne({ slug: 'business' }).lean();
+
+    if (!source) {
+      console.log('Business page not found. Skipping steel child page seeding.');
+      return;
+    }
+
+    for (const target of BUSINESS_CLONE_PAGES) {
+      const existing = await PageContent.findOne({ slug: target.slug }).select('_id').lean();
+      if (existing) continue;
+
+      await PageContent.create({
+        slug: target.slug,
+        title: target.title,
+        description: source.description || '',
+        isPublished: source.isPublished !== false,
+        sections: cloneSections(source.sections),
+      });
+
+      console.log(`Seeded business-clone page: ${target.slug}`);
+    }
+  } catch (error) {
+    console.error('Failed to seed business-clone pages:', error);
+  }
+};
 
 /* ======================================================
    HEALTH CHECK (MUST BE FIRST)
@@ -132,6 +184,8 @@ const startServer = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('MongoDB connected successfully');
+
+    await ensureBusinessClonePages();
 
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
