@@ -5,6 +5,35 @@ const { protect, admin } = require('../middleware/auth');
 
 const createUniqueId = (prefix) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
+const URL_RENAMES = {
+  '/steel-fabrication-delhi-ncr/msfabrication': '/msfabrication-delhi-ncr',
+  '/steel-fabrication-delhi-ncr/laser-sheet-cutting': '/laser-sheet-cutting-delhi-ncr',
+  '/steel-fabrication-delhi-ncr/powder-coating': '/powder-coating-delhi-ncr',
+  '/steel-fabrication-delhi-ncr/laser-pipe-cutting': '/laser-pipe-cutting-delhi-ncr',
+};
+
+const normalizeUrl = (value) => {
+  if (typeof value !== 'string') return value;
+  return URL_RENAMES[value] || value;
+};
+
+const getCandidates = (value) => {
+  const normalized = normalizeUrl(value);
+  const aliases = Object.entries(URL_RENAMES)
+    .filter(([, target]) => target === normalized)
+    .map(([source]) => source);
+  return Array.from(new Set([value, normalized, ...aliases])).filter(Boolean);
+};
+
+const normalizeMenu = (menu) => {
+  if (!menu) return menu;
+  return {
+    ...menu,
+    pagePath: normalizeUrl(menu.pagePath),
+    navbarLinkUrl: normalizeUrl(menu.navbarLinkUrl),
+  };
+};
+
 // @route   GET /api/mega-menu-v2?pagePath=*&navbarLinkUrl=/shop
 // @desc    Get mega menu for a specific navbar link on a specific page
 // @access  Public
@@ -21,8 +50,11 @@ router.get('/', async (req, res) => {
 
     // Build all candidate paths from most-specific to least-specific:
     // e.g. /business/healthcare => ['/business/healthcare', '/business/*', '*']
-    const candidatePaths = [pagePath];
-    const parts = pagePath.split('/').filter(Boolean);
+    const normalizedPagePath = normalizeUrl(pagePath);
+    const normalizedNavbarLinkUrl = normalizeUrl(navbarLinkUrl);
+
+    const candidatePaths = getCandidates(normalizedPagePath);
+    const parts = normalizedPagePath.split('/').filter(Boolean);
     for (let i = parts.length - 1; i > 0; i--) {
       candidatePaths.push('/' + parts.slice(0, i).join('/') + '/*');
     }
@@ -31,7 +63,7 @@ router.get('/', async (req, res) => {
     // Find all matching menus
     const megaMenus = await MegaMenu.find({
       pagePath: { $in: candidatePaths },
-      navbarLinkUrl,
+      navbarLinkUrl: { $in: getCandidates(normalizedNavbarLinkUrl) },
       enabled: true
     });
 
@@ -45,7 +77,7 @@ router.get('/', async (req, res) => {
 
     res.json({
       success: true,
-      data: megaMenu
+      data: normalizeMenu(megaMenu ? (megaMenu.toObject ? megaMenu.toObject() : megaMenu) : null)
     });
   } catch (error) {
     console.error('Error fetching mega menu:', error);
@@ -63,12 +95,12 @@ router.get('/all', protect, admin, async (req, res) => {
   try {
     const { pagePath } = req.query;
     
-    const query = pagePath ? { pagePath } : {};
+    const query = pagePath ? { pagePath: { $in: getCandidates(pagePath) } } : {};
     const megaMenus = await MegaMenu.find(query).sort({ pagePath: 1, navbarLinkLabel: 1 });
 
     res.json({
       success: true,
-      data: megaMenus
+      data: megaMenus.map((menu) => normalizeMenu(menu.toObject()))
     });
   } catch (error) {
     console.error('Error fetching all mega menus:', error);
@@ -85,6 +117,8 @@ router.get('/all', protect, admin, async (req, res) => {
 router.post('/', protect, admin, async (req, res) => {
   try {
     const { pagePath, navbarLinkUrl, navbarLinkLabel, categories, items, enabled } = req.body;
+    const normalizedPagePath = normalizeUrl(pagePath);
+    const normalizedNavbarLinkUrl = normalizeUrl(navbarLinkUrl);
 
     const normalizedCategories = (Array.isArray(categories) ? categories : []).map((category, index) => ({
       ...category,
@@ -101,7 +135,7 @@ router.post('/', protect, admin, async (req, res) => {
     }));
 
     // Check if mega menu already exists
-    let megaMenu = await MegaMenu.findOne({ pagePath, navbarLinkUrl });
+    let megaMenu = await MegaMenu.findOne({ pagePath: normalizedPagePath, navbarLinkUrl: normalizedNavbarLinkUrl });
 
     if (megaMenu) {
       // Update existing
@@ -109,12 +143,14 @@ router.post('/', protect, admin, async (req, res) => {
       megaMenu.categories = normalizedCategories;
       megaMenu.items = normalizedItems;
       megaMenu.enabled = enabled !== undefined ? enabled : true;
+      megaMenu.pagePath = normalizedPagePath;
+      megaMenu.navbarLinkUrl = normalizedNavbarLinkUrl;
       await megaMenu.save();
     } else {
       // Create new
       megaMenu = await MegaMenu.create({
-        pagePath,
-        navbarLinkUrl,
+        pagePath: normalizedPagePath,
+        navbarLinkUrl: normalizedNavbarLinkUrl,
         navbarLinkLabel,
         categories: normalizedCategories,
         items: normalizedItems,
@@ -124,7 +160,7 @@ router.post('/', protect, admin, async (req, res) => {
 
     res.json({
       success: true,
-      data: megaMenu,
+      data: normalizeMenu(megaMenu.toObject()),
       message: megaMenu.isNew ? 'Mega menu created' : 'Mega menu updated'
     });
   } catch (error) {

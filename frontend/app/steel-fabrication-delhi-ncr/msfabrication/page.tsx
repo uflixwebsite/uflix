@@ -1,7 +1,7 @@
 'use client';
 
-import BusinessCmsPage from '@/app/business/BusinessCmsPage';
+import { redirect } from 'next/navigation';
 
 export default function MsFabricationPage() {
-  return <BusinessCmsPage pageSlug="steel-fabrication-delhi-ncr-msfabrication" />;
+  redirect('/msfabrication-delhi-ncr');
 }

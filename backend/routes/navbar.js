@@ -3,6 +3,41 @@ const router = express.Router();
 const NavbarSettings = require('../models/NavbarSettings');
 const { protect, admin } = require('../middleware/auth');
 
+const URL_RENAMES = {
+  '/steel-fabrication-delhi-ncr/msfabrication': '/msfabrication-delhi-ncr',
+  '/steel-fabrication-delhi-ncr/laser-sheet-cutting': '/laser-sheet-cutting-delhi-ncr',
+  '/steel-fabrication-delhi-ncr/powder-coating': '/powder-coating-delhi-ncr',
+  '/steel-fabrication-delhi-ncr/laser-pipe-cutting': '/laser-pipe-cutting-delhi-ncr',
+};
+
+const normalizeUrl = (value) => {
+  if (typeof value !== 'string') return value;
+  return URL_RENAMES[value] || value;
+};
+
+const normalizeConfig = (config) => {
+  if (!config) return config;
+  return {
+    ...config,
+    path: normalizeUrl(config.path),
+    links: Array.isArray(config.links)
+      ? config.links.map((link) => ({
+          ...link,
+          url: normalizeUrl(link.url),
+        }))
+      : [],
+  };
+};
+
+const normalizeSettings = (settings) => {
+  if (!settings || !Array.isArray(settings.configs)) return settings;
+  const plainSettings = settings.toObject ? settings.toObject() : settings;
+  return {
+    ...plainSettings,
+    configs: plainSettings.configs.map(normalizeConfig),
+  };
+};
+
 const getDefaultSettings = () => ({
   configs: [
     {
@@ -21,8 +56,9 @@ const getDefaultSettings = () => ({
 });
 
 const pickConfigForPath = (settings, path) => {
-  if (!settings || !Array.isArray(settings.configs)) return null;
-  const enabledConfigs = settings.configs
+  const normalizedSettings = normalizeSettings(settings);
+  if (!normalizedSettings || !Array.isArray(normalizedSettings.configs)) return null;
+  const enabledConfigs = normalizedSettings.configs
     .filter(c => c && c.enabled)
     .sort((a, b) => (a.order || 0) - (b.order || 0));
 
@@ -48,7 +84,7 @@ const pickConfigForPath = (settings, path) => {
     return pattern.length;
   };
 
-  const currentPath = normalizePath(path);
+  const currentPath = normalizePath(normalizeUrl(path));
 
   const exact = enabledConfigs.find(c => normalizePath(c.path) === currentPath);
   if (exact) return exact;
@@ -93,7 +129,7 @@ router.get('/admin', protect, admin, async (req, res) => {
     if (!settings) {
       return res.json({ success: true, data: getDefaultSettings() });
     }
-    res.json({ success: true, data: settings });
+    res.json({ success: true, data: normalizeSettings(settings.toObject()) });
   } catch (error) {
     console.error('Error fetching navbar settings (admin):', error);
     res.status(500).json({ success: false, message: 'Server error' });
@@ -104,16 +140,17 @@ router.get('/admin', protect, admin, async (req, res) => {
 router.put('/', protect, admin, async (req, res) => {
   try {
     const { configs } = req.body;
+    const normalizedConfigs = Array.isArray(configs) ? configs.map(normalizeConfig) : configs;
 
     let settings = await NavbarSettings.findOne();
     if (!settings) {
-      settings = await NavbarSettings.create({ configs: configs || [] });
+      settings = await NavbarSettings.create({ configs: normalizedConfigs || [] });
     } else {
-      if (configs !== undefined) settings.configs = configs;
+      if (configs !== undefined) settings.configs = normalizedConfigs;
       await settings.save();
     }
 
-    res.json({ success: true, data: settings });
+    res.json({ success: true, data: normalizeSettings(settings.toObject()) });
   } catch (error) {
     console.error('Error updating navbar settings:', error);
     res.status(500).json({ success: false, message: 'Server error' });

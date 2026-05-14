@@ -1,7 +1,7 @@
 'use client';
 
-import BusinessCmsPage from '@/app/business/BusinessCmsPage';
+import { redirect } from 'next/navigation';
 
 export default function PowderCoatingPage() {
-  return <BusinessCmsPage pageSlug="steel-fabrication-delhi-ncr-powder-coating" />;
+  redirect('/powder-coating-delhi-ncr');
 }

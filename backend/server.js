@@ -21,10 +21,10 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 const BUSINESS_CLONE_PAGES = [
-  { slug: 'steel-fabrication-delhi-ncr-msfabrication', title: 'MS Fabrication' },
-  { slug: 'steel-fabrication-delhi-ncr-laser-sheet-cutting', title: 'Laser Sheet Cutting' },
-  { slug: 'steel-fabrication-delhi-ncr-powder-coating', title: 'Powder Coating' },
-  { slug: 'steel-fabrication-delhi-ncr-laser-pipe-cutting', title: 'Laser Pipe Cutting' },
+  { slug: 'msfabrication-delhi-ncr', title: 'MS Fabrication' },
+  { slug: 'laser-sheet-cutting-delhi-ncr', title: 'Laser Sheet Cutting' },
+  { slug: 'powder-coating-delhi-ncr', title: 'Powder Coating' },
+  { slug: 'laser-pipe-cutting-delhi-ncr', title: 'Laser Pipe Cutting' },
 ];
 
 const cloneSections = (sections = []) => sections.map((section) => {

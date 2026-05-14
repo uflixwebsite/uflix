@@ -3,9 +3,32 @@ const router = express.Router();
 const PageContent = require('../models/PageContent');
 const { protect, admin } = require('../middleware/auth');
 
-const STEEL_PAGE_SLUGS = ['steel-fabrication-delhi-ncr', 'business-steel-metal'];
+const PAGE_SLUG_ALIASES = {
+  'msfabrication-delhi-ncr': ['steel-fabrication-delhi-ncr-msfabrication'],
+  'laser-sheet-cutting-delhi-ncr': ['steel-fabrication-delhi-ncr-laser-sheet-cutting'],
+  'powder-coating-delhi-ncr': ['steel-fabrication-delhi-ncr-powder-coating'],
+  'laser-pipe-cutting-delhi-ncr': ['steel-fabrication-delhi-ncr-laser-pipe-cutting'],
+};
 
-const normalizeSteelSlug = (slug) => (slug === 'business-steel-metal' ? 'steel-fabrication-delhi-ncr' : slug);
+const normalizePageSlug = (slug) => {
+  if (slug === 'business-steel-metal') return 'steel-fabrication-delhi-ncr';
+
+  const entries = Object.entries(PAGE_SLUG_ALIASES);
+  for (const [canonicalSlug, aliases] of entries) {
+    if (slug === canonicalSlug || aliases.includes(slug)) {
+      return canonicalSlug;
+    }
+  }
+
+  return slug;
+};
+
+const getPageSlugCandidates = (slug) => {
+  const normalizedSlug = normalizePageSlug(slug);
+  const aliases = PAGE_SLUG_ALIASES[normalizedSlug] || [];
+  const candidates = new Set([normalizedSlug, slug, ...aliases]);
+  return Array.from(candidates).filter(Boolean);
+};
 
 const scorePageContent = (page) => {
   const sections = Array.isArray(page?.sections) ? page.sections : [];
@@ -17,8 +40,8 @@ const scorePageContent = (page) => {
 };
 
 const findPageBySlug = async (slug) => {
-  const normalizedSlug = normalizeSteelSlug(slug);
-  const candidateSlugs = slug === normalizedSlug ? [normalizedSlug, 'business-steel-metal'] : [normalizedSlug, slug];
+  const normalizedSlug = normalizePageSlug(slug);
+  const candidateSlugs = getPageSlugCandidates(slug);
   const candidates = await PageContent.find({ slug: { $in: candidateSlugs } });
 
   if (candidates.length === 0) {
@@ -84,11 +107,13 @@ router.get('/', protect, admin, async (req, res) => {
 
     const normalizedPages = pages.reduce((accumulator, page) => {
       const plain = page.toObject();
-      if (STEEL_PAGE_SLUGS.includes(plain.slug)) {
-        plain.slug = 'steel-fabrication-delhi-ncr';
-        if (!plain.title || plain.title === 'Steel & Metal Fabrication') {
-          plain.title = 'Steel & Metal Fabrication';
-        }
+      const normalizedSlug = normalizePageSlug(plain.slug);
+      if (normalizedSlug !== plain.slug) {
+        plain.slug = normalizedSlug;
+      }
+
+      if (plain.slug === 'steel-fabrication-delhi-ncr' && (!plain.title || plain.title === 'Steel & Metal Fabrication')) {
+        plain.title = 'Steel & Metal Fabrication';
       }
 
       const existingIndex = accumulator.findIndex((item) => item.slug === plain.slug);

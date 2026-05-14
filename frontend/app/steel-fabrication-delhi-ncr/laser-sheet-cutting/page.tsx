@@ -1,7 +1,7 @@
 'use client';
 
-import BusinessCmsPage from '@/app/business/BusinessCmsPage';
+import { redirect } from 'next/navigation';
 
 export default function LaserSheetCuttingPage() {
-  return <BusinessCmsPage pageSlug="steel-fabrication-delhi-ncr-laser-sheet-cutting" />;
+  redirect('/laser-sheet-cutting-delhi-ncr');
 }

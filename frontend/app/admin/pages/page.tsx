@@ -16,10 +16,10 @@ export default function AdminPagesPage() {
   const resolvePreviewPath = (slug: string) => {
     const routeMap: Record<string, string> = {
       'steel-fabrication-delhi-ncr': '/steel-fabrication-delhi-ncr',
-      'steel-fabrication-delhi-ncr-msfabrication': '/steel-fabrication-delhi-ncr/msfabrication',
-      'steel-fabrication-delhi-ncr-laser-sheet-cutting': '/steel-fabrication-delhi-ncr/laser-sheet-cutting',
-      'steel-fabrication-delhi-ncr-powder-coating': '/steel-fabrication-delhi-ncr/powder-coating',
-      'steel-fabrication-delhi-ncr-laser-pipe-cutting': '/steel-fabrication-delhi-ncr/laser-pipe-cutting',
+      'msfabrication-delhi-ncr': '/msfabrication-delhi-ncr',
+      'laser-sheet-cutting-delhi-ncr': '/laser-sheet-cutting-delhi-ncr',
+      'powder-coating-delhi-ncr': '/powder-coating-delhi-ncr',
+      'laser-pipe-cutting-delhi-ncr': '/laser-pipe-cutting-delhi-ncr',
     };
 
     return routeMap[slug] || `/${slug}`;

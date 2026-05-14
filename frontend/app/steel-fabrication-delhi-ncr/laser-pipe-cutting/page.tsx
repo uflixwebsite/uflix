@@ -1,7 +1,7 @@
 'use client';
 
-import BusinessCmsPage from '@/app/business/BusinessCmsPage';
+import { redirect } from 'next/navigation';
 
 export default function LaserPipeCuttingPage() {
-  return <BusinessCmsPage pageSlug="steel-fabrication-delhi-ncr-laser-pipe-cutting" />;
+  redirect('/laser-pipe-cutting-delhi-ncr');
 }
