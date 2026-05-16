@@ -14,6 +14,7 @@ interface SectionItem {
   description?: string;
   icon?: string;
   image?: string;
+  imageLink?: string;
   link?: string;
   linkText?: string;
   items?: string[];
@@ -674,7 +675,7 @@ export default function DynamicPage({ slug, fallback, children }: DynamicPagePro
     <div className="min-h-screen bg-background">
       <Header />
       <main className={hasHeroSection ? 'homepage-main' : ''}>
-        {pageData.sections.map((section) => (
+        {pageData.sections.filter((section) => section.isVisible !== false).map((section) => (
           <div key={section._id || section.sectionId}>
             {renderSection(section)}
           </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
@@ -8,7 +8,7 @@ import { getPageContent } from '@/services/pageService';
 import { getFooterSettings } from '@/services/footerService';
 import type { Section } from '@/components/DynamicPage';
 
-function FabricationHero({ section }: { section?: Section }) {
+function FabricationHero({ section, pageTitle, pageDescription }: { section?: Section; pageTitle?: string; pageDescription?: string }) {
   const parseFeatureString = (value: string) => {
     if (!value?.trim()) return [];
     return value
@@ -34,8 +34,8 @@ function FabricationHero({ section }: { section?: Section }) {
   const sectionLevelFeatures = parseFeatureString(section?.content || '');
   const defaultSlide = {
     image: section?.image || '',
-    title: section?.title || '',
-    subtitle: section?.subtitle || section?.description || '',
+    title: section?.title || pageTitle || '',
+    subtitle: section?.subtitle || section?.description || pageDescription || '',
     link: section?.link || '/contact',
     linkText: section?.linkText || 'Get a Free Quote',
     secondaryLink: section?.secondaryLink || '#projects',
@@ -100,8 +100,8 @@ function FabricationHero({ section }: { section?: Section }) {
       <div className="relative z-10 w-full flex-1 flex items-center">
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-12 text-center">
           <div className="mx-auto max-w-4xl flex flex-col items-center">
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-[1.08] max-w-3xl">{currentSlide.title}</h1>
-            <p className="text-lg md:text-xl text-gray-300 mb-10 leading-relaxed max-w-2xl">{currentSlide.subtitle}</p>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 leading-[1.08] max-w-3xl">{currentSlide.title}</h1>
+            <p className="text-base sm:text-lg md:text-xl text-gray-300 mb-10 leading-relaxed max-w-2xl">{currentSlide.subtitle}</p>
 
             <div className="flex flex-wrap justify-center gap-4">
               <Link href={currentSlide.link} className="bg-accent hover:bg-accent-dark text-white px-8 py-3.5 rounded-md font-semibold transition-colors text-sm uppercase tracking-wide">
@@ -200,12 +200,40 @@ function ServicesSection({ section }: { section?: Section }) {
   const sectionTitle = section?.title || 'Our Steel Fabrication Services';
   const sectionSubtitle = section?.subtitle || section?.description || 'Precision-built fabrication services for retail, commercial and industrial environments.';
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+  const mobileTrackRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     setActiveIndex(0);
   }, [items.length]);
 
+  useEffect(() => {
+    const updateMobileState = () => setIsMobile(window.innerWidth < 768);
+    updateMobileState();
+    window.addEventListener('resize', updateMobileState);
+    return () => window.removeEventListener('resize', updateMobileState);
+  }, []);
+
+  useEffect(() => {
+    if (!isMobile || items.length <= 1) return;
+    const timer = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % items.length);
+    }, 3500);
+    return () => clearInterval(timer);
+  }, [isMobile, items.length]);
+
+  useEffect(() => {
+    if (!isMobile || !mobileTrackRef.current) return;
+    const card = mobileTrackRef.current.querySelector<HTMLElement>(`[data-service-card="${activeIndex}"]`);
+    if (!card) return;
+    const container = mobileTrackRef.current;
+    const targetLeft = card.offsetLeft - (container.clientWidth - card.clientWidth) / 2;
+    container.scrollTo({ left: Math.max(0, targetLeft), behavior: 'smooth' });
+  }, [activeIndex, isMobile]);
+
   const activeItem = items[activeIndex] || items[0];
+  const activeTextLink = activeItem?.link || '#';
+  const activeImageLink = activeItem?.imageLink || activeItem?.link || '#';
 
   return (
     <section id="services" className="py-16 bg-white">
@@ -215,7 +243,7 @@ function ServicesSection({ section }: { section?: Section }) {
           <p className="mt-3 text-sm md:text-base text-gray-600 leading-relaxed max-w-3xl mx-auto">{sectionSubtitle}</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)] gap-4 lg:gap-6 items-start">
+        <div className="hidden md:grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)] gap-4 lg:gap-6 items-start">
           <div className="overflow-visible">
             <div className="p-0">
               {items.map((item: any, i: number) => {
@@ -229,7 +257,7 @@ function ServicesSection({ section }: { section?: Section }) {
                     }`}
                   >
                     <div>
-                      <h3 className="text-xl md:text-[22px] font-medium leading-tight">{item.title}</h3>
+                    <h3 className="text-xl md:text-[22px] font-medium leading-tight">{item.title}</h3>
                     </div>
                     <span className={`shrink-0 text-base transition-transform ${isActive ? 'text-white' : 'text-gray-400'}`}>
                       →
@@ -242,17 +270,49 @@ function ServicesSection({ section }: { section?: Section }) {
 
           <div className="overflow-hidden rounded-2xl">
             <div className="relative h-80 md:h-105 w-full rounded-2xl overflow-hidden">
-              <img
-                src={activeItem?.image || ''}
-                alt={activeItem?.title || sectionTitle}
-                className="absolute inset-0 h-full w-full object-cover rounded-2xl"
-              />
+              <Link href={activeImageLink} className="absolute inset-0 block">
+                <img
+                  src={activeItem?.image || ''}
+                  alt={activeItem?.title || sectionTitle}
+                  className="absolute inset-0 h-full w-full object-cover rounded-2xl"
+                />
+              </Link>
               <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6 text-white">
-                <h3 className="text-xl md:text-2xl font-semibold leading-tight max-w-2xl">{activeItem?.title}</h3>
+                <Link href={activeTextLink} className="inline-block">
+                  <h3 className="text-xl md:text-2xl font-semibold leading-tight max-w-2xl">{activeItem?.title}</h3>
+                </Link>
                 <p className="mt-2 max-w-2xl text-sm text-white/90 leading-relaxed">{activeItem?.description || sectionSubtitle}</p>
               </div>
             </div>
+          </div>
+        </div>
+
+        <div className="md:hidden -mx-4 px-4">
+          <div ref={mobileTrackRef} className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 scroll-smooth">
+            {items.map((item: any, i: number) => {
+              const textLink = item.link || '#';
+              const imageLink = item.imageLink || item.link || '#';
+              return (
+                <article
+                  key={i}
+                  data-service-card={i}
+                  className="snap-center shrink-0 w-[84vw] rounded-3xl border border-gray-200 bg-white shadow-sm overflow-hidden"
+                >
+                  <Link href={imageLink} className="block">
+                    <div className="relative h-52 bg-gray-100 overflow-hidden">
+                      <img src={item.image || ''} alt={item.title || sectionTitle} className="h-full w-full object-cover" />
+                    </div>
+                  </Link>
+                  <div className="p-4">
+                    <Link href={textLink} className="block">
+                      <h3 className="text-lg font-bold text-gray-900 leading-tight">{item.title}</h3>
+                    </Link>
+                    <p className="mt-2 text-sm text-gray-600 leading-relaxed">{item.description || sectionSubtitle}</p>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -264,25 +324,25 @@ function WhyChooseUsSection({ section }: { section?: Section }) {
   const items = section?.items || [];
 
   return (
-    <section className="bg-white py-20">
+    <section className="bg-white py-16 md:py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
+        <div className="text-center mb-12 md:mb-16">
           <h4 className="text-accent text-sm font-bold uppercase tracking-wider mb-3">Why Choose Us</h4>
-          <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">{section?.title || 'Why Choose Uflix Interio?'}</h2>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900">{section?.title || 'Why Choose Uflix Interio?'}</h2>
         </div>
 
-        <div className="md:hidden -mx-4 px-4 overflow-x-auto snap-x snap-mandatory pb-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-          <div className="flex gap-4 w-max">
+        <div className="md:hidden -mx-4 px-4 pb-4">
+          <div className="grid grid-cols-2 gap-3">
             {items.map((item: any, i: number) => (
               <div
                 key={i}
-                className={`snap-start shrink-0 w-[84vw] max-w-sm px-6 py-8 text-center rounded-3xl border border-gray-200 bg-white shadow-sm ${i > 0 ? '' : ''}`}
+                className="px-3 py-4 text-center rounded-3xl border border-gray-200 bg-white shadow-sm"
               >
-                <div className="w-14 h-14 mx-auto mb-5 rounded-full bg-black text-white flex items-center justify-center">
+                <div className="w-11 h-11 mx-auto mb-4 rounded-full bg-black text-white flex items-center justify-center">
                   <WhyChooseUsIcon icon={item.icon} />
                 </div>
-                <h3 className="text-base font-bold text-gray-900 mb-2">{item.title}</h3>
-                <p className="text-sm text-gray-600 leading-relaxed">{item.description}</p>
+                <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-2 leading-tight">{item.title}</h3>
+                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">{item.description}</p>
               </div>
             ))}
           </div>
@@ -311,27 +371,27 @@ function ProcessSection({ section }: { section?: Section }) {
   const items = section?.items || [];
 
   return (
-    <section className="py-16 bg-white overflow-hidden">
+    <section className="py-14 md:py-16 bg-white overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
+        <div className="text-center mb-12 md:mb-16">
           <h4 className="text-accent text-sm font-bold uppercase tracking-wider mb-3">Our Process</h4>
-          <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">Our Fabrication Process</h2>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900">Our Fabrication Process</h2>
         </div>
 
         <div className="relative">
           {/* Connector Line (Desktop) */}
           <div className="hidden md:block absolute top-8 left-[8%] right-[8%] h-px bg-gray-300 border-t border-dashed border-gray-300 z-0" />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-8 lg:gap-4 relative z-10">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-8 lg:gap-4 relative z-10">
             {items.map((item: any, i: number) => {
               return (
                 <div key={i} className="text-center relative">
-                  <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center shadow-md mb-6 bg-gray-900 text-white">
+                  <div className="w-12 h-12 md:w-16 md:h-16 mx-auto rounded-full flex items-center justify-center shadow-md mb-4 md:mb-6 bg-gray-900 text-white">
                     <WhyChooseUsIcon icon={item.icon || 'badge-check'} />
                   </div>
-                  <div className="text-accent font-bold text-sm mb-2">0{i + 1}</div>
-                  <h3 className="text-sm font-bold text-gray-900 mb-2 px-2">{item.title}</h3>
-                  <p className="text-xs text-gray-600 px-2">{item.description}</p>
+                  <div className="text-accent font-bold text-xs sm:text-sm mb-2">0{i + 1}</div>
+                  <h3 className="text-xs sm:text-sm font-bold text-gray-900 mb-2 px-1 sm:px-2 leading-tight">{item.title}</h3>
+                  <p className="text-[11px] sm:text-xs text-gray-600 px-1 sm:px-2 leading-relaxed">{item.description}</p>
                 </div>
               );
             })}
@@ -381,7 +441,7 @@ function ProjectsSection({ section }: { section?: Section }) {
           <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">{title}</h2>
         </div>
 
-        <div className="relative mx-auto h-105 w-full max-w-6xl overflow-hidden">
+        <div className="relative mx-auto h-76 md:h-105 w-full max-w-6xl overflow-hidden">
           {projects.map((project, i) => {
             const pos = getRelativePos(i);
             if (pos === 99) return null;
@@ -400,7 +460,7 @@ function ProjectsSection({ section }: { section?: Section }) {
                   setActiveIndex(i);
                   setOpenIndex(i);
                 }}
-                className={`absolute top-8 h-72.5 md:h-85 overflow-hidden rounded-2xl border border-white/20 shadow-xl transition-all duration-500 ${cardClasses}`}
+                className={`absolute top-1 md:top-8 h-72 md:h-85 overflow-hidden rounded-2xl border border-white/20 shadow-xl transition-all duration-500 ${cardClasses}`}
                 aria-label={`Open details for ${project.title}`}
               >
                 <img src={project.image} alt={project.title} className="h-full w-full object-cover" />
@@ -414,7 +474,7 @@ function ProjectsSection({ section }: { section?: Section }) {
           })}
         </div>
 
-        <div className="mt-8 flex items-center justify-center gap-2">
+        <div className="mt-3 md:mt-8 flex items-center justify-center gap-2">
           {projects.map((_, i) => (
             <button
               key={i}
@@ -425,7 +485,7 @@ function ProjectsSection({ section }: { section?: Section }) {
           ))}
         </div>
 
-        <div className="text-center mt-10">
+        <div className="text-center mt-5 md:mt-10">
           <Link href="/projects" className="inline-block bg-accent hover:bg-accent-dark text-white px-8 py-3 rounded-md font-semibold transition-colors text-sm">
             View More Projects
           </Link>
@@ -534,6 +594,7 @@ export default function SteelMetalFabricationPage() {
   const [sections, setSections] = useState<Section[]>([]);
   const [pageReady, setPageReady] = useState(false);
   const [footerContact, setFooterContact] = useState<{phone?:string,email?:string}>({});
+  const [pageMeta, setPageMeta] = useState<{ title?: string; description?: string }>({});
   const fetchFooter = async () => {
     await fetchFooterSettingsLocal(setFooterContact);
   };
@@ -546,6 +607,10 @@ export default function SteelMetalFabricationPage() {
   const fetchPageContent = async () => {
     try {
       const data = await getPageContent('steel-fabrication-delhi-ncr');
+      setPageMeta({
+        title: data.data?.title,
+        description: data.data?.description,
+      });
       setSections(data.data?.sections || []);
     } catch (err) {
       console.error('Error fetching page content:', err);
@@ -578,7 +643,7 @@ export default function SteelMetalFabricationPage() {
           </div>
         ) : (
           <>
-            {visible('hero') && <FabricationHero section={heroSection} />}
+            {visible('hero') && <FabricationHero section={heroSection} pageTitle={pageMeta.title} pageDescription={pageMeta.description} />}
             {visible('services') && <ServicesSection section={servicesSection} />}
             {visible('why-choose-us') && <WhyChooseUsSection section={whyChooseUsSection} />}
             {visible('process') && <ProcessSection section={processSection} />}

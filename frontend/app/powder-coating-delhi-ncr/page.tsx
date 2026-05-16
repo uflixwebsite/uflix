@@ -3,5 +3,5 @@
 import BusinessCmsPage from '@/app/business/BusinessCmsPage';
 
 export default function PowderCoatingDelhiNcrPage() {
-  return <BusinessCmsPage pageSlug="powder-coating-delhi-ncr" />;
+  return <BusinessCmsPage pageSlug="powder-coating-delhi-ncr" strictSectionVisibility />;
 }

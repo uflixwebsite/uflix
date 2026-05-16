@@ -3,5 +3,5 @@
 import BusinessCmsPage from '@/app/business/BusinessCmsPage';
 
 export default function LaserSheetCuttingDelhiNcrPage() {
-  return <BusinessCmsPage pageSlug="laser-sheet-cutting-delhi-ncr" />;
+  return <BusinessCmsPage pageSlug="laser-sheet-cutting-delhi-ncr" strictSectionVisibility />;
 }

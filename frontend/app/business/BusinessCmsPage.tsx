@@ -495,7 +495,7 @@ function ProjectsSection({ items }: { items: ProjectItem[] }) {
 }
 
 // ─── Business Hero (always dark, carousel if multiple images) ───────────────
-function BusinessHero({ section }: { section?: Section }) {
+function BusinessHero({ section, disableFallbackContent = false }: { section?: Section; disableFallbackContent?: boolean }) {
   const allSlides = [
     {
       image: section?.image || '',
@@ -540,10 +540,10 @@ function BusinessHero({ section }: { section?: Section }) {
     title: '',
     subtitle: '',
     description: '',
-    linkText: 'Browse Collection',
-    link: '#products',
-    secondaryLinkText: 'Request a Quote',
-    secondaryLink: '/contact',
+    linkText: disableFallbackContent ? '' : 'Browse Collection',
+    link: disableFallbackContent ? '' : '#products',
+    secondaryLinkText: disableFallbackContent ? '' : 'Request a Quote',
+    secondaryLink: disableFallbackContent ? '' : '/contact',
     titleColor: '',
     subtitleColor: '',
     primaryButtonBg: '',
@@ -615,37 +615,45 @@ function BusinessHero({ section }: { section?: Section }) {
         </span>
         {cur.title ? (
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight" style={{ color: cur.titleColor || undefined }}>{cur.title}</h1>
-        ) : (
+        ) : !disableFallbackContent ? (
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
             Furniture That <br />
             <span className="text-accent">Means Business</span>
           </h1>
+        ) : null}
+        {(cur.description || cur.subtitle || !disableFallbackContent) && (
+          <p className="text-xl text-white/70 max-w-3xl mx-auto mb-10" style={{ color: cur.subtitleColor || undefined }}>
+            {cur.description || cur.subtitle || 'From corporate offices to government institutions — premium, ISO-certified furniture solutions designed for productivity, durability, and your brand.'}
+          </p>
         )}
-        <p className="text-xl text-white/70 max-w-3xl mx-auto mb-10" style={{ color: cur.subtitleColor || undefined }}>
-          {cur.description || cur.subtitle || 'From corporate offices to government institutions — premium, ISO-certified furniture solutions designed for productivity, durability, and your brand.'}
-        </p>
-        <div className="flex flex-wrap gap-4 justify-center">
-          <Link
-            href={cur.link}
-            className="btn-primary px-8 py-3.5 rounded-full font-semibold shadow-lg transition-all"
-            style={{
-              '--site-btn-primary-bg': cur.primaryButtonBg || undefined,
-              '--site-btn-primary-text': cur.primaryButtonTextColor || undefined,
-            } as React.CSSProperties}
-          >
-            {cur.linkText}
-          </Link>
-          <Link
-            href={cur.secondaryLink}
-            className="btn-outline-inverse px-8 py-3.5 rounded-full font-semibold transition-all hover:bg-white/10"
-            style={{
-              '--site-btn-outline-bg': cur.secondaryButtonBg || undefined,
-              '--site-btn-outline-text': cur.secondaryButtonTextColor || undefined,
-            } as React.CSSProperties}
-          >
-            {cur.secondaryLinkText}
-          </Link>
-        </div>
+        {(cur.linkText || cur.secondaryLinkText) && (
+          <div className="flex flex-wrap gap-4 justify-center">
+            {cur.linkText && cur.link && (
+              <Link
+                href={cur.link}
+                className="btn-primary px-8 py-3.5 rounded-full font-semibold shadow-lg transition-all"
+                style={{
+                  '--site-btn-primary-bg': cur.primaryButtonBg || undefined,
+                  '--site-btn-primary-text': cur.primaryButtonTextColor || undefined,
+                } as React.CSSProperties}
+              >
+                {cur.linkText}
+              </Link>
+            )}
+            {cur.secondaryLinkText && cur.secondaryLink && (
+              <Link
+                href={cur.secondaryLink}
+                className="btn-outline-inverse px-8 py-3.5 rounded-full font-semibold transition-all hover:bg-white/10"
+                style={{
+                  '--site-btn-outline-bg': cur.secondaryButtonBg || undefined,
+                  '--site-btn-outline-text': cur.secondaryButtonTextColor || undefined,
+                } as React.CSSProperties}
+              >
+                {cur.secondaryLinkText}
+              </Link>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Dot nav */}
@@ -701,7 +709,7 @@ function dbToSplit(s: Section, fallback: SplitProps): SplitProps {
 }
 
 // ─── Page ────────────────────────────────────────────────────────────────────────
-export default function BusinessCmsPage({ pageSlug = 'business' }: { pageSlug?: string }) {
+export default function BusinessCmsPage({ pageSlug = 'business', strictSectionVisibility = false }: { pageSlug?: string; strictSectionVisibility?: boolean }) {
   const [sections, setSections] = useState<Section[]>([]);
   const [subCategories, setSubCategories] = useState<any[]>([]);
   const [businessRootSlug, setBusinessRootSlug] = useState('for-business');
@@ -743,16 +751,20 @@ export default function BusinessCmsPage({ pageSlug = 'business' }: { pageSlug?: 
   // DB overrides or placeholder fallbacks
   const heroSection = sections.find((s) => s.type === 'hero');
 
-  const statsItems     = get('stats-bar')?.items?.length ? dbToStats(get('stats-bar')!)            : PH_STATS;
-  const gridItems      = get('image-grid')?.items?.length ? dbToGridItems(get('image-grid')!)      : PH_IMAGE_GRID;
-  const split1Data     = get('split-1')                   ? dbToSplit(get('split-1')!, PH_SPLIT_1)  : PH_SPLIT_1;
-  const split2Data     = get('split-2')                   ? dbToSplit(get('split-2')!, PH_SPLIT_2)  : PH_SPLIT_2;
+  const statsItems     = get('stats-bar')?.items?.length ? dbToStats(get('stats-bar')!)            : (strictSectionVisibility ? [] : PH_STATS);
+  const gridItems      = get('image-grid')?.items?.length ? dbToGridItems(get('image-grid')!)      : (strictSectionVisibility ? [] : PH_IMAGE_GRID);
+  const split1Data     = get('split-1')                   ? dbToSplit(get('split-1')!, PH_SPLIT_1)  : (strictSectionVisibility ? null : PH_SPLIT_1);
+  const split2Data     = get('split-2')                   ? dbToSplit(get('split-2')!, PH_SPLIT_2)  : (strictSectionVisibility ? null : PH_SPLIT_2);
   const projectItems   = get('projects')?.items?.length   ? dbToProjects(get('projects')!)          : [];
   const adminSliderItems = get('slider')?.items?.length   ? get('slider')!.items                   : undefined;
   const ctaSection     = get('cta') || get('bulk-cta');
   // Visibility: only hide when section exists in DB AND isVisible is explicitly false.
   // If section has never been saved (no DB entry), always show with placeholder.
-  const visible = (id: string) => { const s = get(id); return !s || s.isVisible !== false; };
+  const visible = (id: string) => {
+    const s = get(id);
+    if (strictSectionVisibility) return !!s && s.isVisible !== false;
+    return !s || s.isVisible !== false;
+  };
 
   const HANDLED = new Set(['hero','slider','stats-bar','image-grid','split-1','split-2','text-image','projects','cta','bulk-cta']);
   const extraSections = sections.filter((s) => !HANDLED.has(s.type) && !HANDLED.has(s.sectionId));
@@ -765,7 +777,7 @@ export default function BusinessCmsPage({ pageSlug = 'business' }: { pageSlug?: 
         {/* 1. Hero */}
         {!pageReady
           ? <div className="min-h-screen" style={{ background: '#000' }} />
-          : visible('hero') && <BusinessHero section={heroSection} />}
+          : visible('hero') && <BusinessHero section={heroSection} disableFallbackContent={strictSectionVisibility} />}
 
         {/* 2. Category Tabs + Products */}
         {visible('slider') && (
@@ -778,16 +790,16 @@ export default function BusinessCmsPage({ pageSlug = 'business' }: { pageSlug?: 
         )}
 
         {/* 3. Stats Bar */}
-        {visible('stats-bar') && <StatsBar items={statsItems} />}
+        {visible('stats-bar') && statsItems.length > 0 && <StatsBar items={statsItems} />}
 
         {/* 4. Image Grid */}
-        {visible('image-grid') && <ImageGrid items={gridItems} />}
+        {visible('image-grid') && gridItems.length > 0 && <ImageGrid items={gridItems} />}
 
         {/* 5. Split — Audio-Visual (image left) */}
-        {visible('split-1') && <SplitContent {...split1Data} imageRight={false} bgLight={false} />}
+        {visible('split-1') && split1Data && <SplitContent {...split1Data} imageRight={false} bgLight={false} />}
 
         {/* 6. Split — Shop for Home (image right) */}
-        {visible('split-2') && <SplitContent {...split2Data} imageRight={true} bgLight={true} />}
+        {visible('split-2') && split2Data && <SplitContent {...split2Data} imageRight={true} bgLight={true} />}
 
         {/* 7. Flagship Projects — only renders when admin has added items AND section is visible */}
         {visible('projects') && projectItems.length > 0 && <ProjectsSection items={projectItems} />}
@@ -800,7 +812,7 @@ export default function BusinessCmsPage({ pageSlug = 'business' }: { pageSlug?: 
         {/* 9. CTA */}
         {visible('cta') && (ctaSection ? (
           renderSection(ctaSection)
-        ) : (
+        ) : strictSectionVisibility ? null : (
           <section
             className="py-20"
             style={{ background: '#000' }}

@@ -43,11 +43,30 @@ export default function Header({ navbarContextPath }: HeaderProps) {
   const { isSignedIn, user } = useUser();
   const { status, userRole, isAdmin } = useAuthState();
 
+  const defaultTopTabs = [
+    { label: 'For Businesses', href: '/business' },
+    { label: 'Retail Shop Fitting', href: '/shop-fittings' },
+    { label: 'Steel Fabrication', href: '/steel-fabrication-delhi-ncr' },
+  ];
+
+  const steelFabricationTabs = [
+    { label: 'Steel Fabrication', href: '/steel-fabrication-delhi-ncr' },
+    { label: 'MS Fabrication', href: '/msfabrication-delhi-ncr' },
+    { label: 'Laser Sheet Cutting', href: '/laser-sheet-cutting-delhi-ncr' },
+    { label: 'Powder Coating', href: '/powder-coating-delhi-ncr' },
+    { label: 'Laser Pipe Cutting', href: '/laser-pipe-cutting-delhi-ncr' },
+  ];
+
   const isTopTabActive = (href: string) => {
     if (!pathname) return false;
     if (href === '/') return pathname === '/';
     return pathname === href || pathname.startsWith(`${href}/`);
   };
+
+  const isSteelFabricationPage = steelFabricationTabs.some((tab) => isTopTabActive(tab.href));
+  const mobileTopTabs = isSteelFabricationPage
+    ? steelFabricationTabs.filter((tab) => !isTopTabActive(tab.href))
+    : defaultTopTabs;
 
   // Fetch mega menu data for hovered link
   const fetchMegaMenuForLink = async (linkUrl: string) => {
@@ -274,11 +293,7 @@ export default function Header({ navbarContextPath }: HeaderProps) {
       <div className="hidden lg:block bg-linear-to-r from-white via-[#fffefc] to-[#f8f6f1] border-b border-[#ece6dc]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-11">
           <div className="flex items-center gap-1 bg-white/75 rounded-full p-0.5 border border-[#f0e8da] shadow-sm">
-            {[
-              { label: 'For Businesses', href: '/business' },
-              { label: 'Retail Shop Fitting', href: '/shop-fittings' },
-                { label: 'Steel Fabrication', href: '/steel-fabrication-delhi-ncr' },
-            ].map((tab) => (
+            {defaultTopTabs.map((tab) => (
               <Link key={tab.href} href={tab.href}
                 className={`px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-all duration-300 ${
                   isTopTabActive(tab.href)
@@ -299,20 +314,18 @@ export default function Header({ navbarContextPath }: HeaderProps) {
       </div>
 
       <div className="lg:hidden bg-[#f8f6f1] border-b border-[#ece4d8]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex gap-1 justify-center">
-          {[
-            { label: 'For Businesses', href: '/business' },
-            { label: 'Retail Shop Fitting', href: '/shop-fittings' },
-              { label: 'Steel Fabrication', href: '/steel-fabrication-delhi-ncr' },
-          ].map((tab) => (
-            <Link key={tab.href} href={tab.href}
-              className={`shrink-0 whitespace-nowrap px-2 py-1.5 rounded-full text-[11px] font-semibold transition-all duration-200 ${
-                isTopTabActive(tab.href)
-                  ? 'bg-orange-500 text-white shadow-sm'
-                  : 'bg-white text-gray-700 hover:bg-gray-100'
-              }`}
-            >{tab.label}</Link>
-          ))}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <div className="flex w-max min-w-full gap-1 justify-center">
+            {mobileTopTabs.map((tab) => (
+              <Link key={tab.href} href={tab.href}
+                className={`shrink-0 whitespace-nowrap px-2 py-1.5 rounded-full text-[11px] font-semibold transition-all duration-200 ${
+                  isTopTabActive(tab.href)
+                    ? 'bg-orange-500 text-white shadow-sm'
+                    : 'bg-white text-gray-700 hover:bg-gray-100'
+                }`}
+              >{tab.label}</Link>
+            ))}
+          </div>
         </div>
       </div>
 

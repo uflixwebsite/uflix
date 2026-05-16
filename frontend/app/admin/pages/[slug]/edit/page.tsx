@@ -377,11 +377,12 @@ type SectionSchema = {
   showDescription?: boolean;
   showImage?: boolean;
   showLink?: boolean;
+  showImageLink?: boolean;
   showSecondaryLink?: boolean;
   secondaryLinkLabel?: string;
   secondaryLinkTextLabel?: string;
   itemLabel?: string;
-  itemFields: Array<'title'|'image'|'link'|'description'|'stats'|'statsLabel'|'icon'>;
+  itemFields: Array<'title'|'image'|'imageLink'|'link'|'description'|'stats'|'statsLabel'|'icon'>;
   noItems?: boolean;
   isSlider?: boolean;
   isHeroImages?: boolean; // unified drag-drop image grid replaces showImage + items
@@ -447,6 +448,13 @@ const SECTION_SCHEMAS: Record<string, SectionSchema> = {
     showTitle: true,
     itemLabel: 'Icon Card',
     itemFields: ['icon', 'title', 'description'],
+  },
+  services: {
+    label: 'Steel Fabrication Services',
+    hint: 'Service cards can link text and images to different pages on mobile.',
+    showTitle: true,
+    itemLabel: 'Service',
+    itemFields: ['title', 'description', 'image', 'link', 'imageLink'],
   },
   slider: {
     label: 'Product Slider',
@@ -599,9 +607,17 @@ function SectionItemEditor({ item, index, onChange, onRemove, fields, itemLabel,
           </div>
         )}
         {show('link') && (
-          <div className={show('image') ? '' : 'md:col-span-2'}>
-            <label className="block text-xs font-medium mb-1 text-gray-600">Link URL</label>
+          <div className={show('image') || show('imageLink') ? '' : 'md:col-span-2'}>
+            <label className="block text-xs font-medium mb-1 text-gray-600">Text/Page Link</label>
             <input type="text" value={item.link || ''} onChange={(e) => update('link', e.target.value)}
+              placeholder="/category/seating"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
+          </div>
+        )}
+        {show('imageLink') && (
+          <div className={show('image') || show('link') ? '' : 'md:col-span-2'}>
+            <label className="block text-xs font-medium mb-1 text-gray-600">Image/Page Link</label>
+            <input type="text" value={item.imageLink || ''} onChange={(e) => update('imageLink', e.target.value)}
               placeholder="/category/seating"
               className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
           </div>
@@ -1183,7 +1199,7 @@ function SectionEditor({ section, index, onChange, onDelete, onMoveUp, onMoveDow
   const update = (field: string, value: any) => onChange({ ...section, [field]: value });
 
   const addItem = () => {
-    update('items', [...(section.items || []), { title: '', description: '', image: '', link: '', stats: '', statsLabel: '', icon: 'shield-check' }]);
+    update('items', [...(section.items || []), { title: '', description: '', image: '', imageLink: '', link: '', stats: '', statsLabel: '', icon: 'shield-check' }]);
   };
   const updateItem = (idx: number, item: any) => {
     const items = [...(section.items || [])]; items[idx] = item; update('items', items);
