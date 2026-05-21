@@ -20,6 +20,10 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Render and similar hosts sit behind a reverse proxy and forward client IPs
+// through X-Forwarded-For. Trusting one proxy keeps rate limiting stable.
+app.set('trust proxy', 1);
+
 const BUSINESS_CLONE_PAGES = [
   { slug: 'msfabrication-delhi-ncr', title: 'MS Fabrication' },
   { slug: 'laser-sheet-cutting-delhi-ncr', title: 'Laser Sheet Cutting' },

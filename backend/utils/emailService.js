@@ -60,9 +60,16 @@ const transporterConfig = EMAIL_HOST && EMAIL_PORT
 
 const transporter = nodemailer.createTransport(transporterConfig);
 
-transporter.verify().catch((error) => {
-  console.error('Email transporter verification failed:', error.message);
-});
+const shouldVerifyTransporter = String(process.env.EMAIL_VERIFY_ON_START || '').toLowerCase() === 'true'
+  || process.env.NODE_ENV !== 'production';
+
+if (shouldVerifyTransporter) {
+  transporter.verify().catch((error) => {
+    console.error('Email transporter verification failed:', error.message);
+  });
+} else {
+  console.log('Email transporter verification skipped on startup.');
+}
 
 const currency = (value = 0) => `Rs ${Number(value || 0).toLocaleString('en-IN')}`;
 
