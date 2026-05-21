@@ -26,6 +26,7 @@ function ContactPageContent() {
     message: '',
   });
   const [submitting, setSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     fetchPageContent();
@@ -128,6 +129,23 @@ function ContactPageContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // client-side validation
+    const clientErrors: Record<string, string> = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneDigits = formData.phone.replace(/[^0-9]/g, '');
+
+    if (!formData.name || formData.name.trim().length < 2) clientErrors.name = 'Please enter your full name (min 2 characters).';
+    if (!formData.email || !emailRegex.test(formData.email.trim())) clientErrors.email = 'Please enter a valid email address.';
+    if (!formData.phone || phoneDigits.length < 7) clientErrors.phone = 'Please enter a valid phone number.';
+    if (!formData.subject) clientErrors.subject = 'Please select a subject.';
+    if (!formData.message || formData.message.trim().length < 10) clientErrors.message = 'Please enter a message (min 10 characters).';
+    if (formData.subject === 'customize-existing' && (!formData.selectedProduct || formData.selectedProduct.trim() === '')) clientErrors.selectedProduct = 'Please select a product to customize.';
+
+    if (Object.keys(clientErrors).length) {
+      setErrors(clientErrors);
+      return;
+    }
+
     setSubmitting(true);
     try {
       await submitContactForm(formData);
@@ -140,6 +158,7 @@ function ContactPageContent() {
         selectedProduct: '',
         message: '',
       });
+      setErrors({});
     } catch (error: any) {
       alert(error.response?.data?.message || 'Failed to send message. Please try again.');
     } finally {
@@ -238,14 +257,17 @@ function ContactPageContent() {
                   <div>
                     <label htmlFor="name" className="block text-sm font-medium mb-2">Full Name</label>
                     <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent" required />
+                    {errors.name && <p className="text-sm text-red-600 mt-1">{errors.name}</p>}
                   </div>
                   <div>
                     <label htmlFor="email" className="block text-sm font-medium mb-2">Email Address</label>
                     <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent" required />
+                    {errors.email && <p className="text-sm text-red-600 mt-1">{errors.email}</p>}
                   </div>
                   <div>
                     <label htmlFor="phone" className="block text-sm font-medium mb-2">Phone Number</label>
                     <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleChange} className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent" required />
+                    {errors.phone && <p className="text-sm text-red-600 mt-1">{errors.phone}</p>}
                   </div>
                   <div>
                     <label htmlFor="subject" className="block text-sm font-medium mb-2">Subject</label>
@@ -304,6 +326,7 @@ function ContactPageContent() {
                         </div>
                       </div>
                       <p className="text-sm text-neutral-dark">Click a product from the list to select it for customization.</p>
+                      {errors.selectedProduct && <p className="text-sm text-red-600 mt-1">{errors.selectedProduct}</p>}
                     </div>
                   )}
                   <div>
@@ -326,6 +349,7 @@ function ContactPageContent() {
                       className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent" 
                       required 
                     />
+                      {errors.message && <p className="text-sm text-red-600 mt-1">{errors.message}</p>}
                   </div>
                   <button type="submit" disabled={submitting} className="w-full btn-primary py-3 rounded-md font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
                     {submitting ? 'Sending...' : 'Send Message'}

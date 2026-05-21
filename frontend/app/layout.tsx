@@ -12,6 +12,8 @@ import LoadingBar from '@/components/LoadingBar';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import SiteButtonThemeSync from '@/components/SiteButtonThemeSync';
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+
 const playfair = Playfair_Display({
   variable: "--font-playfair",
   subsets: ["latin"],
@@ -27,6 +29,7 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     default: "UFLIX - Premium Furniture & Manufacturing Solutions",
     template: "%s | UFLIX",

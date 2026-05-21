@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Contact = require('../models/Contact');
 const { sendContactFormNotifications } = require('../utils/emailService');
+const { appendLeadToSheet } = require('../utils/googleSheets');
 const { protect, admin } = require('../middleware/auth');
 
 // @route   POST /api/contact
@@ -11,21 +12,51 @@ router.post('/', async (req, res) => {
   try {
     const { name, email, phone, subject, selectedProduct, message } = req.body;
 
-    if (!name || !email || !phone || !subject || !message) {
+    // Basic validation
+    const errors = [];
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneDigits = (phone || '').replace(/[^0-9]/g, '');
+    const allowedSubjects = [
+      'custom-built',
+      'steel-metal-fabrication-enquiry',
+      'customize-existing',
+      'shop-fittings',
+      'business-order',
+      'become-dealer',
+      'general',
+      'other',
+    ];
+
+    if (!name || String(name).trim().length < 2) errors.push('name');
+    if (!email || !emailRegex.test(String(email).trim())) errors.push('email');
+    if (!phone || phoneDigits.length < 7) errors.push('phone');
+    if (!subject || !allowedSubjects.includes(subject)) errors.push('subject');
+    if (!message || String(message).trim().length < 10) errors.push('message');
+
+    if (subject === 'customize-existing' && (!selectedProduct || String(selectedProduct).trim().length === 0)) {
+      errors.push('selectedProduct');
+    }
+
+    if (errors.length) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide all required fields',
+        message: 'Validation failed',
+        errors,
       });
     }
 
-    const contact = await Contact.create({
-      name,
-      email,
-      phone,
-      subject,
-      selectedProduct,
-      message,
-    });
+    // sanitize
+    const safe = {
+      name: String(name).trim(),
+      email: String(email).trim(),
+      phone: String(phone).trim(),
+      subject: String(subject).trim(),
+      selectedProduct: selectedProduct ? String(selectedProduct).trim() : '',
+      message: String(message).trim(),
+    };
+
+    const contact = await Contact.create(safe);
 
     try {
       await sendContactFormNotifications({
@@ -38,6 +69,13 @@ router.post('/', async (req, res) => {
       });
     } catch (emailError) {
       console.error('Error sending contact notification email:', emailError);
+    }
+
+    // Append to Google Sheet (best-effort; do not fail the request if this errors)
+    try {
+      await appendLeadToSheet(contact);
+    } catch (sheetError) {
+      console.error('Error appending contact to Google Sheet:', sheetError);
     }
 
     res.status(201).json({
