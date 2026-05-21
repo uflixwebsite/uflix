@@ -3,6 +3,11 @@ const fs = require('fs');
 const path = require('path');
 
 const ADMIN_NOTIFICATION_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL || 'uflixwebsite@gmail.com';
+const EMAIL_HOST = process.env.EMAIL_HOST;
+const EMAIL_PORT = process.env.EMAIL_PORT ? Number(process.env.EMAIL_PORT) : undefined;
+const EMAIL_SECURE = process.env.EMAIL_SECURE
+  ? String(process.env.EMAIL_SECURE).toLowerCase() === 'true'
+  : EMAIL_PORT === 465;
 const MAIL_USER = process.env.EMAIL_USER;
 const MAIL_PASS = process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS;
 const LOCAL_LOGO_PATH = path.resolve(__dirname, '../../frontend/public/Logos/Uflix_Logo.png');
@@ -35,12 +40,28 @@ const getInlineLogoAttachment = () => {
 
 const getEmailLogoSrc = () => (getInlineLogoAttachment() ? 'cid:uflix-logo' : DEFAULT_LOGO_URL);
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: MAIL_USER,
-    pass: MAIL_PASS,
-  },
+const transporterConfig = EMAIL_HOST && EMAIL_PORT
+  ? {
+      host: EMAIL_HOST,
+      port: EMAIL_PORT,
+      secure: EMAIL_SECURE,
+      auth: {
+        user: MAIL_USER,
+        pass: MAIL_PASS,
+      },
+    }
+  : {
+      service: 'gmail',
+      auth: {
+        user: MAIL_USER,
+        pass: MAIL_PASS,
+      },
+    };
+
+const transporter = nodemailer.createTransport(transporterConfig);
+
+transporter.verify().catch((error) => {
+  console.error('Email transporter verification failed:', error.message);
 });
 
 const currency = (value = 0) => `Rs ${Number(value || 0).toLocaleString('en-IN')}`;

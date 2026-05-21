@@ -127,6 +127,21 @@ export default function AdminDashboardPage() {
           </Link>
 
           <Link
+            href="/admin/contacts"
+            className="group bg-white rounded-lg border border-border p-6 hover:shadow-lg transition-all duration-200 hover:border-accent"
+          >
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-cyan-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-cyan-200 transition-colors">
+                <svg className="w-8 h-8 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h8m-8 4h5m1 9l-3-3H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v9a2 2 0 01-2 2h-3l-3 3z" />
+                </svg>
+              </div>
+              <h3 className="font-semibold text-lg mb-2">Contacts</h3>
+              <p className="text-sm text-neutral-dark">Manage contact submissions</p>
+            </div>
+          </Link>
+
+          <Link
             href="/admin/users"
             className="group bg-white rounded-lg border border-border p-6 hover:shadow-lg transition-all duration-200 hover:border-accent"
           >
