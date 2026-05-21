@@ -1,14 +1,92 @@
 const express = require('express');
 const router = express.Router();
+const { randomUUID } = require('crypto');
 const Contact = require('../models/Contact');
 const { sendContactFormNotifications } = require('../utils/emailService');
 const { appendLeadToSheet } = require('../utils/googleSheets');
 const { protect, admin } = require('../middleware/auth');
 
+const isProduction = process.env.NODE_ENV === 'production';
+
+const getRequestMeta = (req) => ({
+  ip: req.ip,
+  forwardedFor: req.get('x-forwarded-for') || '',
+  userAgent: req.get('user-agent') || '',
+});
+
+const logContactEvent = (requestId, stage, details = {}) => {
+  if (!isProduction) return;
+  console.info('[contact]', {
+    requestId,
+    stage,
+    ...details,
+  });
+};
+
+const processContactFollowUps = async ({ requestId, startedAt, contact, payload }) => {
+  logContactEvent(requestId, 'background_started', {
+    contactId: String(contact._id),
+  });
+
+  try {
+    const emailStartedAt = Date.now();
+    logContactEvent(requestId, 'email_start', {
+      contactId: String(contact._id),
+    });
+
+    await sendContactFormNotifications(payload);
+
+    logContactEvent(requestId, 'email_sent', {
+      contactId: String(contact._id),
+      durationMs: Date.now() - emailStartedAt,
+    });
+  } catch (emailError) {
+    console.error('[contact] email_failed', {
+      requestId,
+      contactId: String(contact._id),
+      message: emailError?.message,
+      stack: isProduction ? undefined : emailError?.stack,
+    });
+  }
+
+  try {
+    const sheetStartedAt = Date.now();
+    logContactEvent(requestId, 'sheet_start', {
+      contactId: String(contact._id),
+    });
+
+    await appendLeadToSheet(contact);
+
+    logContactEvent(requestId, 'sheet_appended', {
+      contactId: String(contact._id),
+      durationMs: Date.now() - sheetStartedAt,
+    });
+  } catch (sheetError) {
+    console.error('[contact] sheet_failed', {
+      requestId,
+      contactId: String(contact._id),
+      message: sheetError?.message,
+      stack: isProduction ? undefined : sheetError?.stack,
+    });
+  }
+
+  logContactEvent(requestId, 'background_completed', {
+    contactId: String(contact._id),
+    durationMs: Date.now() - startedAt,
+  });
+};
+
 // @route   POST /api/contact
 // @desc    Submit contact form, store it, and send notification emails
 // @access  Public
 router.post('/', async (req, res) => {
+  const requestId = randomUUID();
+  const startedAt = Date.now();
+
+  logContactEvent(requestId, 'received', {
+    ...getRequestMeta(req),
+  });
+
   try {
     const { name, email, phone, subject, selectedProduct, message } = req.body;
 
@@ -39,6 +117,11 @@ router.post('/', async (req, res) => {
     }
 
     if (errors.length) {
+      logContactEvent(requestId, 'validation_failed', {
+        errors,
+        durationMs: Date.now() - startedAt,
+      });
+
       return res.status(400).json({
         success: false,
         message: 'Validation failed',
@@ -56,35 +139,58 @@ router.post('/', async (req, res) => {
       message: String(message).trim(),
     };
 
+    logContactEvent(requestId, 'validated', {
+      subject: safe.subject,
+      hasSelectedProduct: Boolean(safe.selectedProduct),
+    });
+
     const contact = await Contact.create(safe);
 
-    try {
-      await sendContactFormNotifications({
-        name,
-        email,
-        phone,
-        subject,
-        selectedProduct,
-        message,
-      });
-    } catch (emailError) {
-      console.error('Error sending contact notification email:', emailError);
-    }
-
-    // Append to Google Sheet (best-effort; do not fail the request if this errors)
-    try {
-      await appendLeadToSheet(contact);
-    } catch (sheetError) {
-      console.error('Error appending contact to Google Sheet:', sheetError);
-    }
+    logContactEvent(requestId, 'db_saved', {
+      contactId: String(contact._id),
+      durationMs: Date.now() - startedAt,
+    });
 
     res.status(201).json({
       success: true,
       data: contact,
       message: 'Contact form submitted successfully',
     });
+
+    logContactEvent(requestId, 'response_sent', {
+      contactId: String(contact._id),
+      totalBeforeResponseMs: Date.now() - startedAt,
+    });
+
+    setImmediate(() => {
+      void processContactFollowUps({
+        requestId,
+        startedAt,
+        contact,
+        payload: {
+          name: safe.name,
+          email: safe.email,
+          phone: safe.phone,
+          subject: safe.subject,
+          selectedProduct: safe.selectedProduct,
+          message: safe.message,
+        },
+      }).catch((backgroundError) => {
+        console.error('[contact] background_crashed', {
+          requestId,
+          contactId: String(contact._id),
+          message: backgroundError?.message,
+          stack: isProduction ? undefined : backgroundError?.stack,
+        });
+      });
+    });
   } catch (error) {
-    console.error('Error submitting contact form:', error);
+    console.error('[contact] request_failed', {
+      requestId,
+      message: error?.message,
+      stack: isProduction ? undefined : error?.stack,
+      durationMs: Date.now() - startedAt,
+    });
     res.status(500).json({
       success: false,
       message: error.message || 'Failed to submit contact form',

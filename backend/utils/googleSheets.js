@@ -13,6 +13,16 @@ const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 
 let sheetsClient = null;
 
+const isProduction = process.env.NODE_ENV === 'production';
+
+const logSheetsEvent = (event, details = {}) => {
+  if (!isProduction) return;
+  console.info('[sheets]', {
+    event,
+    ...details,
+  });
+};
+
 function getSheetsClient() {
   if (sheetsClient) return sheetsClient;
 
@@ -56,6 +66,12 @@ async function ensureHeaders() {
 
   const headerRange = `${SHEET_NAME}!A1:P1`;
 
+  const startedAt = Date.now();
+  logSheetsEvent('header_check_start', {
+    spreadsheetId: SPREADSHEET_ID,
+    range: headerRange,
+  });
+
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
     range: headerRange,
@@ -66,6 +82,7 @@ async function ensureHeaders() {
   const firstRowEmpty = values.length === 0 || !values[0] || values[0].length === 0;
 
   if (firstRowEmpty) {
+    const headerWriteStartedAt = Date.now();
     await sheets.spreadsheets.values.update({
       spreadsheetId: SPREADSHEET_ID,
       range: headerRange,
@@ -74,11 +91,31 @@ async function ensureHeaders() {
         values: [HEADER_ROW],
       },
     });
+
+    logSheetsEvent('header_written', {
+      spreadsheetId: SPREADSHEET_ID,
+      range: headerRange,
+      durationMs: Date.now() - headerWriteStartedAt,
+    });
   }
+
+  logSheetsEvent('header_check_complete', {
+    spreadsheetId: SPREADSHEET_ID,
+    range: headerRange,
+    durationMs: Date.now() - startedAt,
+    firstRowEmpty,
+  });
 }
 
 async function appendLeadToSheet(contact) {
   if (!contact) throw new Error('Contact data is required');
+
+  const startedAt = Date.now();
+  logSheetsEvent('append_start', {
+    spreadsheetId: SPREADSHEET_ID,
+    sheetName: SHEET_NAME,
+    contactId: String(contact._id),
+  });
 
   try {
     await ensureHeaders();
@@ -134,6 +171,14 @@ async function appendLeadToSheet(contact) {
     // non-fatal logging error
     console.error('Google Sheets: append succeeded but logging failed', logErr);
   }
+
+  logSheetsEvent('append_complete', {
+    spreadsheetId: SPREADSHEET_ID,
+    sheetName: SHEET_NAME,
+    contactId: String(contact._id),
+    durationMs: Date.now() - startedAt,
+    updatedRange: res?.data?.updates?.updatedRange,
+  });
 
   return res.data;
 }

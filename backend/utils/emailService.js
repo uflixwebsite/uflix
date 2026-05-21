@@ -71,6 +71,16 @@ if (shouldVerifyTransporter) {
   console.log('Email transporter verification skipped on startup.');
 }
 
+const isProduction = process.env.NODE_ENV === 'production';
+
+const logEmailEvent = (event, details = {}) => {
+  if (!isProduction) return;
+  console.info('[email]', {
+    event,
+    ...details,
+  });
+};
+
 const currency = (value = 0) => `Rs ${Number(value || 0).toLocaleString('en-IN')}`;
 
 const escapeHtml = (value = '') =>
@@ -236,7 +246,20 @@ const sendEmail = async (options) => {
     attachments,
   };
 
+  const startedAt = Date.now();
+  logEmailEvent('send_start', {
+    to: options.to,
+    subject: options.subject,
+    attachmentCount: attachments.length,
+  });
+
   await transporter.sendMail(mailOptions);
+
+  logEmailEvent('send_complete', {
+    to: options.to,
+    subject: options.subject,
+    durationMs: Date.now() - startedAt,
+  });
 };
 
 const sendOrderPlacedNotifications = async ({ order, customer, invoice }) => {
