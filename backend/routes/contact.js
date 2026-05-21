@@ -29,27 +29,6 @@ const processContactFollowUps = async ({ requestId, startedAt, contact, payload 
   });
 
   try {
-    const emailStartedAt = Date.now();
-    logContactEvent(requestId, 'email_start', {
-      contactId: String(contact._id),
-    });
-
-    await sendContactFormNotifications(payload);
-
-    logContactEvent(requestId, 'email_sent', {
-      contactId: String(contact._id),
-      durationMs: Date.now() - emailStartedAt,
-    });
-  } catch (emailError) {
-    console.error('[contact] email_failed', {
-      requestId,
-      contactId: String(contact._id),
-      message: emailError?.message,
-      stack: isProduction ? undefined : emailError?.stack,
-    });
-  }
-
-  try {
     const sheetStartedAt = Date.now();
     logContactEvent(requestId, 'sheet_start', {
       contactId: String(contact._id),
@@ -67,6 +46,27 @@ const processContactFollowUps = async ({ requestId, startedAt, contact, payload 
       contactId: String(contact._id),
       message: sheetError?.message,
       stack: isProduction ? undefined : sheetError?.stack,
+    });
+  }
+
+  try {
+    const emailStartedAt = Date.now();
+    logContactEvent(requestId, 'email_start', {
+      contactId: String(contact._id),
+    });
+
+    await sendContactFormNotifications(payload);
+
+    logContactEvent(requestId, 'email_sent', {
+      contactId: String(contact._id),
+      durationMs: Date.now() - emailStartedAt,
+    });
+  } catch (emailError) {
+    console.error('[contact] email_failed', {
+      requestId,
+      contactId: String(contact._id),
+      message: emailError?.message,
+      stack: isProduction ? undefined : emailError?.stack,
     });
   }
 
