@@ -35,3 +35,12 @@ export const deleteProduct = async (id) => {
   const response = await api.delete(`/products/${id}`);
   return response.data;
 };
+
+// Download all products as CSV (admin)
+export const downloadProductsCsv = async () => {
+  const response = await api.get('/products/export/csv', {
+    responseType: 'blob',
+  });
+
+  return response.data;
+};

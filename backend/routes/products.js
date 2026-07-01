@@ -6,6 +6,30 @@ const Review = require('../models/Review');
 const mongoose = require('mongoose');
 const { protect, admin, optionalAuth } = require('../middleware/auth');
 
+const toCsvValue = (value) => {
+  if (value === undefined || value === null) return '';
+  const str = String(value).replace(/"/g, '""');
+  return `"${str}"`;
+};
+
+const joinUrls = (images = []) => {
+  if (!Array.isArray(images)) return '';
+  return images.map((image) => image?.url).filter(Boolean).join(' | ');
+};
+
+const getArraySlot = (items = [], index = 0) => {
+  if (!Array.isArray(items)) return null;
+  return items[index] || null;
+};
+
+const getImageSlot = (images = [], index = 0) => {
+  const image = getArraySlot(images, index);
+  return {
+    url: image?.url || '',
+    alt: image?.alt || '',
+  };
+};
+
 // Helper: get all descendant category IDs including self
 const getAllDescendantIds = async (categoryId) => {
   const all = await Category.find({}, '_id parent');
@@ -204,6 +228,188 @@ router.get('/', async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message
+    });
+  }
+});
+
+// @route   GET /api/products/export/csv
+// @desc    Export all products as CSV
+// @access  Private/Admin
+router.get('/export/csv', protect, admin, async (req, res) => {
+  try {
+    const products = await Product.find({}).sort({ createdAt: -1 }).lean();
+
+    const columns = [
+      'productId',
+      'name',
+      'slug',
+      'description',
+      'sku',
+      'price',
+      'discountPrice',
+      'shippingFees',
+      'categories',
+      'categoryRef',
+      'categoryRefs',
+      'subcategoryId',
+      'subcategoryName',
+      'material',
+      'color',
+      'tags',
+      'isFeatured',
+      'bestSeller',
+      'newArrival',
+      'availableOnQuotation',
+      'isActive',
+      'dimensionLength',
+      'dimensionWidth',
+      'dimensionHeight',
+      'dimensionUnit',
+      'weightValue',
+      'weightUnit',
+      'stock',
+      'ratingAverage',
+      'ratingCount',
+      'sold',
+      'views',
+      'video',
+      ...Array.from({ length: 6 }, (_, index) => [`image${index + 1}Url`, `image${index + 1}Alt`]).flat(),
+      ...Array.from({ length: 5 }, (_, index) => [`specification${index + 1}Key`, `specification${index + 1}Value`]).flat(),
+      'variantIndex',
+      'variantCount',
+      'variantId',
+      'variantName',
+      'variantSku',
+      'variantColor',
+      'variantSize',
+      'variantPrice',
+      'variantDiscountPrice',
+      'variantStockQuantity',
+      'variantStockReserved',
+      'variantIsActive',
+      'variantDescription',
+      'variantDimensionLength',
+      'variantDimensionWidth',
+      'variantDimensionHeight',
+      'variantDimensionUnit',
+      'variantWeightValue',
+      'variantWeightUnit',
+      ...Array.from({ length: 6 }, (_, index) => [`variantImage${index + 1}Url`, `variantImage${index + 1}Alt`]).flat(),
+      'createdAt',
+      'updatedAt',
+    ];
+
+    const rows = products.flatMap((product) => {
+      const productImages = Array.isArray(product.images) ? product.images.slice(0, 6) : [];
+      const productSpecs = Array.isArray(product.specifications) ? product.specifications.slice(0, 5) : [];
+      const variants = Array.isArray(product.variants) && product.variants.length ? product.variants : [null];
+
+      return variants.map((variant, variantIndex) => {
+        const variantImages = Array.isArray(variant?.images) ? variant.images.slice(0, 6) : [];
+
+        const row = {
+          productId: product._id,
+          name: product.name,
+          slug: product.slug,
+          description: product.description,
+          sku: product.sku,
+          price: product.price,
+          discountPrice: product.discountPrice,
+          shippingFees: product.shippingFees,
+          categories: Array.isArray(product.categories) ? product.categories.join(' | ') : '',
+          categoryRef: product.categoryRef || '',
+          categoryRefs: Array.isArray(product.categoryRefs)
+            ? product.categoryRefs.map((id) => String(id)).join(' | ')
+            : '',
+          subcategoryId: product.subcategory?._id || '',
+          subcategoryName: product.subcategory?.name || '',
+          material: product.material,
+          color: Array.isArray(product.color) ? product.color.join(' | ') : '',
+          tags: Array.isArray(product.tags) ? product.tags.join(' | ') : '',
+          isFeatured: Boolean(product.isFeatured),
+          bestSeller: Boolean(product.bestSeller),
+          newArrival: Boolean(product.newArrival),
+          availableOnQuotation: Boolean(product.availableOnQuotation),
+          isActive: Boolean(product.isActive),
+          dimensionLength: product.dimensions?.length ?? '',
+          dimensionWidth: product.dimensions?.width ?? '',
+          dimensionHeight: product.dimensions?.height ?? '',
+          dimensionUnit: product.dimensions?.unit ?? '',
+          weightValue: product.weight?.value ?? '',
+          weightUnit: product.weight?.unit ?? '',
+          stock: product.stock ?? '',
+          ratingAverage: product.ratings?.average ?? '',
+          ratingCount: product.ratings?.count ?? '',
+          sold: product.sold ?? '',
+          views: product.views ?? '',
+          video: product.video,
+          variantIndex: variant ? variantIndex + 1 : '',
+          variantCount: variants[0] ? variants.length : 0,
+          variantId: variant?._id || '',
+          variantName: variant?.name || '',
+          variantSku: variant?.sku || '',
+          variantColor: variant?.color || '',
+          variantSize: variant?.size || '',
+          variantPrice: variant?.price ?? '',
+          variantDiscountPrice: variant?.discountPrice ?? '',
+          variantStockQuantity: variant?.stock?.quantity ?? '',
+          variantStockReserved: variant?.stock?.reserved ?? '',
+          variantIsActive: variant?.isActive ?? '',
+          variantDescription: variant?.description || '',
+          variantDimensionLength: variant?.dimensions?.length ?? '',
+          variantDimensionWidth: variant?.dimensions?.width ?? '',
+          variantDimensionHeight: variant?.dimensions?.height ?? '',
+          variantDimensionUnit: variant?.dimensions?.unit ?? '',
+          variantWeightValue: variant?.weight?.value ?? '',
+          variantWeightUnit: variant?.weight?.unit ?? '',
+          createdAt: product.createdAt,
+          updatedAt: product.updatedAt,
+        };
+
+        productImages.forEach((image, index) => {
+          row[`image${index + 1}Url`] = image?.url || '';
+          row[`image${index + 1}Alt`] = image?.alt || '';
+        });
+
+        for (let index = productImages.length; index < 6; index += 1) {
+          row[`image${index + 1}Url`] = '';
+          row[`image${index + 1}Alt`] = '';
+        }
+
+        productSpecs.forEach((specification, index) => {
+          row[`specification${index + 1}Key`] = specification?.key || '';
+          row[`specification${index + 1}Value`] = specification?.value || '';
+        });
+
+        for (let index = productSpecs.length; index < 5; index += 1) {
+          row[`specification${index + 1}Key`] = '';
+          row[`specification${index + 1}Value`] = '';
+        }
+
+        variantImages.forEach((image, index) => {
+          row[`variantImage${index + 1}Url`] = image?.url || '';
+          row[`variantImage${index + 1}Alt`] = image?.alt || '';
+        });
+
+        for (let index = variantImages.length; index < 6; index += 1) {
+          row[`variantImage${index + 1}Url`] = '';
+          row[`variantImage${index + 1}Alt`] = '';
+        }
+
+        return columns.map((column) => toCsvValue(row[column])).join(',');
+      });
+    });
+
+    const csv = [columns.map((column) => toCsvValue(column)).join(','), ...rows].join('\n');
+    const fileName = `products-export-${new Date().toISOString().slice(0, 10)}.csv`;
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
+    res.status(200).send(csv);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
     });
   }
 });

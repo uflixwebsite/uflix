@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { getProducts, deleteProduct } from '@/services/productService';
+import { getProducts, deleteProduct, downloadProductsCsv } from '@/services/productService';
 import { useAuthState } from '@/hooks/useAuthState';
 
 export default function AdminProductsPage() {
@@ -20,6 +20,7 @@ export default function AdminProductsPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalProducts, setTotalProducts] = useState(0);
+  const [csvDownloading, setCsvDownloading] = useState(false);
   const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
@@ -112,6 +113,27 @@ export default function AdminProductsPage() {
     }
   };
 
+  const handleDownloadCsv = async () => {
+    try {
+      setCsvDownloading(true);
+      const blob = await downloadProductsCsv();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const fileName = `products-export-${new Date().toISOString().slice(0, 10)}.csv`;
+
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error: any) {
+      alert('Failed to download CSV. Please try again.');
+    } finally {
+      setCsvDownloading(false);
+    }
+  };
+
   // No frontend filtering needed - backend handles it
 
   // Show loading while auth is hydrating OR while fetching products data
@@ -149,12 +171,21 @@ export default function AdminProductsPage() {
             <h1 className="text-3xl font-bold">Products Management</h1>
             <p className="text-neutral-dark mt-2">Manage your product catalog</p>
           </div>
-          <Link
-            href="/admin/products/new"
-            className="px-6 py-3 bg-accent text-white rounded-md hover:bg-secondary transition-colors font-semibold"
-          >
-            + Add New Product
-          </Link>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleDownloadCsv}
+              disabled={csvDownloading}
+              className="px-6 py-3 border border-accent text-accent rounded-md hover:bg-accent/10 transition-colors font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {csvDownloading ? 'Downloading...' : 'Download CSV'}
+            </button>
+            <Link
+              href="/admin/products/new"
+              className="px-6 py-3 bg-accent text-white rounded-md hover:bg-secondary transition-colors font-semibold"
+            >
+              + Add New Product
+            </Link>
+          </div>
         </div>
 
         {/* Filters */}
