@@ -43,6 +43,7 @@ const pageOptions = [
   { value: '/laser-sheet-cutting-delhi-ncr', label: 'Laser Sheet Cutting Page' },
   { value: '/powder-coating-delhi-ncr', label: 'Powder Coating Page' },
   { value: '/laser-pipe-cutting-delhi-ncr', label: 'Laser Pipe Cutting Page' },
+  { value: '/cable-tray-manufacture-delhi-ncr', label: 'Cable Tray Manufacture Page' },
   { value: '/shop-fittings/metal-sheet', label: 'Metal Sheet Page' },
   { value: '/contact', label: 'Contact' },
   { value: '/about', label: 'About' },

@@ -20,6 +20,7 @@ export default function AdminPagesPage() {
       'laser-sheet-cutting-delhi-ncr': '/laser-sheet-cutting-delhi-ncr',
       'powder-coating-delhi-ncr': '/powder-coating-delhi-ncr',
       'laser-pipe-cutting-delhi-ncr': '/laser-pipe-cutting-delhi-ncr',
+      'cable-tray-manufacture-delhi-ncr': '/cable-tray-manufacture-delhi-ncr',
     };
 
     return routeMap[slug] || `/${slug}`;

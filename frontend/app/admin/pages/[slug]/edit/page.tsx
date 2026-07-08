@@ -258,6 +258,7 @@ const BUSINESS_STYLE_PAGE_SLUGS = new Set([
   'laser-sheet-cutting-delhi-ncr',
   'powder-coating-delhi-ncr',
   'laser-pipe-cutting-delhi-ncr',
+  'cable-tray-manufacture-delhi-ncr',
 ]);
 
 const PAGE_PREVIEW_PATHS: Record<string, string> = {
@@ -266,6 +267,7 @@ const PAGE_PREVIEW_PATHS: Record<string, string> = {
   'laser-sheet-cutting-delhi-ncr': '/laser-sheet-cutting-delhi-ncr',
   'powder-coating-delhi-ncr': '/powder-coating-delhi-ncr',
   'laser-pipe-cutting-delhi-ncr': '/laser-pipe-cutting-delhi-ncr',
+  'cable-tray-manufacture-delhi-ncr': '/cable-tray-manufacture-delhi-ncr',
 };
 
 function extractCloudinaryPublicId(url: string): string | null {
@@ -1251,11 +1253,25 @@ function SectionEditor({ section, index, onChange, onDelete, onMoveUp, onMoveDow
       {expanded && (
         <div className="p-5 space-y-5 border-t border-gray-200">
 
-          {/* Visibility toggle — always shown */}
-          <div className="flex items-center gap-2">
-            <input type="checkbox" id={`vis-${index}`} checked={section.isVisible !== false}
-              onChange={(e) => update('isVisible', e.target.checked)} className="rounded border-gray-300" />
-            <label htmlFor={`vis-${index}`} className="text-sm font-medium">Visible on page</label>
+          {/* Visibility toggle + background color — always shown */}
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2">
+              <input type="checkbox" id={`vis-${index}`} checked={section.isVisible !== false}
+                onChange={(e) => update('isVisible', e.target.checked)} className="rounded border-gray-300" />
+              <label htmlFor={`vis-${index}`} className="text-sm font-medium">Visible on page</label>
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-700">Background</label>
+              <select
+                value={section.bgColor || 'white'}
+                onChange={(e) => update('bgColor', e.target.value)}
+                className="px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+              >
+                {BG_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Section-level title */}

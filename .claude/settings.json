@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\aiman\\\\Desktop\\\\Projects\\\\Uflix\\\\frontend\\\\app\\\\cable-tray-manufacture-delhi-ncr\")",
+      "Bash(Out-Null)",
+      "Bash(Write-Output \"done\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\aiman\\\\Desktop\\\\Projects\\\\Uflix\\\\frontend\\\\app\\\\cable-tray-manufacture-delhi-ncr\")"
+    ]
+  }
+}

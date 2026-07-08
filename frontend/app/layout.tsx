@@ -69,7 +69,6 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body className={`${playfair.variable} ${montserrat.variable} antialiased`}>
-          <div style={{ position: 'fixed', inset: 0, backgroundColor: '#ffffff', zIndex: 99999 }} />
           <Script id="google-tag-manager" strategy="afterInteractive">
             {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
